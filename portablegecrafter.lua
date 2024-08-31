@@ -66,6 +66,13 @@ function antiban()
     end
 end
 
+function loadLastPreset()
+    print("Last Preset")
+    API.DoAction_NPC(0x33,API.OFF_ACT_InteractNPC_route4,{ banker },50)
+    API.RandomSleep2(600, 0, 250)
+    API.WaitUntilMovingEnds()
+end
+
 function openBank()
     print("openBank")
     API.DoAction_NPC(0x5,API.OFF_ACT_InteractNPC_route,{ banker },50)
@@ -93,18 +100,18 @@ end
 
 function startProduction()
     print("Start")
-    API.DoAction_Interface(0xffffffff,0xffffffff,0,1370,30,-1,API.OFF_ACT_GeneralInterface_Choose_option)    
+    API.DoAction_Interface(0xffffffff,0xffffffff,0,1370,30,-1,API.OFF_ACT_GeneralInterface_Choose_option)  
+    API.RandomSleep2(1200, 0, 250)  
 end
 
 function makeItems()
-    openBank()
-    preset(1)
+    --openBank()
+    --preset(1)
+    loadLastPreset()
     craftCrafter()
     startProduction()
     
-    make_Timer = API.SystemTime()
-
-    while Check_Timer(make_Timer) < 15000 do
+    while API.CheckAnim(50) do
 
         antiban()
         API.RandomSleep2(600, 0, 250)
