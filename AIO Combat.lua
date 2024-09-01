@@ -247,8 +247,10 @@ function hasDeBuff(debuff)
     end
 end
 
-function hasItem(item)
-    if API.InvItemcount_String(item) > 0 then
+function hasItem(item, count)
+    invitems = API.InvItemcount_String()
+    if count then return invitems
+    if invitems > 0 then
         return true
     else
         return false
@@ -720,12 +722,16 @@ do------------------------------------------------------------------------------
         API.DrawTable(metrics)
     ----METRICS----
     if runLoop and enemyToFight ~= (nil or "None") then
+
         setupPrayers()
         chargePackCheck()
-        noteStuff()
-        if currentTarget then
+   
+        if not currentTarget then findClosestEnemy()
+
             while API.IsTargeting() do 
+
                 openLoot()
+                noteStuff()
                 buffCheck()
                 prayerCheck()
                 healthCheck()
@@ -733,15 +739,25 @@ do------------------------------------------------------------------------------
                 essenceOfFinality()
                 antiban()
                 API.RandomSleep2(1200, 0, 600)  
-            end       
+
+            end     
+  
+            currentTarget = nil
             STATS.kills = STATS.kills + 1  
             API.RandomSleep2(2400, 0, 600)
             openLoot()
+
+
     else
+
         if currentTarget == nil then
+
             API.logWarn("Please select an enemy")
+
         end
+
         API.RandomSleep2(2400, 0, 600)
+
     end
     
     antiban()
