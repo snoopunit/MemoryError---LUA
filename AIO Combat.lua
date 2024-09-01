@@ -271,6 +271,10 @@ function getEnemies(names, size)
     end
 end
 
+function attack()
+    API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, closestNPC)
+end
+
 function uniqueEnemies()
     local uniqueEnemies = {}  
     local seenIDs = {}   
@@ -289,8 +293,9 @@ function uniqueEnemies()
     return uniqueEnemies
 end
 
-function moveToEnemy(enemy)
+function moveToEnemy()
     local player = API.PlayerCoord()
+    local enemy = currentTarget
 
     local direction = {
         x = player.x - enemy.Tile_XYZ.x,
@@ -300,7 +305,7 @@ function moveToEnemy(enemy)
 
     local length = math.sqrt(direction.x^2 + direction.y^2 + direction.z^2)
 
-    if length <= 3 then
+    if length <= 4 then
         return 
     end
     
@@ -318,7 +323,7 @@ function moveToEnemy(enemy)
     
     
     API.DoAction_WalkerF(target_tile)
-    API.RandomSleep2(1200, 0, 250)
+    API.RandomSleep2(1600, 0, 250)
 
     if length > 14 then
         if UTILS.canUseSkill("Barge") then
@@ -331,6 +336,11 @@ function moveToEnemy(enemy)
         end
     end
   
+    while API.ReadPlayerMovin2() do
+        API.RandomSleep2(600, 0, 250)
+        attack()
+    end
+
 end
 
 function openLoot()
@@ -338,8 +348,20 @@ function openLoot()
     if not lootDrops or (STATS.kills == 0) then
         return
     end
+
     local data = API.LootWindow_GetData()
-    --API.logWarn(data.name)
+    local hasWindowItems = false
+    
+    if #data then
+        for i = 0, #data do
+            for j = 0, #notelist do
+                if data[i].itemid1 == notelist[j] then
+                    hasWindowItems = true
+                    break
+                end
+            end
+        end
+    end
 
     local dist = 10
     local radius = 10
@@ -350,12 +372,14 @@ function openLoot()
         API.RandomSleep2(600, 0, 0)
     end
     
-    API.logDebug("Looting...")
     
-    if Loot_Type == (Loot_Types.CUSTOM or Loot_Types.BOTH) then
+    
+    if Loot_Type == (Loot_Types.CUSTOM or Loot_Types.BOTH) and hasWindowItems then
+        API.logDebug("Loot custom button")
         API.DoAction_Interface(0x24,0xffffffff,1,1622,30,-1,API.OFF_ACT_GeneralInterface_route)
-    end
-    if Loot_Type == (Loot_Types.LIST or Loot_Types.BOTH) then
+    elseif Loot_Type == (Loot_Types.LIST or Loot_Types.BOTH) then
+        if not API.LootWindowOpen_2() then API.logDebug("Searching for loot...")
+        else API.logDebug("Looting lootlist") end
         API.DoAction_Loot_w(lootlist, dist, API.PlayerCoordfloat(), radius)
     end
 
@@ -422,10 +446,6 @@ function drawGUI()
 end
 
 function findClosestEnemy()
-
-    if API.IsTargeting() then      
-        return true
-    end
 
     local coords = API.PlayerCoord()
     local playerX, playerY = coords.x, coords.y
@@ -725,37 +745,42 @@ do------------------------------------------------------------------------------
 
         setupPrayers()
         chargePackCheck()
+        healthCheck()
    
-        if not currentTarget then findClosestEnemy()
+        if not currentTarget then findClosestEnemy() end
 
-            while API.IsTargeting() do 
+        if not API.isTargeting() then
+            attack()
+        end
 
-                openLoot()
-                noteStuff()
-                buffCheck()
-                prayerCheck()
-                healthCheck()
-                specialAttack()  
-                essenceOfFinality()
-                antiban()
-                API.RandomSleep2(1200, 0, 600)  
+        imguiTarget.string_value = currentTarget.Name
+        API.DrawTextAt(imguiTarget)
 
-            end     
-  
-            currentTarget = nil
-            STATS.kills = STATS.kills + 1  
-            API.RandomSleep2(2400, 0, 600)
+        while API.IsTargeting() do 
+
             openLoot()
+            noteStuff()
+            buffCheck()
+            prayerCheck()
+            healthCheck()
+            specialAttack()  
+            essenceOfFinality()
+            moveToEnemy()
+            antiban()
+            API.RandomSleep2(1200, 0, 600)  
 
+        end     
+  
+        currentTarget = nil
+        imguiTarget.string_value = ""
+        API.DrawTextAt(imguiTarget)
+        STATS.kills = STATS.kills + 1  
+        API.RandomSleep2(2400, 0, 600)
+        openLoot()
 
     else
 
-        if currentTarget == nil then
-
-            API.logWarn("Please select an enemy")
-
-        end
-
+        if currentTarget == nil then API.logWarn("Please select an enemy") end
         API.RandomSleep2(2400, 0, 600)
 
     end
