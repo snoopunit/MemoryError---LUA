@@ -249,7 +249,7 @@ end
 
 function hasItem(item, count)
     invitems = API.InvItemcount_String()
-    if count then return invitems
+    if count then return invitems end
     if invitems > 0 then
         return true
     else
@@ -360,6 +360,12 @@ function openLoot()
                     break
                 end
             end
+        end
+    end
+
+    for j = 1, #data, 1 do
+        if data[j].itemid1 == gItems[i].Id then
+            itemPresent = true
         end
     end
 
@@ -681,6 +687,11 @@ end
 function noteStuff()
     if not noteItems then
         return
+    end
+    for i = 1, #notelist do
+        if not hasItem(notelist[i]) then
+            return
+        end
     end
     if API.Invfreecount_() < math.random(1,4) then
         for i = 1, #notelist do
