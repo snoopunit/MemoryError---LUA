@@ -400,7 +400,6 @@ function drawGUI()
     end
 
     if imguicombo.return_click then
-        imguicombo.return_click = false
         while enemyToFight == nil do
             if not imguicombo.string_value == ("Select an enemy" or "") then
                 enemyToFight = imguicombo.string_value
@@ -410,6 +409,7 @@ function drawGUI()
             end
             API.RandomSleep2(250, 0, 50)
         end
+        imguicombo.return_click = false
     end
 
     if getBtn.return_click then
