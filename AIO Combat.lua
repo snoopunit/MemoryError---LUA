@@ -115,7 +115,7 @@ local BUFFS = {
 local DEBUFFS = {
     Poison = 14691,
     Elven_Shard = 43358,
-    Enh_Excalibur = nil -- add this ID or it wont work
+    Enh_Excalibur = 14632
 }
 local PROTECT_MAGIC = {
     names = {"Olivia the Chronicler", "Oyu the Quietest"},
@@ -151,6 +151,7 @@ table.insert(notelist, ITEMS.BONES.frost_dbones)
 ----Loot List----
 local lootlist = {}
 table.insert(lootlist, ITEMS.MISC.gold)
+table.insert(lootlist, ITEMS.BONES.frost_dbones)
 
 local enemyToFight = nil
 local currentTarget = nil
@@ -158,13 +159,15 @@ local closestNPC = nil
 local lootDrops = true
 local noteItems = true
 local useSpecial = true
+local waitForDeath = false
+local moveToTarget = false
 local runLoop = false
 
 ----GUI----
 local imguiBackground = API.CreateIG_answer()
 imguiBackground.box_name = "imguiBackground"
 imguiBackground.box_start = FFPOINT.new(16, 60, 0)  
-imguiBackground.box_size = FFPOINT.new(400, 150, 0)
+imguiBackground.box_size = FFPOINT.new(400, 180, 0)
 imguiBackground.colour = ImColor.new(71, 71, 71)  
 
 local fightBtn = API.CreateIG_answer()
@@ -194,18 +197,35 @@ imguibox1.box_name = "Loot Drops"
 imguibox1.box_start = FFPOINT.new(start_x, 115, 0)  
 imguibox1.box_size = FFPOINT.new(checkbox_width, 30, 0)
 imguibox1.tooltip_text = ""
+imguibox1.box_ticked = lootDrops
 
 local imguibox2 = API.CreateIG_answer()
 imguibox2.box_name = "Note Items"
 imguibox2.box_start = FFPOINT.new(start_x + checkbox_width + checkbox_spacing, 115, 0)  
 imguibox2.box_size = FFPOINT.new(checkbox_width, 30, 0)
 imguibox2.tooltip_text = ""
+imguibox2.box_ticked = noteItems
 
 local imguibox3 = API.CreateIG_answer()
 imguibox3.box_name = "SP Attack"
 imguibox3.box_start = FFPOINT.new(start_x + 2 * (checkbox_width + checkbox_spacing), 115, 0)  
 imguibox3.box_size = FFPOINT.new(checkbox_width, 30, 0)
 imguibox3.tooltip_text = ""
+imguibox3.box_ticked = useSpecial
+
+local imguibox4 = API.CreateIG_answer()
+imguibox4.box_name = "Wait"
+imguibox4.box_start = FFPOINT.new(start_x + checkbox_width + checkbox_spacing, 135, 0)  
+imguibox4.box_size = FFPOINT.new(checkbox_width, 30, 0)
+imguibox4.tooltip_text = "Wait for enemies to die and drop loot"
+imguibox4.box_ticked = waitForDeath
+
+local imguibox5 = API.CreateIG_answer()
+imguibox5.box_name = "Move"
+imguibox5.box_start = FFPOINT.new(start_x + 2 * (checkbox_width + checkbox_spacing), 135, 0)  
+imguibox5.box_size = FFPOINT.new(checkbox_width, 30, 0)
+imguibox5.tooltip_text = "Move closer to enemies for area loot"
+imguibox5.box_ticked = moveToTarget
 
 local imguiTargetLabel = API.CreateIG_answer()
 imguiTargetLabel.box_name = "CurrentTarget"
@@ -273,6 +293,13 @@ end
 
 function attack()
     API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, closestNPC)
+    API.RandomSleep2(600, 0, 600)
+
+    if API.IsTargeting() then
+        return true
+    else
+        return false
+    end
 end
 
 function uniqueEnemies()
@@ -294,13 +321,15 @@ function uniqueEnemies()
 end
 
 function moveToEnemy()
+    if not moveToTarget then return end
+
     local player = API.PlayerCoord()
-    local enemy = currentTarget
+    local enemyX, enemyY, enemyZ = currentTarget.Tile_XYZ.x, currentTarget.Tile_XYZ.y, currentTarget.Tile_XYZ.z
 
     local direction = {
-        x = player.x - enemy.Tile_XYZ.x,
-        y = player.y - enemy.Tile_XYZ.y,
-        z = player.z - enemy.Tile_XYZ.z
+        x = player.x - enemyX,
+        y = player.y - enemyY,
+        z = player.z - enemyZ
     }
 
     local length = math.sqrt(direction.x^2 + direction.y^2 + direction.z^2)
@@ -315,23 +344,24 @@ function moveToEnemy()
         z = direction.z / length
     }
     
-    local target_tile = FFPOINT:new{
-        enemy.Tile_XYZ.x + 3 * unit_vector.x,
-        enemy.Tile_XYZ.y + 3 * unit_vector.y,
-        enemy.Tile_XYZ.z + 3 * unit_vector.z
-    }
+    local target_tile = WPOINT:new(
+        math.floor(enemyX + 3 * unit_vector.x),
+        math.floor(enemyY + 3 * unit_vector.y),
+        math.floor(enemyZ + 3 * unit_vector.z)
+    )
     
     
-    API.DoAction_WalkerF(target_tile)
+    API.DoAction_WalkerW(target_tile)
     API.RandomSleep2(1600, 0, 250)
 
     if length > 14 then
-        if UTILS.canUseSkill("Barge") then
-            activateAbility("Barge")
-            API.RandomSleep2(600, 0, 250)
-        end
         if UTILS.canUseSkill("Surge") then
             activateAbility("Surge")
+            API.RandomSleep2(600, 0, 250)
+        end
+    elseif length >= 7 then
+        if UTILS.canUseSkill("Barge") then
+            activateAbility("Barge")
             API.RandomSleep2(600, 0, 250)
         end
     end
@@ -343,9 +373,15 @@ function moveToEnemy()
 
 end
 
+function checkGroundItems()
+    local items = API.ReadAllObjectsArray({3}, lootlist, {})
+
+    return #items
+end
+
 function openLoot()
 
-    if not lootDrops or (STATS.kills == 0) then
+    if not lootDrops or (STATS.kills == 0) or (checkGroundItems() < 1) then
         return
     end
 
@@ -353,19 +389,13 @@ function openLoot()
     local hasWindowItems = false
     
     if #data then
-        for i = 0, #data do
-            for j = 0, #notelist do
+        for i = 1, #data, 1 do
+            for j = 1, #notelist, 1 do
                 if data[i].itemid1 == notelist[j] then
                     hasWindowItems = true
                     break
                 end
             end
-        end
-    end
-
-    for j = 1, #data, 1 do
-        if data[j].itemid1 == gItems[i].Id then
-            itemPresent = true
         end
     end
 
@@ -377,8 +407,6 @@ function openLoot()
         API.DoAction_Interface(0xffffffff, 0xffffffff, 1, 1678, 8, -1, API.OFF_ACT_GeneralInterface_route)
         API.RandomSleep2(600, 0, 0)
     end
-    
-    
     
     if Loot_Type == (Loot_Types.CUSTOM or Loot_Types.BOTH) and hasWindowItems then
         API.logDebug("Loot custom button")
@@ -400,17 +428,13 @@ function drawGUI()
     end
 
     if imguicombo.return_click then
-        while enemyToFight == nil do
-            if not imguicombo.string_value == ("Select an enemy" or "") then
-                enemyToFight = imguicombo.string_value
-                API.logDebug("Selected Target: "..imguicombo.string_value)    
-            else
-                enemyToFight = "None"
-            end
-            API.RandomSleep2(250, 0, 50)
-        end
         imguicombo.return_click = false
+        enemyToFight = imguicombo.string_value
+        API.logDebug("Selected Target: "..imguicombo.string_value)    
+        API.RandomSleep2(250, 0, 50)
     end
+
+    --API.logDebug("Enemy to fight: "..tostring(enemyToFight))
 
     if getBtn.return_click then
         local availableTargets = uniqueEnemies()
@@ -440,6 +464,18 @@ function drawGUI()
         API.logDebug("Weapon Special Attack: "..tostring(useSpecial))
     end
 
+    if imguibox4.return_click then
+        imguibox4.return_click = false
+        waitForDeath = not waitForDeath
+        API.logDebug("Wait for Death: "..tostring(waitForDeath))
+    end
+
+    if imguibox5.return_click then
+        imguibox5.return_click = false
+        moveToTarget = not moveToTarget
+        API.logDebug("Move to target: "..tostring(moveToTarget))
+    end
+
     API.DrawSquareFilled(imguiBackground)
     API.DrawBox(fightBtn)
     API.DrawBox(getBtn)
@@ -447,6 +483,8 @@ function drawGUI()
     API.DrawCheckbox(imguibox1)
     API.DrawCheckbox(imguibox2)
     API.DrawCheckbox(imguibox3)
+    API.DrawCheckbox(imguibox4)
+    API.DrawCheckbox(imguibox5)
     API.DrawTextAt(imguiTargetLabel)
     API.DrawTextAt(imguiTarget)
 end
@@ -474,6 +512,8 @@ function findClosestEnemy()
         end
     end
     currentTarget = closestNPC
+    imguiTarget.string_value = currentTarget.Name
+    API.DrawTextAt(imguiTarget)
 end
 
 function Check_Timer(int)
@@ -734,6 +774,33 @@ function essenceOfFinality()
             API.RandomSleep2(600, 0, 600)    
         end
 end
+
+function rejuvenate()
+
+    if  (API.GetAddreline_() < 94) or (API.GetHPrecent() > 80) or not (hasItem("shield", true) >= 1) or hasDeBuff(DEBUFFS.Enh_Excalibur) then
+        return
+    end
+
+    local startHP = API.GetHPrecent()
+
+    API.KeyboardPress('1', 50, 250)
+    API.RandomSleep2(600, 0, 600)  
+
+    if UTILS.canUseSkill("Rejuvenate") then
+        activateAbility("Rejuvenate")
+        API.RandomSleep2(600, 0, 600)
+    end
+
+    local skillTimer = API.SystemTime()
+
+    while Check_Timer(skillTimer) < 10000 do
+        API.RandomSleep2(600, 0, 600)
+    end
+
+    API.KeyboardPress('2', 50, 250)
+    API.RandomSleep2(600, 0, 600)
+    
+end
 --main loop
 API.Write_LoopyLoop(true)
 API.SetDrawLogs(true)
@@ -741,7 +808,9 @@ API.SetDrawTrackedSkills(true)
 
 while(API.Read_LoopyLoop())
 do-----------------------------------------------------------------------------------
+
     drawGUI()
+
     ----METRICS----
     local metrics = {
         {"Script","All-In-One Combat - by Klamor"},
@@ -752,7 +821,10 @@ do------------------------------------------------------------------------------
         }
         API.DrawTable(metrics)
     ----METRICS----
-    if runLoop and enemyToFight ~= (nil or "None") then
+
+    local hasMoved = false
+
+    if runLoop and (enemyToFight ~= nil or "None") then
 
         setupPrayers()
         chargePackCheck()
@@ -760,25 +832,24 @@ do------------------------------------------------------------------------------
    
         if not currentTarget then findClosestEnemy() end
 
-        if not API.isTargeting() then
+        if not API.IsTargeting() then
             attack()
         end
 
-        imguiTarget.string_value = currentTarget.Name
-        API.DrawTextAt(imguiTarget)
-
-        while API.IsTargeting() do 
+        while API.IsTargeting() do
 
             openLoot()
             noteStuff()
             buffCheck()
             prayerCheck()
             healthCheck()
+            rejuvenate()
             specialAttack()  
             essenceOfFinality()
-            moveToEnemy()
+            if not hasMoved then moveToEnemy() end
+            hasMoved = true
             antiban()
-            API.RandomSleep2(1200, 0, 600)  
+            API.RandomSleep2(600, 0, 600)  
 
         end     
   
@@ -786,8 +857,10 @@ do------------------------------------------------------------------------------
         imguiTarget.string_value = ""
         API.DrawTextAt(imguiTarget)
         STATS.kills = STATS.kills + 1  
-        API.RandomSleep2(2400, 0, 600)
-        openLoot()
+        if waitForDeath then 
+            API.RandomSleep2(3000, 0, 600)
+            openLoot()
+        end
 
     else
 
@@ -798,4 +871,5 @@ do------------------------------------------------------------------------------
     
     antiban()
     API.RandomSleep2(600, 0, 250)
+
 end----------------------------------------------------------------------------------

@@ -1,4 +1,5 @@
 local API = require("api")
+local UTILS = require("UTILS")
 
 API.SetDrawTrackedSkills(true)
 
@@ -68,9 +69,17 @@ end
 
 function loadLastPreset()
     print("Last Preset")
+    local banktimer = API.SystemTime()
     API.DoAction_NPC(0x33,API.OFF_ACT_InteractNPC_route4,{ banker },50)
     API.RandomSleep2(600, 0, 250)
-    API.WaitUntilMovingEnds()
+    while API.Invfreecount_() > 0 do
+        if Check_Timer(banktimer) > 30000 then
+            print("Out of supplies!")
+            API.Write_LoopyLoop(false)
+            return
+        end
+        API.RandomSleep2(50, 0, 50)
+    end
 end
 
 function openBank()
@@ -87,19 +96,39 @@ end
 
 function craftCrafter()
     print("Crafter")
+    local useTimer = API.SystemTime()
     API.DoAction_Object1(0x3e,API.OFF_ACT_GeneralObject_route0,{ craftID },50);
-    API.RandomSleep2(2000, 0, 250)    
+    while not UTILS.isCraftingInterfaceOpen() do
+        if Check_Timer(useTimer) > 30000 then
+            print("Crafter not available!")
+            API.Write_LoopyLoop(false)
+            return
+        end
+        API.RandomSleep2(50, 0, 50) 
+    end   
 end
 
 function tanCrafter()
     print("Crafter")
+    local useTimer = API.SystemTime()
     API.DoAction_Object1(0x29,API.OFF_ACT_GeneralObject_route0,{ tanID },50)
-    --[19:51:16:677] object id?:98284 might be wrong
-    API.RandomSleep2(2000, 0, 250)
+    while not UTILS.isCraftingInterfaceOpen() do
+        if Check_Timer(useTimer) > 30000 then
+            print("Crafter not available!")
+            API.Write_LoopyLoop(false)
+            return
+        end
+        API.RandomSleep2(50, 0, 50) 
+    end
 end
 
 function startProduction()
     print("Start")
+    if not UTILS.isCraftingInterfaceOpen() then
+        print("something's fucked")
+        API.Write_LoopyLoop(false)
+            return
+    end
     API.DoAction_Interface(0xffffffff,0xffffffff,0,1370,30,-1,API.OFF_ACT_GeneralInterface_Choose_option)  
     API.RandomSleep2(1200, 0, 250)  
 end
@@ -110,8 +139,7 @@ function makeItems()
     loadLastPreset()
     craftCrafter()
     startProduction()
-    
-    while API.CheckAnim(50) do
+    while API.CheckAnim(75) do
 
         antiban()
         API.RandomSleep2(600, 0, 250)
