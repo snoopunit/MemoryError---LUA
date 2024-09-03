@@ -97,9 +97,10 @@ function hasDeBuff(debuff)
     end
 end
 
----MUST BE ON ACTIONBARS
----@param string
-function activate(name)
+function activateAbility(name)
+
+    ---MUST BE ON ACTIONBARS
+    
     API.DoAction_Ability(name, 1, API.OFF_ACT_GeneralInterface_route)
     API.RandomSleep2(600, 50, 300)
 end
