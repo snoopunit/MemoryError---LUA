@@ -1,8 +1,4 @@
---[[
-    Author:      Klamor
-    Version:     1.0
-    Release      Date: 
-    Script:      Temple of Aminishi
+print("Temple of Aminishi")
 
    
 
@@ -631,6 +627,12 @@ function exitDungeon()
         API.RandomSleep2(600, 0, 250)
     end
     
+end
+function resetMenu()
+    while API.Check_Dialog_Open() do
+        API.KeyboardPress('1', 50, 250)
+        API.RandomSleep2(600, 0, 250)
+    end    
 end
 --ZONE LOGIC
 
