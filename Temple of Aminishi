@@ -12,6 +12,7 @@ local API = require("api")
 local UTILS = require("utils")
 
 ------------------------SCRIPT SETUP------------------------
+local Leader_Name = ""                                      --Name of party leader
 local Min_Eat_Percent = 60                                  --min HP% to start eating food
 local Min_HP_Percent = 20                                   --min HP% to teleport out
 local Use_Prayers_Percent = 20                              --min Pray% to activate prayers
@@ -19,7 +20,7 @@ local Min_AFK = 30000                                       --Minimum idle time 
 local Max_AFK = 180000                                      --Maximum idle time in ms
 ------------------------END    SETUP------------------------
 local ZONES = {
-    START = WPOINT:new(14915, 15517, 0), --grab proper start point from dungeon chest coords +2....
+    START = WPOINT:new(0, 0, 0), --grab proper start point from dungeon chest coords +2....
     FIRST_CHECKPOINT = WPOINT:new(START.x + 20, START.y + 4, 0),
     FIRST_STAIRS_FIGHT = {
         TOP_LEFT = WPOINT:new(START.x + 27, START.y + 7, 0),
@@ -238,11 +239,15 @@ function getEnemies(names, size)
         return NPCs
     end
 end
---[[
 function findLeader()
     local obj = API.ReadAllObjectsArray({2}, {1}, {Leader_Name})
-    return obj 
+    if obj then
+        return true
+    else
+        return false
+    end
 end
+--[[
 function MoveToLeader(direction)
     local leader = findLeader()
 
@@ -495,22 +500,70 @@ end
 --ABILITIES
 
 --ZONE LOGIC
-function isOutside()
-    local chestID = 93017
-    local templeDoorID = 103952
-
-    --if both objects found within 5 distance from player, we are outside
-end
-function isInside()
-    local chestID = 93017
+function inOrOut()
     local doorID = 111710
+    local templeDoorID = 103952
     
-    --if both objects found within 5 distance from player, we are inside
+    local inside, outside, foundDoor = false, false, false
+
+    local door = API.ReadAllObjectsArray({0}, {doorID}, {})
+    if door and #door == 1 then
+        foundDoor = true
+        inside = true
+    end
+
+    local templeDoor = API.ReadAllObjectsArray({0}, {templeDoorID}, {})
+    if templeDoor and #templeDoor == 1 then
+        foundDoor = true
+        outside = true
+    end
+
+    if foundDoor and inside and not outside then
+        return "inside"
+    end
+
+    if foundDoor and outside and not inside then
+        return "outside"
+    end
+end
+function enterDungeon()
+    result = false
+    if not inOrOut == "outside" then
+        return result
+    end
+
+    local templeDoorID = 103952
+    local doorFound = false
+
+    local templeDoor = API.ReadAllObjectsArray({0}, {templeDoorID}, {})
+    if templeDoor and #templeDoor == 1 then
+        doorFound = true
+    end
+    
+    if API.GetLocalPlayerName() == Leader_Name then
+        --API.DoAction_Object_Direct(action, offset, templeDoor)
+        --wait for dungeon reset window
+        --reset dungeon
+        --wait for story/normal window
+        --normal mode
+    else 
+        while findLeader() do
+            API.RandomSleep2(600, 0, 600)    
+        end
+        --API.DoAction_Object_Direct(action, offset, templeDoor)
+    end
+
+    while not inOrOut == "inside" do
+        API.RandomSleep2(600, 0, 600)
+    end
 end
 function setupCoordOffset()
     local chestID = 93017
     --offset chest coords to player start coords
-    local coords
+    local objs = API.ReadAllObjectsArray({0}, {chestID}, {})
+    if objs and #objs == 1 then
+        ZONES.START = (objs[1].TILE_XYZ.x + 2, objs[1].TILE_XYZ.y - 2, 0) -- double check before running
+    end
 end
 function dungeonStart()
     --everyone walks to start tile and waits for rest of party
@@ -558,6 +611,26 @@ function bossZone(zone)
         antiban()
         API.RandomSleep2(600, 0, 250)
     end
+end
+function exitDungeon()
+    local randomCoords = WPOINT:new(ZONES.START.x + math.random(-2.2), ZONES.START.y + math.random(-2,2),0)
+    API.DoAction_WalkerW(randomCoords)
+    
+    local doorID = 111710
+
+    local door = API.ReadAllObjectsArray({0}, {doorID}, {})
+    if door and #door == 1 then
+        while door.Distance > 10 and not PartyInRange(4) do
+            antiban()
+            API.RandomSleep2(600, 0, 250)
+        end
+        --API.DoAction_Object_Direct(action, offset, door)
+    end
+
+    while not inOrOut() == "outside" do
+        API.RandomSleep2(600, 0, 250)
+    end
+    
 end
 --ZONE LOGIC
 
