@@ -267,14 +267,12 @@ function hasDeBuff(debuff)
     end
 end
 
-function hasItem(item, count)
-    invitems = API.InvItemcount_String()
-    if count then return invitems end
+function hasItem(item)
+    local invitems = API.InvItemcount_String(item)
     if invitems > 0 then
         return true
-    else
-        return false
     end
+    return false    
 end
 
 function getEnemies(names, size)
@@ -596,6 +594,14 @@ function healthCheck()
             API.logDebug("Can't use 'Eat Food'. It's either not on the action bar or no food in inventory.")
         end
     end
+    if not API.IsTargeting() and (API.GetAddreline_() > 55) and (API.GetHPrecent() < 80) then
+        while API.GetAddreline_() > 0 do
+            openLoot()
+            antiban()
+            API.RandomSleep2(600, 50, 300)
+        end
+
+    end
     if API.GetHPrecent() < Min_HP_Percent then
         emergencyTele()
         terminate()
@@ -728,13 +734,9 @@ function noteStuff()
     if not noteItems then
         return
     end
-    for i = 1, #notelist do
-        if not hasItem(notelist[i]) then
-            return
-        end
-    end
     if API.Invfreecount_() < math.random(1,4) then
         for i = 1, #notelist do
+            API.logDebug("Noting: "..tostring(notelist[i]))
             UTILS.NoteItem(notelist[i])
         end
     end
@@ -776,8 +778,11 @@ function essenceOfFinality()
 end
 
 function rejuvenate()
+    if not hasItem("shield") then
+        return
+    end
 
-    if  (API.GetAddreline_() < 94) or (API.GetHPrecent() > 80) or not (hasItem("shield", true) >= 1) or hasDeBuff(DEBUFFS.Enh_Excalibur) then
+    if  (API.GetAddreline_() < 94) or (API.GetHPrecent() > 80) or hasDeBuff(DEBUFFS.Enh_Excalibur) then
         return
     end
 
@@ -834,12 +839,13 @@ do------------------------------------------------------------------------------
 
         if not API.IsTargeting() then
             attack()
+            API.RandomSleep2(600, 0, 600)
         end
 
         while API.IsTargeting() do
 
             openLoot()
-            noteStuff()
+            if not hasMoved then noteStuff() end
             buffCheck()
             prayerCheck()
             healthCheck()
@@ -858,7 +864,7 @@ do------------------------------------------------------------------------------
         API.DrawTextAt(imguiTarget)
         STATS.kills = STATS.kills + 1  
         if waitForDeath then 
-            API.RandomSleep2(3000, 0, 600)
+            API.RandomSleep2(3000, 0, 1200)
             openLoot()
         end
 
