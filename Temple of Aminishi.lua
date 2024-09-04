@@ -1,6 +1,6 @@
 --[[
     Author:      Klamor
-    Version:     1.0
+    Version:     0.8
     Release      Date: 
     Script:      Temple of Aminishi
 
@@ -47,60 +47,74 @@ local ZONES = {
     START = WPOINT:new(0, 0, 0), 
     FIRST_CHECKPOINT = WPOINT:new(START.x + 20, START.y + 4, 0),
     FIRST_STAIRS_FIGHT = {
+        NAME = "First Stairwell",
         TOP_LEFT = WPOINT:new(START.x + 27, START.y + 7, 0),
         BOT_RIGHT = WPOINT:new(START.x + 28, START.y + 1, 0)
     },
     RIGHT_SIDE_FIGHT = {
+        NAME = "Right Side",
         TOP_LEFT = WPOINT:new(START.x + 27, START.y - 4, 0),
         BOT_RIGHT = WPOINT:new(START.x + 40, START.y - 11, 0)
     },
     LEFT_SIDE_FIGHT = {
+        NAME = "Left Side",
         TOP_LEFT = WPOINT:new(START.x + 27, START.y + 19, 0),
         BOT_RIGHT = WPOINT:new(START.x + 40, START.y + 12, 0)
     },
     SECOND_STAIRS_FIGHT = {
+        NAME = "Bottom Stairwell",
         TOP_LEFT = WPOINT:new(START.x + 48, START.y + 13, 0),
         BOT_RIGHT = WPOINT:new(START.x + 57, START.y + 8, 0)
     },
     CATHEDRAL_OUTSIDE = {
+        NAME = "Cathedral Outside",
         TOP_LEFT = WPOINT:new(START.x + 62, START.y + 19, 0),
         BOT_RIGHT = WPOINT:new(START.x + 71, START.y + 11, 0)
     },
+    CATHEDRAL_INSIDE = {
+        NAME = "Cathedral Inside",
+        TOP_LEFT = WPOINT:new(),
+        BOT_RIGHT = WPOINT:new()
+    },
     XIANG_MINIBOSS = {
+        NAME = "Xiang Miniboss",
         TOP_LEFT = WPOINT:new(START.x + 81, START.y + 10, 0),
         BOT_RIGHT = WPOINT:new(START.x + 85, START.y + 7, 0)
     },
     OLIVIA_MINIBOSS = {
+        NAME = "Olivia Miniboss",
         TOP_LEFT = WPOINT:new(START.x + 94, START.y + 8, 0),
         BOT_RIGHT = WPOINT:new(START.x + 100, START.y, 0)
     },
     CATHEDRAL_OUTSIDE_TWO = {
+        NAME = "Cathedral Outside Back",
         TOP_LEFT = WPOINT:new(START.x + 78, START.y + 35, 0),
         BOT_RIGHT = WPOINT:new(START.x + 84, START.y + 24, 0)
     },
     OYU_MINIBOSS = {
+        NAME = "Oyu Miniboss",
         TOP_LEFT = WPOINT:new(START.x + 92, START.y + 35, 0),
         BOT_RIGHT = WPOINT:new(START.x + 96, START.y + 32, 0)
     },
     KITCHEN_OUTSIDE = {
+        NAME = "Outside Kitchen",
         TOP_LEFT = WPOINT:new(START.x + 81, START.y - 2, 0),
         BOT_RIGHT = WPOINT:new(START.x + 93, START.y - 10, 0)
     },
     AHOEITU_MINIBOSS = {
+        NAME = "Ahoeitu Miniboss",
         TOP_LEFT = WPOINT:new(START.x + 94, START.y - 19, 0),
         BOT_RIGHT = WPOINT:new(START.x + 99, START.y - 21, 0)
     },
     KITCHEN_OUTSIDE_TWO = {
+        NAME = "Outside Kitchen Far",
         TOP_LEFT = WPOINT:new(START.x + 67, START.y - 12, 0),
         BOT_RIGHT = WPOINT:new(START.x + 65, START.y - 10, 0)
     },
     LAST_GROUP = {
+        NAME = "Bottom Stairwell Last",
         TOP_LEFT = WPOINT:new(START.x + 48, START.y + 1, 0),
         BOT_RIGHT = WPOINT:new(START.x + 61, START.y - 5, 0)
-    },
-    CATHEDRAL_INSIDE = {
-        TOP_LEFT = WPOINT:new(),
-        BOT_RIGHT = WPOINT:new()
     }
 }
 local ENEMIES = {
@@ -274,6 +288,9 @@ function findLeader()
 end
 function PartyInRange(maxDistance)
     local players = API.ReadAllObjectsArray({2}, {1}, {}) 
+    if #players == 1 then
+        return true
+    end
     local myName = API.GetLocalPlayerName()
     for _, player in ipairs(players) do
         if player.Name ~= myName then
@@ -285,8 +302,8 @@ function PartyInRange(maxDistance)
     return true
 end
 function EnemiesWithinLocation(enemy, location, return_table)
-    local topLeft = location.top_left
-    local botRight = location.bot_right
+    local topLeft = location.TOP_LEFT
+    local botRight = location.BOT_RIGHT
     local NPCs = getEnemies({enemy})
     local enemies = {}
     for i = 0, #NPCs do
@@ -519,11 +536,11 @@ function dungeonStart()
         antiban()
         API.RandomSleep2(600, 0, 250)
     end
-    preCombatChecks()
 end
 function combatZone(zone)
-    API.logDebug("Starting zone: "..tostring(zone))
+    API.logDebug("Starting zone: "..zone.NAME)
     currentTarget = ENEMIES.Elite_Sotapanna
+    preCombatChecks()
     while EnemiesWithinLocation(currentTarget, zone) > 0 do
         local npcsToFight = EnemiesWithinLocation(currentTarget, zone, true)
         for x = 1, #npcsToFight do
@@ -579,5 +596,19 @@ do------------------------------------------------------------------------------
         API.logWarn("Move to the dungeon entrance before starting the script!")
         terminate()
     end
+
+    enterDungeon()
+
+    if not inOrOut() == "inside" then
+        API.logWarn("Something's wrong. We're not inside the dungeon after enterDungeon()")
+        terminate()
+    else
+        setupCoordOffset()
+        dungeonStart()
+    end
+
+    combatZone(ZONES.FIRST_STAIRS_FIGHT)
+    combatZone(ZONES.RIGHT_SIDE_FIGHT)
+    combatZone(ZONES.LEFT_SIDE_FIGHT)
 
 end----------------------------------------------------------------------------------
