@@ -1,11 +1,11 @@
 --[[
     Author:      Klamor
-    Version:     0.8
+    Version:     0.9
     Release      Date: 
     Script:      Temple of Aminishi
 
     Release Notes:
-    - Version 0.8   :   Beta Testing
+    - Version 0.9   :   Beta Testing
 
     SUPPORTED FEATURES:
     --HEALING--
@@ -85,6 +85,11 @@ local ZONES = {
         NAME = "Olivia Miniboss",
         TOP_LEFT = WPOINT:new(START.x + 94, START.y + 8, 0),
         BOT_RIGHT = WPOINT:new(START.x + 100, START.y, 0)
+    },
+    TRAINING_GROUP = {
+        NAME = "Training Group",
+        TOP_LEFT = WPOINT:new(START.x + 88, START.y + 30, 0),
+        BOT_RIGHT = WPOINT:new(START.x + 96, START.y + 22, 0)
     },
     CATHEDRAL_OUTSIDE_TWO = {
         NAME = "Cathedral Outside Back",
@@ -523,6 +528,9 @@ function setupCoordOffset()
     end
 end
 function dungeonStart()
+    if API.GetLocalPlayerName() == Leader_Name then
+        API.RandomSleep2(1800, 0, 600)
+    end
     API.DoAction_WalkerW(ZONES.FIRST_CHECKPOINT)
     while not API.PlayerCoord() == ZONES.FIRST_CHECKPOINT do
         antiban()
@@ -556,12 +564,18 @@ function combatZone(zone)
 end
 function bossZone(zone)
     boss = EnemiesWithinLocation({}, zone, true)
-    currentTarget = boss.Name
-    preCombatChecks()
-    if boss and (#boss == 1) then
+
+    if #boss == 0 then
+        return
+    end
+
+    if #boss == 1 then
+        currentTarget = boss.Name
+        preCombatChecks()
         API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, boss)
         API.RandomSleep2(600, 0, 250)
     end
+    
     while API.IsTargeting() do
         combatChecks()
         antiban()
@@ -610,5 +624,18 @@ do------------------------------------------------------------------------------
     combatZone(ZONES.FIRST_STAIRS_FIGHT)
     combatZone(ZONES.RIGHT_SIDE_FIGHT)
     combatZone(ZONES.LEFT_SIDE_FIGHT)
+    combatZone(ZONES.SECOND_STAIRS_FIGHT)
+    combatZone(ZONES.CATHEDRAL_OUTSIDE)
+    bossZone(ZONES.XIANG_MINIBOSS)
+    combatZone(ZONES.TRAINING_GROUP)
+    combatZone(ZONES.CATHEDRAL_OUTSIDE_TWO)
+    bossZone(ZONES.OYU_MINIBOSS)
+    bossZone(ZONES.OLIVIA_MINIBOSS)
+    combatZone(ZONES.KITCHEN_OUTSIDE)
+    bossZone(ZONES.AHOEITU_MINIBOSS)
+    combatZone(ZONES.KITCHEN_OUTSIDE_TWO)
+    combatZone(ZONES.LAST_GROUP)
+
+    exitDungeon()
 
 end----------------------------------------------------------------------------------
