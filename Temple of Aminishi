@@ -44,7 +44,7 @@ local Min_AFK = 30000                                       --Minimum idle time 
 local Max_AFK = 180000                                      --Maximum idle time in ms
 ------------------------END    SETUP------------------------
 local ZONES = {
-    START = WPOINT:new(0, 0, 0), --grab proper start point from dungeon chest coords +2....
+    START = WPOINT:new(0, 0, 0), 
     FIRST_CHECKPOINT = WPOINT:new(START.x + 20, START.y + 4, 0),
     FIRST_STAIRS_FIGHT = {
         TOP_LEFT = WPOINT:new(START.x + 27, START.y + 7, 0),
@@ -488,7 +488,7 @@ end
 function enterDungeon()
     if API.GetLocalPlayerName() == Leader_Name then
         API.DoAction_Object1(0x39,API.OFF_ACT_GeneralObject_route0,{ templeDoorID },50)
-        while not API.Check_Dialog_Open() do API.RandomSleep2(600, 0, 600) end
+        while not API.Check_Dialog_Open() do API.RandomSleep2(50, 0, 50) end
         resetMenu()
     else 
         while findLeader() do API.RandomSleep2(600, 0, 600) end
