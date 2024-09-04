@@ -1,6 +1,34 @@
-print("Temple of Aminishi")
+--[[
+    Author:      Klamor
+    Version:     1.0
+    Release      Date: 
+    Script:      Temple of Aminishi
 
-   
+    Release Notes:
+    - Version 0.8   :   Beta Testing
+
+    SUPPORTED FEATURES:
+    --HEALING--
+        :   Food
+        :   Enhanced Excalibur 
+    --PRAYERS--
+        :   Elven Ritual Shard
+        :   Protection Prayers
+        :   Soul Split
+    --Teleports--
+        :   Wilderness Sword
+        :   Ring of Fortune
+        :   War's Retreat
+
+    UPCOMING FEATURES:
+
+    REQUIREMENTS:
+        :   UTILS.lua
+
+    SCRIPT SETUP:
+        :   Modify values in 'SCRIPT SETUP'
+        :   Make sure all 'feature-supported' items/abilities are on your action bars
+        :   Start script outside the dungeon with or without party already configured
 
 ]]
 
@@ -244,40 +272,6 @@ function findLeader()
         return false
     end
 end
---[[
-function MoveToLeader(direction)
-    local leader = findLeader()
-
-    if not (leader == nil) then
-
-        local tile = leader.Tile_XYZ
-
-        if direction == "N" then
-            tile.y = (tile.y - 2)
-        elseif direction == "S" then
-            tile.y = (tile.y + 2)
-        elseif direction == "E" then
-            tile.x = (tile.x + 2)
-        elseif direction == "W" then
-            tile.x = (tile.x - 2)
-        end
-
-        API.DoAction_WalkerF(tile)
-
-    end
-end
-function LeaderInRange(distance)
-
-    local leader = findLeader()
-
-    if math.floor(leader.Distance) <= distance then
-        return true
-    end 
-
-    return false
-
-end
-]]
 function PartyInRange(maxDistance)
     local players = API.ReadAllObjectsArray({2}, {1}, {}) 
     local myName = API.GetLocalPlayerName()
@@ -297,7 +291,6 @@ function EnemiesWithinLocation(enemy, location, return_table)
     local enemies = {}
     for i = 0, #NPCs do
         local objectPosition = NPCs[i].TILE_XYZ
-
         if objectPosition.x >= topLeft.x and objectPosition.x <= botRight.x and
         objectPosition.y <= topLeft.y and objectPosition.y >= botRight.y then
             table.insert(enemies, NPCs[i])
@@ -312,8 +305,7 @@ end
 --UTILITIES
 
 --PLAYERCHECKS
-function buffCheck()
-       
+function buffCheck()    
     if API.InvItemcount_String("Ancient elven ritual shard") > 0 then
         if not hasDeBuff(DEBUFFS.Elven_Shard) and (API.GetPrayPrecent() <= 63) then
             --API.DoAction_Interface(0x2e,0xa95e,1,1670,110,-1,API.OFF_ACT_GeneralInterface_route)
@@ -321,25 +313,21 @@ function buffCheck()
             API.RandomSleep2(600, 50, 300)
         end 
     end
-
     if API.InvItemcount_String("Enhanced Excalibur") > 0 then
         if not hasDeBuff(DEBUFFS.Enh_Excalibur) and (API.GetHPrecent() <= 80) then
             activateAbility("Enhanced Excalibur")
             API.RandomSleep2(600, 50, 300)
         end 
     end
-
     if API.InvItemcount_String("Overload") > 0 then
         if not hasBuff(BUFFS.Overload) then
             API.logDebug("Using Overloads")
             activateAbility("Overload potion")
             API.RandomSleep2(600, 50, 300)
         end
-    end
-    
+    end 
 end
 function setupPrayers()
-
     if currentTarget == nil then
         return false
     else
@@ -351,7 +339,6 @@ function setupPrayers()
                 end
             end
         else 
-            --API.logDebug(PROTECT_MAGIC.SPELL_NAME.." unavailable!")
         end
         if UTILS.canUseSkill(PROTECT_MELEE.SPELL_NAME) then
             for _, name in ipairs(PROTECT_MELEE.names) do
@@ -361,7 +348,6 @@ function setupPrayers()
                 end
             end
         else
-            --API.logDebug(PROTECT_MELEE.SPELL_NAME.." unavailable!")    
         end
         if UTILS.canUseSkill(PROTECT_RANGED.SPELL_NAME) then
             for _, name in ipairs(PROTECT_RANGED.names) do
@@ -371,7 +357,6 @@ function setupPrayers()
                 end
             end
         else
-            --API.logDebug(PROTECT_RANGED.SPELL_NAME.." unavailable!")
         end
         if UTILS.canUseSkill(PROTECT_NECRO.SPELL_NAME) then
             for _, name in ipairs(PROTECT_NECRO.names) do
@@ -381,23 +366,19 @@ function setupPrayers()
                 end
             end
         else
-            --API.logDebug(PROTECT_NECRO.SPELL_NAME.." unavailable!")    
         end
         if UTILS.canUseSkill(SOUL_SPLIT.SPELL_NAME) then
             PRAYER_TO_USE = SOUL_SPLIT
             return true
         else
-            --API.logDebug(SOUL_SPLIT.SPELL_NAME.." unavailable!")
         end
     end
     return false
 end
 function prayerCheck()
-
     if PRAYER_TO_USE == nil then
         return
     end
-
     if API.IsTargeting() and not hasBuff(PRAYER_TO_USE.BUFF_ID) and (API.GetPrayPrecent() > Use_Prayers_Percent) then
         API.logDebug("In combat! Enabling protection prayers")
         activateAbility(PRAYER_TO_USE.SPELL_NAME)
@@ -451,7 +432,6 @@ end
 
 --ABILITIES
 function activateAbility(name)
-
     ---MUST BE ON ACTIONBARS 
     API.DoAction_Ability(name, 1, API.OFF_ACT_GeneralInterface_route)
     API.RandomSleep2(600, 50, 300)
@@ -469,46 +449,35 @@ function essenceOfFinality()
     end
 end
 function rejuvenate()
-
     if  (API.GetAddreline_() < 94) or (API.GetHPrecent() > 80) or not (hasItem("shield", true) >= 1) or hasDeBuff(DEBUFFS.Enh_Excalibur) then
         return
     end
-
     local startHP = API.GetHPrecent()
-
     API.KeyboardPress('1', 50, 250)
     API.RandomSleep2(600, 0, 600)  
-
     if UTILS.canUseSkill("Rejuvenate") then
         activateAbility("Rejuvenate")
         API.RandomSleep2(600, 0, 600)
     end
-
     local skillTimer = API.SystemTime()
-
     while Check_Timer(skillTimer) < 10000 do
         API.RandomSleep2(600, 0, 600)
     end
-
     API.KeyboardPress('2', 50, 250)
     API.RandomSleep2(600, 0, 600)
-
 end
 --ABILITIES
 
 --ZONE LOGIC
 function inOrOut()
-
     local door = API.ReadAllObjectsArray({12}, {doorID}, {})
     if #door > 0 then
         return "inside"
     end
-
     local templeDoor = API.ReadAllObjectsArray({12}, {templeDoorID}, {"Temple of Aminishi"})
     if #templeDoor > 0 then
         return "outside"
     end
-
 end
 function resetMenu()
     while API.Check_Dialog_Open() do
@@ -517,27 +486,17 @@ function resetMenu()
     end    
 end
 function enterDungeon()
-    
     if API.GetLocalPlayerName() == Leader_Name then
-
         API.DoAction_Object1(0x39,API.OFF_ACT_GeneralObject_route0,{ templeDoorID },50)
-
         while not API.Check_Dialog_Open() do API.RandomSleep2(600, 0, 600) end
-
         resetMenu()
-
     else 
-
         while findLeader() do API.RandomSleep2(600, 0, 600) end
-
         API.DoAction_Object1(0x39,API.OFF_ACT_GeneralObject_route0,{ templeDoorID },50)
-
     end    
-    
     while not inOrOut == "inside" do
         API.RandomSleep2(600, 0, 600)
     end
-
 end
 function setupCoordOffset()
     local chestID = 93017
@@ -547,7 +506,6 @@ function setupCoordOffset()
     end
 end
 function dungeonStart()
-    --everyone walks to start tile and waits for rest of party
     API.DoAction_WalkerW(ZONES.FIRST_CHECKPOINT)
     while not API.PlayerCoord() == ZONES.FIRST_CHECKPOINT do
         antiban()
@@ -594,28 +552,19 @@ function bossZone(zone)
     end
 end
 function exitDungeon()
-
     local randomCoords = WPOINT:new(ZONES.START.x + math.random(-2.2), ZONES.START.y + math.random(-2,2),0)
     API.DoAction_WalkerW(randomCoords)
-
     local door = API.ReadAllObjectsArray({12}, {doorID}, {})
-
     while door.Distance > 1 do
-        if door.Distance < 10 and PartyInRange(4) then
-            break
-        end
+        if door.Distance < 10 and PartyInRange(4) then break end
         antiban()
         API.RandomSleep2(600, 0, 250)
     end
-
     API.DoAction_Object1(0x39,API.OFF_ACT_GeneralObject_route0,{ doorID },50)
-
     while not inOrOut() == "outside" do
         API.RandomSleep2(600, 0, 250)
-    end
-    
+    end  
 end
-
 --ZONE LOGIC
 
 --main loop
