@@ -11,11 +11,6 @@ local furnace = 113261
 local Min_AFK = 30000
 local Max_AFK = 180000
 
-local Use_Timer = true
-
-local cannonballs = 252000
-local steel_bars = 52000
-
 ----Script Timers----
 local Start_Timer = 0
 local AFK_Timer
@@ -85,26 +80,17 @@ function deposit()
 end
 
 function make()
-    ScripCuRunning2 = "Smelting";
+    
     API.DoAction_Object1(0x3f,0,{ furnace },50) -- Smelt Items
     API.RandomSleep2(600, 600, 1200)
     API.DoAction_Interface(0x24,0xffffffff,1,37,163,-1,API.OFF_ACT_GeneralInterface_route)
     --API.DoAction_Interface(0x24,0xffffffff,1,37,163,-1,2480) -- make items
-    if Use_Timer then
-        Smelt_Timer = API.SystemTime()
-        print("Waiting for", (Smelt_Time/1000), "seconds")
-        while Check_Timer(Smelt_Timer) < (Smelt_Time + math.random(600, 1200)) do 
+
+        while API.CheckAnim(100) do 
             antiban()
             API.RandomSleep2(600, 250, 600)    
         end
-        return
-    else
-        while not API.InvFull_() do
-            print("Waiting for inventory")
-            antiban()
-            API.RandomSleep2(600, 250, 600)    
-        end
-    end
+
 end
 
 --Exported function list is in API
