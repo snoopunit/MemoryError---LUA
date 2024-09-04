@@ -17,12 +17,9 @@ Script_Timer = API.SystemTime()
 
 local antibans = 0
 
----@param int
----@return int 
 function Check_Timer(int)
     return (API.SystemTime() - int)
 end
-
 function antiban()
     local elapsedTime = Check_Timer(AFK_Timer)
     local afkThreshold = math.random(Min_AFK, Max_AFK)
@@ -45,10 +42,11 @@ function deposit()
     API.DoAction_Object1(0x29,80,{ furnace },50) -- depositOre
     API.RandomSleep2(600, 600, 1200)
 end
-
 function make()
     API.DoAction_Object1(0x3f,0,{ furnace },50) -- Smelt Items
-    API.RandomSleep2(600, 600, 1200)
+    while not UTILS.isSmeltingInterfaceOpen() do
+        API.RandomSleep2(50, 0, 50)
+    end
     API.DoAction_Interface(0x24,0xffffffff,1,37,163,-1,API.OFF_ACT_GeneralInterface_route)
     while API.CheckAnim(100) do 
         antiban()
