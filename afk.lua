@@ -1,4 +1,4 @@
-print("Run Lua script Abyss AFK.")
+print("Run Lua script AFK.")
 
 local API = require("api")
 local UTILS = require("utils")
