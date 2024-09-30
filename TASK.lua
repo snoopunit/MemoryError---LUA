@@ -4,15 +4,13 @@ local TASK = {}
 TASK.__index = TASK
 
 ---@param name string
----@param skills table --vector<string>
 ---@param min_lvl number
 ---@param max_lvl number
 ---@param lodestone string
 ---@return boolean
-function TASK:new(name, skills, min_lvl, max_lvl, lodestone)
+function TASK:new(name, min_lvl, max_lvl, lodestone)
     local task = {
         Name = name or "",
-        Skills = skills or "",
         min_lvl = min_lvl or 1,
         max_lvl = max_lvl or 99,
         Lodestone = lode,
@@ -31,87 +29,28 @@ function TASK:new(name, skills, min_lvl, max_lvl, lodestone)
     return task
 end
 
---[[ SKILL STRINGS:
-
-ATTACK
-STRENGTH
-RANGED
-COMBAT
-MAGIC
-DEFENCE
-CONSTITUTION
-PRAYER
-SUMMONING
-DUNGEONEERING
-AGILITY
-THIEVING
-SLAYER
-HUNTER
-SMELTING
-SMITHING
-CRAFTING
-FLETCHING
-HERBLORE
-RUNECRAFTING
-COOKING
-CONSTRUCTION
-FIREMAKING
-WOODCUTTING
-FARMING
-FISHING
-MINING
-DIVINATION
-INVENTION
-ARCHAEOLOGY
-NECROMANCY
-
---]]
-
 ---@param objects table --vector<string>
 ---@param banks table --vector<string>
 ---@param doors table --vector<string>
 function TASK:initObjects(objects, banks, doors)
 
-    if type(objects) == "table" then
-        self.Objects = objects
-    else
-        self.Objects = {} 
-    end
-
-    if type(banks) == "table" then
-        self.Banks = banks
-    else
-        self.Banks = {}  
-    end
-
-    if type(doors) == "table" then
-        self.Doors = doors
-    else
-        self.Doors = {}  
-    end
+    self.Objects = objects
+   
+    self.Banks = banks
+    
+    self.Doors = doors
     
 end
----@param object_locations table --vector<string>
----@param bank_locations table --vector<string>
----@param door_locations table --vector<string>
+---@param object_locations table --{{x,y,z},{x,y,z}}
+---@param bank_locations table ----{{x,y,z},{x,y,z}}
+---@param door_locations table ----{{x,y,z},{x,y,z}}
 function TASK:initLocations(object_locations, bank_locations, door_locations)
 
-    if type(object_locations) == "table" then
-        self.Object_locations = object_locations
-    else
-        self.Object_locations = {} 
-    end
+    self.Object_locations = object_locations
 
-    if type(bank_locations) == "table" then
-        self.Bank_locations = bank_locations
-    else
-        self.Bank_locations = {}  
-    end
+    self.Bank_locations = bank_locations
 
-    if type(door_locations) == "table" then
-        self.Door_locations = door_locations
-    else
-        self.Door_locations = {}  
+    self.Door_locations = door_locations
 
 end
 ---@param logicFunctions table --vector<function()>
@@ -126,7 +65,7 @@ function TASK:initLogic(logicFunctions, mainLoop)
                     return false
                 end
             end
-            self.Logic = {logicFunctions}
+            self.Logic = logicFunctions
         end
     else
         self.Logic = {}
@@ -184,8 +123,8 @@ function TASK:guiTable()
     API.DrawTable(TaskInfo)
 end
 function TASK:execute()
-    if self.logic then
-        self.logic()
+    if self.Routine then
+        self.Routine()
     else
         print("No logic defined for task: " .. self.Name)
         return false
@@ -240,7 +179,7 @@ function TASK:goTo(location)
 end
 ---@param preset number or string --1,2,last
 ---@return boolean
-function TASK:doBank(preset) --WIP
+function TASK:doBank(preset)
 
     if #self.Banks == 0 then
         print("No banks defined for task: " .. self.Name)
@@ -261,16 +200,35 @@ function TASK:doBank(preset) --WIP
         return false
     end
 
-    local banktimer = API.SystemTime()
-    local presetType = type(preset)
+    local ACTIONS = {
+        bank = 0x5
+        collect = 0x5
+        load_last = 0x33
+    }
 
-    if presetType == "String" then
+    local OFFSETS = {
+        NPC = {
+            bank = API.OFF_ACT_InteractNPC_route1
+            collect = API.OFF_ACT_InteractNPC_route3
+            load_last = API.OFF_ACT_InteractNPC_route4
+        }
+        OBJECT = {
+            bank = API.OFF_ACT_GeneralObject_route1
+            collect = API.OFF_ACT_GeneralObject_route2
+            load_last = API.OFF_ACT_GeneralObject_route3
+        }
+    }
+
+    local banktimer = API.SystemTime()
+
+    if preset == "last" then
 
         while not API.InvFull() do
             if bank.Type == 1 then
-                API.DoAction_NPC(0x33,API.OFF_ACT_InteractNPC_route4,{ bank[bankToUse] },50)
+                API.DoAction_NPC__Direct(ACTIONS.load_last, OFFSETS.NPC.load_last, bank[bankToUse])
             else
-                --API.DoAction_Object
+                API.DoAction_Object_Direct(ACTIONS.load_last, OFFSETS.OBJECT.load_last, bank[bankToUse])
+
             end
             API.RandomSleep2(600, 0, 250)
             while API.ReadPlayerMovin2() do
@@ -284,13 +242,13 @@ function TASK:doBank(preset) --WIP
         end
         return true
 
-    elseif presetType == "Number" then
+    elseif preset >= 1 then
 
         while not API.CheckBankVarp() do
             if bank.Type == 1 then
-                --API.DoAction_NPC
+                API.DoAction_NPC__Direct(ACTIONS.bank, OFFSETS.NPC.bank, bank[bankToUse])
             else
-                --API.DoAction_Object    
+                API.DoAction_Object_Direct(ACTIONS.bank, OFFSETS.OBJECT.bank, bank[bankToUse])   
             end
             API.RandomSleep2(1200, 0, 250)
             while API.ReadPlayerMovin2() do
@@ -303,7 +261,7 @@ function TASK:doBank(preset) --WIP
             end
         end
 
-        --API,DoAction_Interface(preset)
+        API.DoAction_Interface(0x24,0xffffffff,1,517,119,preset,API.OFF_ACT_GeneralInterface_route)
         API.RandomSleep2(1200, 0, 250)
 
         if not API.CheckBankVarp() then
@@ -312,43 +270,116 @@ function TASK:doBank(preset) --WIP
 
     end
 end
+
+ores = {
+    copper = {rock = "Copper rock", ore = "Copper ore", action = "Mine", min_lvl = 1, max_lvl = 15},
+    tin = {rock = "Tin rock", ore = "Tin ore", action = "Mine", min_lvl = 1, max_lvl = 15},
+    iron = {rock = "Iron rock", ore = "Iron ore", action = "Mine", min_lvl = 15, max_lvl = 30},
+    coal = {rock = "Coal rock", ore = "Coal", action = "Mine", min_lvl = 30, max_lvl = 99},
+    mithril = {rock = "Mithril rock", ore = "Mithril ore", action = "Mine", min_lvl = 55, max_lvl = 70},
+    adamant = {rock = "Adamantite rock", ore = "Adamantite ore", action = "Mine", min_lvl = 70, max_lvl = 90},
+    rune = {rock = "Runite rock", ore = "Runite ore", action = "Mine", min_lvl = 85, max_lvl = 99},
+    luminite = {rock = "Luminite rock", ore = "Luminite", action = "Mine", min_lvl = 40, max_lvl = 70},
+    orichalcite = {rock = "Orichalcite rock", ore = "Orichalcite ore", action = "Mine", min_lvl = 60, max_lvl = 70},
+    drakolith = {rock = "Drakolith rock", ore = "Drakolith", action = "Mine", min_lvl = 60, max_lvl = 80}
+}
+
+herbs = {
+    guam = {grimy = "Grimy guam leaf", clean = "Guam leaf", action = "Harvest", min_lvl = 9, max_lvl = 20},
+    marrentill = {grimy = "Grimy marrentill", clean = "Marrentill", action = "Harvest", min_lvl = 14, max_lvl = 30},
+    tarromin = {grimy = "Grimy tarromin", clean = "Tarromin", action = "Harvest", min_lvl = 19, max_lvl = 40},
+    harralander = {grimy = "Grimy harralander", clean = "Harralander", action = "Harvest", min_lvl = 26, max_lvl = 50},
+    ranarr = {grimy = "Grimy ranarr weed", clean = "Ranarr weed", action = "Harvest", min_lvl = 32, max_lvl = 60},
+    toadflax = {grimy = "Grimy toadflax", clean = "Toadflax", action = "Harvest", min_lvl = 38, max_lvl = 70},
+    avantoe = {grimy = "Grimy avantoe", clean = "Avantoe", action = "Harvest", min_lvl = 48, max_lvl = 80},
+    kwuarm = {grimy = "Grimy kwuarm", clean = "Kwuarm", action = "Harvest", min_lvl = 54, max_lvl = 85},
+    snapdragon = {grimy = "Grimy snapdragon", clean = "Snapdragon", action = "Harvest", min_lvl = 62, max_lvl = 90},
+    torstol = {grimy = "Grimy torstol", clean = "Torstol", action = "Harvest", min_lvl = 85, max_lvl = 99}
+}
+
+divination = {
+    pale = {wisp = "Pale wisp", energy = "Pale energy", memory = "Pale memory", action = "Harvest", min_lvl = 1, max_lvl = 10},
+    flickering = {wisp = "Flickering wisp", energy = "Flickering energy", memory = "Flickering memory", action = "Harvest", min_lvl = 10, max_lvl = 20},
+    bright = {wisp = "Bright wisp", energy = "Bright energy", memory = "Bright memory", action = "Harvest", min_lvl = 20, max_lvl = 30},
+    glowing = {wisp = "Glowing wisp", energy = "Glowing energy", memory = "Glowing memory", action = "Harvest", min_lvl = 30, max_lvl = 40},
+    sparkling = {wisp = "Sparkling wisp", energy = "Sparkling energy", memory = "Sparkling memory", action = "Harvest", min_lvl = 40, max_lvl = 50},
+    gleaming = {wisp = "Gleaming wisp", energy = "Gleaming energy", memory = "Gleaming memory", action = "Harvest", min_lvl = 50, max_lvl = 60},
+    vibrant = {wisp = "Vibrant wisp", energy = "Vibrant energy", memory = "Vibrant memory", action = "Harvest", min_lvl = 60, max_lvl = 70},
+    lustrous = {wisp = "Lustrous wisp", energy = "Lustrous energy", memory = "Lustrous memory", action = "Harvest", min_lvl = 70, max_lvl = 80},
+    brilliant = {wisp = "Brilliant wisp", energy = "Brilliant energy", memory = "Brilliant memory", action = "Harvest", min_lvl = 80, max_lvl = 85},
+    radiant = {wisp = "Radiant wisp", energy = "Radiant energy", memory = "Radiant memory", action = "Harvest", min_lvl = 85, max_lvl = 90},
+    luminous = {wisp = "Luminous wisp", energy = "Luminous energy", memory = "Luminous memory", action = "Harvest", min_lvl = 90, max_lvl = 99}
+}
+
+fish = {
+    shrimp = {spot = "Fishing spot", action = "Net", raw = "Raw shrimp", cooked = "Shrimp", min_lvl = 1, max_lvl = 20},
+    anchovies = {spot = "Fishing spot", action = "Net", raw = "Raw anchovies", cooked = "Anchovies", min_lvl = 15, max_lvl = 40},
+    trout = {spot = "Fishing spot", action = "Lure", raw = "Raw trout", cooked = "Trout", min_lvl = 20, max_lvl = 50},
+    salmon = {spot = "Fishing spot", action = "Lure", raw = "Raw salmon", cooked = "Salmon", min_lvl = 30, max_lvl = 70},
+    tuna = {spot = "Fishing spot", action = "Harpoon", raw = "Raw tuna", cooked = "Tuna", min_lvl = 35, max_lvl = 80},
+    swordfish = {spot = "Fishing spot", action = "Harpoon", raw = "Raw swordfish", cooked = "Swordfish", min_lvl = 50, max_lvl = 99},
+    shark = {spot = "Fishing spot", action = "Harpoon", raw = "Raw shark", cooked = "Shark", min_lvl = 76, max_lvl = 99},
+    monkfish = {spot = "Fishing spot", action = "Net", raw = "Raw monkfish", cooked = "Monkfish", min_lvl = 62, max_lvl = 90},
+    rocktail = {spot = "Fishing spot", action = "Net", raw = "Raw rocktail", cooked = "Rocktail", min_lvl = 90, max_lvl = 99},
+    crayfish = {spot = "Fishing spot", action = "Crayfish cage", raw = "Raw crayfish", cooked = "Crayfish", min_lvl = 1, max_lvl = 10}
+}
+
+trees = {
+    normal = {tree = "Tree", action = "Chop", log = "Logs", min_lvl = 1, max_lvl = 15},
+    oak = {tree = "Oak tree", action = "Chop", log = "Oak logs", min_lvl = 15, max_lvl = 30},
+    willow = {tree = "Willow tree", action = "Chop", log = "Willow logs", min_lvl = 30, max_lvl = 50},
+    maple = {tree = "Maple tree", action = "Chop", log = "Maple logs", min_lvl = 45, max_lvl = 60},
+    yew = {tree = "Yew tree", action = "Chop", log = "Yew logs", min_lvl = 60, max_lvl = 75},
+    magic = {tree = "Magic tree", action = "Chop", log = "Magic logs", min_lvl = 75, max_lvl = 90},
+    elder = {tree = "Elder tree", action = "Chop", log = "Elder logs", min_lvl = 90, max_lvl = 99}
+}
+
+--=======================================================--
+--                       TASK OBJECTS                    --
+--=======================================================--
+
 ---@param object string --self.Objects[x]
 ---@return boolean
-function TASK:actionObject(object, quitCondition)
-
-    local actionToUse = nil
-    local actions = {
-        mine = 0x3a,
-        craft = 0x3e,
-        chop = 0x3B,
-        fish = ,
-        smelt = 0x3f
-        }
-
-    local offsetToUse = nil
-    local offsets = {
-        attack_offset = API.OFF_ACT_AttackNPC_route
-        object_offset = API.OFF_ACT_GeneralObject_route0
-    }
-
-    if #self.Skills == 1 then
-        if self.Skills == "MINING" then
-            actionToUse = actions.mine
-        elseif self.Skills == "WOODCUTTING" then
-            actionToUse = actions.chop
-        elseif self.Skills == "CRAFTING" then
-            actionToUse = actions.craft
-        elseif self.Skills == "FISHING" then
-            actionToUse = actions.fish
-        elseif self.Skills == "SMELTING" then
-            actionToUse = actions.smelt
-        elseif self.Skills == "COMBAT" then
-            actionToUse = actions.attack
-        end
-    end
-
-    if actionToUse ~= nil and #API.ReadAllObjectsArray({0,12},{-1},self.Objects) > 0 then
-        API.DoAction_Object_string1(actionToUse)
-    end
+function TASK:mine(object)
+    return API.DoAction_Object_string1(0x3a, API.OFF_ACT_GeneralObject_route0, object, 30, true)
 end
+---@param object string --self.Objects[x]
+---@return boolean
+function TASK:chop(object)
+    return API.DoAction_Object_string1(0x3b, API.OFF_ACT_GeneralObject_route0, object, 30, true)
+end
+
+---@param object string --self.Objects[x]
+---@return boolean
+function TASK:smelt(object)
+    return API.DoAction_Object_string1(0x3f, API.OFF_ACT_GeneralObject_route0, object, 30, true)
+end
+---@param object string --self.Objects[x]
+---@return boolean
+function TASK:talkTo(object)
+    return API.DoAction_NPC_str(0x3f, API.OFF_ACT_GeneralObject_route0, {object}, 30, true, 1)
+end
+
+function TASK:doDoor(object) --WIP
+end
+
+function TASK:doLadder(object) --WIP
+end
+
+function TASK:useResourceDungeon(object) -- NECESSARY?
+end
+
+--=======================================================--
+--                       TASK NPCS                       --
+--=======================================================--
+
+---@param object string --self.Objects[x]
+---@return boolean
+function TASK:fish(npc)
+    return API.DoAction_NPC_str(0x3c, API.OFF_ACT_InteractNPC_route, {object}, 30, true, 1)
+end
+
+function TASK:attack(NPC) -- WIP
+end
+
 return TASK
