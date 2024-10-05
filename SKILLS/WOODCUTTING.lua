@@ -67,7 +67,7 @@ function Woodcutting.chop(treeType)
     end
 
     for _, tree in ipairs(trees) do
-        if API.DoAction_Object_Direct(0x3b, API.OFF_ACT_GeneralObject_route0, tree)
+        if API.DoAction_Object_Direct(0x3b, API.OFF_ACT_GeneralObject_route0, tree) then
             API.RandomSleep2(800, 0, 250)
             while API.ReadPlayerMovin2() do
                 API.RandomSleep2(50, 0, 50)
