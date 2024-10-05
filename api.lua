@@ -1,7 +1,18 @@
 local API = {}
 
 --- API Version will increase with breaking changes
-API.VERSION = 1.007
+API.VERSION = 1.021
+
+--[[
+Known shortcuts
+Ctrl+shift == mark tiles
+Insert == disable rendering
+Home == hide focus window
+Ctrl+home == unhide window
+End == end Script
+Page_up == disable ImGui
+Page_down == enable ImGui
+]]--
 
 --- General action on some objects, like bank chest
 API.OFF_ACT_GeneralObject_route00 = GeneralObject_route00
@@ -41,9 +52,6 @@ API.OFF_ACT_Walk_route = Walk_route
 
 --- special face route for bladed dive, familiar attack, use in inv
 API.OFF_ACT_Bladed_interface_route = Bladed_interface_route
-
---- special face route for bladed dive NPC
-API.OFF_ACT_BladedDiveNPC_route = BladedDiveNPC_route
 
 --- option in chat box
 API.OFF_ACT_GeneralInterface_Choose_option = GeneralInterface_Choose_option
@@ -89,6 +97,83 @@ API.I_itemids = I_itemids
 API.I_itemstack = I_itemstack
 
 
+-- Disable ImGui for script runtime so it dosent mess with script. Page down to enable again or if script ends it gets enabled again
+function API.DisableImGui()
+	return DisableImGui()
+end
+
+-- Read pixel color at coordinates
+---@param at_x number
+---@param at_y number
+---@return table of summary rgb colors, [1] red, [2] green, [3] blue, [4] sum
+function API.ReadDCColor(at_x,at_y)
+	return ReadDCColor(at_x,at_y)
+end
+
+-- check tiles in list against tile +- range
+---@param occtiles table|FFPOINT will be trunc
+---@param size number
+---@param range number
+---@return  table|FFPOINT tiles that isnt near our occtiles 
+function API.Math_FreeTilesTile(tile,occtiles,size,range)
+	return Math_FreeTilesTile(tile,occtiles,size,range)
+end
+
+-- check tiles in list against localplayer +- range
+---@param occtiles table|FFPOINT will be trunc
+---@param size number
+---@param range number
+---@return  table|FFPOINT tiles that isnt near our occtiles 
+function API.Math_FreeTiles(occtiles,size,range)
+	return Math_FreeTiles(occtiles,size,range)
+end
+
+-- Make it flat
+---@param tile FFPOINT
+---@return FFPOINT
+function API.Math_FlattenFloat(tile)
+	return Math_FlattenFloat(tile)
+end
+
+-- Make it flat
+---@param tiles table|FFPOINT
+---@return table|FFPOINT
+function API.Math_FlattenFloatArray(tiles)
+	return Math_FlattenFloatArray(tiles)
+end
+
+-- by distance from tile
+---@param objects table|AllObject
+---@return table|AllObject
+function API.Math_SortAODistFromA(tile,objects)
+	return Math_SortAODistFromA(tile,objects)
+end
+
+--by distance from localplayer
+---@param objects table|AllObject
+---@return table|AllObject
+function API.Math_SortAODistA(objects)
+	return Math_SortAODistA(objects)
+end
+
+-- by distance from tile
+---@param objects table|AllObject
+---@return AllObject
+function API.Math_SortAODistFrom(tile,objects)
+	return Math_SortAODistFrom(tile,objects)
+end
+
+--by distance from localplayer
+---@param objects table|AllObject
+---@return AllObject
+function API.Math_SortAODist(objects)
+	return Math_SortAODist(objects)
+end
+
+---@return number
+function API.Local_PlayerInterActingWith_UID()
+	return Local_PlayerInterActingWith_UID()
+end
 
 ---@param id number
 ---@return AllObject
@@ -105,12 +190,12 @@ function API.GetMapIconTile(id,x,y)
 end
 
 ---@param id number
----@return AllObject table
+---@return AllObject|table
 function API.GetMapIcons(id)
 	return GetMapIcons(id)
 end
 
----@return AllObject table
+---@return AllObject|table
 function API.GetALLMapIcons()
 	return GetALLMapIcons()
 end
@@ -176,14 +261,14 @@ end
 
 --- get container data
 ---@param cont_id number -- container id
----@return table inv_Container_struct
+---@return table|inv_Container_struct
 function API.Container_Get_all(cont_id)
 	return Container_Get_all(cont_id)
 end
 
 --- get container data
 ---@param item_id number -- find item
----@param cont_vec table inv_Container_struct -- container
+---@param cont_vec table|inv_Container_struct -- container
 ---@return inv_Container_struct
 function API.Container_Findfrom(cont_vec,item_id)
 	return Container_Findfrom(cont_vec,item_id)
@@ -197,6 +282,15 @@ function API.Container_Get_s(cont_id,item_id)
 	return Container_Get_s(cont_id,item_id)
 end
 
+--- get container data, get all items with those ids
+---@param item_id table|number -- find items
+---@param cont_id number -- container id
+---@return table|inv_Container_struct
+function API.Container_Get_AllItems(cont_id,item_ids)
+	return Container_Get_AllItems(cont_id,item_ids)
+end
+
+
 --- get container
 ---@param cont_id number
 ---@return boolean --is container with id found
@@ -205,7 +299,7 @@ function API.Container_Get_Check(cont_id)
 end
 
 --- get container data
----@return table inv_Container --vectors of custom tables
+---@return table|inv_Container --vectors of custom tables
 function API.GetContainerSettings()
 	return GetContainerSettings()
 end
@@ -428,7 +522,7 @@ function API.Write_ScripCuRunning2(status)
 end
 
 --- Return material storagedata
----@return userdata --vector<IInfo>
+---@return table|IInfo
 function API.MaterialStorage()
 	return MaterialStorage()
 end
@@ -436,19 +530,19 @@ end
 ---Return trade window item array
 ---Default will return your own trade window (your offer) param set to "their" will return their offer
 ---@param which string optional "their" or default "self"
----@return userdata --vector<IInfo>
+---@return table|IInfo
 function API.TradeWindow(which)
 	return TradeWindow(which)
 end
 
 --- Return array of bank inventory
----@return userdata IInfo
+---@return table|IInfo
 function API.FetchBankInvArray()
 	return FetchBankInvArray()
 end
 
 --- Return array of bankdata
----@return userdata IInfo
+---@return table|IInfo
 function API.FetchBankArray()
 	return FetchBankArray()
 end
@@ -510,9 +604,20 @@ function API.CreateIG_answer()
 	return CreateIG_answer()
 end
 
---- Delete all data
+--- Delete all data, maybe dont touch during running
 function API.DeleteIG_answers()
 	return DeleteIG_answers()
+end
+
+--- create empty AllObject --couldnt figure out how to do it in lua
+---@return AllObject
+function API.Create_AO_struct()
+	return Create_AO_struct()
+end
+
+--- Delete all data
+function API.DeleteAllObject_list()
+	return DeleteAllObject_list()
 end
 
 --- create FFPOINT
@@ -544,7 +649,7 @@ function API.Check_tick()
 end
 
 --- sleep how many ticks, on avarage tick is 600m
----@param number count --number of ticks
+---@param count number --number of ticks
 ---@return boolean
 function API.Sleep_tick(count)
 	return Sleep_tick(count)
@@ -582,14 +687,14 @@ end
 ---@param input WPOINT -- tile 
 ---@param angle number -- int
 ---@param steps number -- int
----@return table WPOINT
+---@return table|WPOINT
 function API.Math_AnglePixels(input,angle,steps)
 	return Math_AnglePixels(input,angle,steps)
 end
 
 --- is localplayer facing in direction of tile
----@param ArrayOfPoints table WPOINT -- vectors of tiles to check vs
----@param OnePoint number -- tile vs
+---@param ArrayOfPoints table|WPOINT -- vectors of tiles to check vs
+---@param OnePoint WPOINT -- tile vs
 ---@param inrangeof number -- how far to predict
 ---@return boolean
 function API.Math_PointsCrossEach(ArrayOfPoints, OnePoint, inrangeof)
@@ -635,7 +740,7 @@ end
 
 --- open with number --char press
 ---@param id number
----@param number --char number ---to press number --char code
+---@param char number ---to press number --char code
 ---@return boolean
 function API.OpenBankChest1(id,char)
 	return OpenBankChest(id,char)
@@ -735,14 +840,14 @@ end
 
 --- Save FFPOINTs to disk
 ---@param name string
----@param array_points userdata --vector<FFPOINT>
+---@param array_points table|FFPOINT
 ---@return boolean
 function API.SaveFFPOINTs(name, array_points)
 	return SaveFFPOINTs(name, API.CreateFFPointArray(array_points))
 end
 
 ---@param name string
----@return userdata --vector<FFPOINT>
+---@return table|FFPOINT
 function API.LoadFFPOINTs(name)
 	return LoadFFPOINTs(name)
 end
@@ -779,26 +884,6 @@ end
 ---@return FFPOINT
 function API.TilesToPixelsWF(xy)
 	return TilesToPixelsWF(xy)
-end
-
----@param SummAddress1 ChOpt
----@param SummAddress2 ChOpt
----@return boolean
-function API.Math_comparebigger(SummAddress1, SummAddress2)
-	return Math_comparebigger(SummAddress1, SummAddress2)
-end
-
----@param inputaddr number
----@param offset number
----@return userdata --vector<UINT64>
-function API.GatherIU(inputaddr, offset)
-	return GatherIU(inputaddr, offset)
-end
-
----@param inputaddr number
----@return userdata --vector<UINT64>
-function API.GatherIUM(inputaddr)
-	return GatherIUM(inputaddr)
 end
 
 ---@param mxy WPOINT
@@ -855,24 +940,19 @@ function API.CheckVisibleLimit(limitx, limity)
 	return CheckVisibleLimit(limitx, limity)
 end
 
----@param todo string
----@param unknown string
----@return userdata --vector<uint8_t>
-function API.string_to_pattern(todo, unknown)
-	return string_to_pattern(todo, unknown)
-end
-
 ---@return boolean
 function API.PlayerLoggedIn()
 	return PlayerLoggedIn()
 end
 
+---dosent work
 ---@param worldtohop string
 ---@return boolean
 function API.World_Hopper(worldtohop)
 	return World_Hopper(worldtohop)
 end
 
+---dosent work
 ---@param name string
 ---@param password string
 ---@param world string
@@ -881,22 +961,11 @@ function API.LoginFunction(name, password, world)
 	return LoginFunction(name, password, world)
 end
 
+---dosent work
 ---@param text string
 ---@return boolean
 function API.Select_Option(text)
 	return Select_Option(text)
-end
-
----@param text string
----@return InterfaceComp5
-function API.GetIbystring(text)
-	return GetIbystring(text)
-end
-
----@param text string
----@return userdata --vector<InterfaceComp5>
-function API.GetIbystringstatic(text)
-	return GetIbystringstatic(text)
 end
 
 ---@param text string
@@ -946,30 +1015,24 @@ function API.GetFloorLv_2()
 	return GetFloorLv_2()
 end
 
----@param item userdata --vector<int>
+---@param item table|number
 ---@return boolean
 function API.FindGItemBool_(item)
 	return FindGItemBool_(item)
 end
 
----@param Except_item userdata --vector<int>
+---@param Except_item table|number
 ---@param maxdistance number
 ---@param accuracy number
 ---@param tilespot WPOINT
 ---@param maxdistance2 number
----@param items_to_eat userdata --vector<int>
+---@param items_to_eat table|number
 ---@return boolean
 function API.FindGItem_AllBut2(Except_item, maxdistance, accuracy, tilespot, maxdistance2, items_to_eat)
 	return FindGItem_AllBut2(Except_item, maxdistance, accuracy, tilespot, maxdistance2, items_to_eat)
 end
 
----@param base number
----@return string
-function API.InterfaceGetALLText(base)
-	return InterfaceGetALLText(base)
-end
-
----@param npc userdata --vector<int>
+---@param npc table|number
 ---@param maxdistance number
 ---@param accuracy number
 ---@param lifepoint number
@@ -982,14 +1045,14 @@ function API.FindNPCss(npc, maxdistance, accuracy, lifepoint, tilespot, maxdista
 	return FindNPCss(npc, maxdistance, accuracy, lifepoint, tilespot, maxdistance2, action, sidetext)
 end
 
----@param npc userdata --vector<int>
+---@param npc table|number
 ---@param maxdistance number
 ---@param accuracy number
 ---@param lifepoints number
 ---@param tilespot WPOINT
 ---@param maxdistance2 number
 ---@param action number
----@param sidetext userdata --vector<string>
+---@param sidetext table|string
 ---@return boolean
 function API.FindNPCssMulti(npc, maxdistance, accuracy, lifepoints, tilespot, maxdistance2, action, sidetext)
 	return FindNPCssMulti(npc, maxdistance, accuracy, lifepoints, tilespot, maxdistance2, action, sidetext)
@@ -1021,7 +1084,7 @@ function API.FindNPCssSTR(NPC_name, maxdistance, accuracy, lifepoints, tilespot,
 	return FindNPCssSTR(NPC_name, maxdistance, accuracy, lifepoints, tilespot, maxdistance2, action, sidetext)
 end
 
----@param NPC_names userdata --vector<string>
+---@param NPC_names table|string
 ---@param maxdistance number
 ---@param accuracy number
 ---@param lifepoints number
@@ -1036,7 +1099,7 @@ end
 
 ---@param NPC_name string
 ---@param maxdistance number
----@return userdata --vector<AllObj>
+---@return table|AllObject
 function API.FindNPCbyName(NPC_name, maxdistance)
 	return FindNPCbyName(NPC_name, maxdistance)
 end
@@ -1057,9 +1120,10 @@ function API.IsSelectingItem()
 	return IsSelectingItem()
 end
 
----@return Choption
-function API.ReadTargetInfo()
-	return ReadTargetInfo()
+---@param forcerefresh boolean -- force to update buffs
+---@return Target_data
+function API.ReadTargetInfo(forcerefresh)
+	return ReadTargetInfo(forcerefresh)
 end
 
 ---@return AllObject
@@ -1069,13 +1133,13 @@ end
 
 ---@param animated_also boolean
 ---@param hp number
----@return userdata --vector<AllObject>
+---@return table|AllObject
 function API.OthersInteractingWithLpNPC(animated_also, hp)
 	return OthersInteractingWithLpNPC(animated_also, hp)
 end
 
 ---@param look_stance boolean
----@return userdata --vector<AllObject>
+---@return table|AllObject
 function API.OthersInteractingWithLpPl(look_stance)
 	return OthersInteractingWithLpPl(look_stance)
 end
@@ -1113,9 +1177,9 @@ function API.RandomSleep()
 	return RandomSleep()
 end
 
----@param wait number
----@param sleep number
----@param sleep2 number
+---@param wait number 100% sleep
+---@param sleep number random sleep
+---@param sleep2 number rare random sleep
 ---@return void
 function API.RandomSleep2(wait, sleep, sleep2)
 	return RandomSleep2(wait, sleep, sleep2)
@@ -1159,19 +1223,21 @@ function API.ReadPlayerMovin2()
 	return ReadPlayerMovin2()
 end
 
----@param obj userdata --vector<int>
+-- old
+---@param obj table|number
 ---@param maxdistance number
 ---@param accuracy number
 ---@param usemap boolean
 ---@param action number
 ---@param sidetext string
----@param highlight userdata --vector<int>
+---@param highlight table|number
 ---@return boolean
 function API.FindHl(obj, maxdistance, accuracy, usemap, action, sidetext, highlight)
 	return FindHl(obj, maxdistance, accuracy, usemap, action, sidetext, highlight)
 end
 
----@param obj userdata --vector<int>
+-- old
+---@param obj table|number
 ---@param maxdistance number
 ---@param accuracy number
 ---@param usemap boolean
@@ -1181,6 +1247,8 @@ end
 function API.FindObjCheck(obj, maxdistance, accuracy, usemap, action, sidetext)
 	return FindObjCheck(obj, maxdistance, accuracy, usemap, action, sidetext)
 end
+
+-- old
 --[[AllObject Types 
 0 obj
 1 npc
@@ -1191,13 +1259,15 @@ end
 8 tiles
 12 decor
 --]]
----@param obj userdata --vector<int>
+---@param obj table|number
 ---@param maxdistance number
----@param type number --vector<int> {}
----@return userdata --vector<AllObject>
+---@param type table|number
+---@return table|AllObject
 function API.GetAllObjArrayInteract(obj, maxdistance, type)
 	return GetAllObjArrayInteract(obj, maxdistance, type)
 end
+
+-- old
 --[[AllObject Types 
 0 obj
 1 npc
@@ -1208,14 +1278,15 @@ end
 8 tiles
 12 decor
 --]]
----@param obj userdata --vector<string>
+---@param obj table|string
 ---@param maxdistance number
----@param type number --vector<int> {}
----@return userdata --vector<AllObject>
+---@param type table|number
+---@return table|AllObject
 function API.GetAllObjArrayInteract_str(obj, maxdistance, type)
 	return GetAllObjArrayInteract_str(obj, maxdistance, type)
 end
 
+-- old
 ---@param tile WPOINT
 ---@param item number
 ---@return boolean
@@ -1223,7 +1294,8 @@ function API.CheckTileforItems(tile, item)
 	return CheckTileforItems(tile, item)
 end
 
----@param obj userdata --vector<int>
+-- old
+---@param obj table|number
 ---@param maxdistance number
 ---@param accuracy number
 ---@param objtile WPOINT
@@ -1235,26 +1307,34 @@ function API.FindObjTile(obj, maxdistance, accuracy, objtile, usemap, action, si
 	return FindObjTile(obj, maxdistance, accuracy, objtile, usemap, action, sidetext)
 end
 
----@return userdata --POINT
+---@return table|number
 function API.MousePos_()
 	return MousePos_()
 end
 
----@param cursor userdata --POINT
+---@return WPOINT
+--[[
+returns x,y coords of the mouse cusor relative to the game window
+]]
+function API.GetMLoc()
+	return GetMLoc()
+end
+
+---@param cursor table|number c POINT
 ---@param type boolean
 ---@return void
 function API.MouseCLRS(cursor, type)
 	return MouseCLRS(cursor, type)
 end
 
----@param cursor userdata --POINT
----@param cursor2 userdata --POINT
+---@param cursor table|number c POINT
+---@param cursor2 table|number c POINT
 ---@return void
 ---function API.MouseDrag_RS(cursor, cursor2)
 ---	return MouseDrag_RS(cursor, cursor2)
 ---end
 
----@param cursor userdata --POINT
+---@param cursor table|number c POINT
 ---@return void
 function API.MouseMove_(cursor)
 	return MouseMove_(cursor)
@@ -1269,8 +1349,8 @@ function API.MouseMove_2(x, y, rx, ry)
 	return MouseMove_2(x, y, rx, ry)
 end
 
----@param dx number --double
----@param dy number --double
+---@param dx number
+---@param dy number
 ---@return number
 function API.Hypot(dx, dy)
 	return Hypot(dx, dy)
@@ -1389,22 +1469,22 @@ function API.FindSideText()
 	return FindSideText()
 end
 
----@param ObjectName userdata -vector<string>
+---@param ObjectName table|string
 ---@param maxdistance number
----@return userdata --vector<AllObject>
+---@return table|AllObject
 function API.FindObject_string(ObjectName, maxdistance)
 	return FindObject_str(ObjectName, maxdistance)
 end
 
----@param types table --vector<int> -- possible types are: 0,1,2,3,5,8,12,all -1
----@param ids table --vector<int> --place {-1} unless you know ids
----@param names table --vector<string> --leave empty with {}
----@return userdata --vector<AllObject>
+---@param types table|number -- possible types are: 0,1,2,3,5,8,12,all -1
+---@param ids table|number --place {-1} unless you know ids
+---@param names table|string --leave empty with {}
+---@return table|AllObject
 function API.ReadAllObjectsArray(types, ids, names)
 	return ReadAllObjectsArray(types, ids, names)
 end
 
----@return userdata --vector<IInfo>
+---@return table|IInfo
 function API.ReadInvArrays33()
 	return ReadInvArrays33()
 end
@@ -1435,27 +1515,27 @@ function API.GetPrayMax_()
 end
 
 ---@param value number
----@return userdata --bitset<32>
+---@return table|number --bitset<32>
 function API.VB_ToBitSet(value)
 	return VB_ToBitSet(value)
 end
 
----@param set userdata --bitset<32>
+---@param set table|number --bitset<32>
 ---@param at number
 ---@param state boolean
----@return userdata --bitset<32>
+---@return table|number --bitset<32>
 function API.VB_ModifyBitSet(set, at, state)
 	return VB_ModifyBitSet(set, at, state)
 end
 
----@param to_print userdata --bitset<32>
+---@param to_print table|number --bitset<32>
 ---@return void
 function API.VB_PrintBitsSet(to_print)
 	return VB_PrintBitsSet(to_print)
 end
 
 ---@param str string
----@return userdata --bitset<32>
+---@return table|number --bitset<32>
 function API.VB_Bitstr_convert(str)
 	return VB_Bitstr_convert(str)
 end
@@ -1473,7 +1553,7 @@ function API.VB_PrintBits(ID)
 end
 
 ---@param ID number
----@return userdata --bitset<32>
+---@return table|number --bitset<32>
 function API.VB_GetBits(ID)
 	return VB_GetBits(ID)
 end
@@ -1642,13 +1722,15 @@ function API.ToMapFFPOINT(ItemCoord, map_limit)
 	return ToMapFFPOINT(ItemCoord, map_limit)
 end
 
+---old
 ---@param ItemCoord2 FFPOINT
 ---@return boolean
 function API.ClickMapTile_(ItemCoord2)
 	return ClickMapTile_(ItemCoord2)
 end
 
----@param ItemCoord2 userdata --POINT
+---old
+---@param ItemCoord2 table|number --c POINT
 ---@return boolean
 function API.ClickMapTile_2(ItemCoord2)
 	return ClickMapTile_2(ItemCoord2)
@@ -1673,7 +1755,7 @@ end
 --- return 32 slot boolean array
 ---@param id number
 ---@param FSArray number --what array look on can be -1
----@return userdata --vector<bool>
+---@return table|number
 function API.VB_FindPSett2(id, FSArray)
 	return VB_FindPSett2(id, FSArray)
 end
@@ -1717,19 +1799,19 @@ function API.LootWindowOpen_2()
 	return LootWindowOpen_2()
 end
 
----@return userdata --vector<IInfo>
+---@return table|IInfo
 function API.LootWindow_GetData()
 	return LootWindow_GetData()
 end
 
----@param Except_item userdata --vector<int>
+---@param Except_item table|number
 ---@param Inventory_stacks boolean
 ---@return number
 function API.LootWindow_space_needed(Except_item, Inventory_stacks)
 	return LootWindow_space_needed(Except_item, Inventory_stacks)
 end
 
----@param Except_itemv userdata --vector<int>
+---@param Except_itemv table|number
 ---@return boolean
 function API.LootWindow_Loot(Except_itemv)
 	return LootWindow_Loot(Except_itemv)
@@ -1800,171 +1882,79 @@ function API.String_Filter3(to)
 	return String_Filter3(to)
 end
 
+--old
 ---@return boolean
 function API.FindChooseOptionOpen()
 	return FindChooseOptionOpen()
 end
 
+--old
 ---@return boolean
 function API.FindChooseOptionOpenClose()
 	return FindChooseOptionOpenClose()
 end
 
----@param SummAddress1 AllObject
----@param SummAddress2 AllObject
----@return boolean
-function API.Math_Compare_AllObject_dist_smallest(SummAddress1, SummAddress2)
-	return Math_Compare_AllObject_dist_smallest(SummAddress1, SummAddress2)
-end
-
----@param SummAddress1 InterfaceComp5
----@param SummAddress2 InterfaceComp5
----@return boolean
-function API.Math_Compare_InterfaceComp5_smallest(SummAddress1, SummAddress2)
-	return Math_Compare_InterfaceComp5_smallest(SummAddress1, SummAddress2)
-end
-
 ---@param value number
----@param arrayof userdata --vector<Bbar>
+---@param arrayof table|Bbar
 ---@return boolean
 function API.Math_Bbar_ValueEquals(value, arrayof)
 	return Math_Bbar_ValueEquals(value, arrayof)
 end
 
----@param arrayof1 userdata --vector<int>
----@param arrayof2 userdata --vector<Bbar>
----@return userdata --vector<bool>
+---@param arrayof1 table|number
+---@param arrayof2 table|Bbar
+---@return table|number
 function API.Math_Bbar_ValueEqualsArr(arrayof1, arrayof2)
 	return Math_Bbar_ValueEqualsArr(arrayof1, arrayof2)
 end
 
 ---@param value number
----@param arrayof userdata --vector<AllObject>
+---@param arrayof table|AllObject
 ---@return boolean
 function API.Math_AO_ValueEquals(value, arrayof)
 	return Math_AO_ValueEquals(value, arrayof)
 end
 
 ---@param name string
----@param arrayof userdata --vector<IInfo>
+---@param arrayof table|IInfo
 ---@return boolean
 function API.Math_IInfo_ValueEqualsStr(name, arrayof)
 	return Math_IInfo_ValueEqualsStr(name, arrayof)
 end
 
----@param name userdata --vector<string>
----@param arrayof userdata --vector<IInfo>
+---@param name table|string
+---@param arrayof table|IInfo
 ---@return boolean
 function API.Math_IInfo_ValueEqualsStrArr(name, arrayof)
 	return Math_IInfo_ValueEqualsStrArr(name, arrayof)
 end
 
 ---@param value number
----@param arrayof userdata --vector<IInfo>
+---@param arrayof table|IInfo
 ---@return boolean
 function API.Math_IInfo_ValueEqualsStack(value, arrayof)
 	return Math_IInfo_ValueEqualsStack(value, arrayof)
 end
 
----@param arrayof1 userdata --vector<int>
----@param arrayof2 userdata --vector<AllObject>
+---@param arrayof1 table|number
+---@param arrayof2 table|AllObject
 ---@return boolean
 function API.Math_AO_ValueEqualsArr(arrayof1, arrayof2)
 	return Math_AO_ValueEqualsArr(arrayof1, arrayof2)
 end
 
----@param arrayof1 userdata --vector<int>
----@param arrayof2 userdata --vector<AllObject>
----@return userdata --vector<bool>
+---@param arrayof1 table|number
+---@param arrayof2 table|AllObject
+---@return table|number
 function API.Math_AO_ValueEqualsArr2(arrayof1, arrayof2)
 	return Math_AO_ValueEqualsArr2(arrayof1, arrayof2)
 end
 
----@param val number
----@return number
-function API.Math_Reverse_int(val)
-	return Math_Reverse_int(val)
-end
-
----@param val number --unsigned number --char*
----@param start number
----@return number --unsigned short
-function API.Math_AppendBytes16(val, start)
-	return Math_AppendBytes16(val, start)
-end
-
----@param val number --unsigned number --char*
----@param start number
----@return number --unsigned short
-function API.Math_AppendBytes16rev(val, start)
-	return Math_AppendBytes16rev(val, start)
-end
-
----@param val number --unsigned number --char*
----@param start number
----@return number
-function API.Math_AppendBytes24(val, start)
-	return Math_AppendBytes24(val, start)
-end
-
----@param val number --unsigned number --char*
----@param start number
----@return number
-function API.Math_AppendBytes24rev(val, start)
-	return Math_AppendBytes24rev(val, start)
-end
-
----@param val number --unsigned number --char*
----@param start number
----@return number
-function API.Math_AppendBytes32(val, start)
-	return Math_AppendBytes32(val, start)
-end
-
----@param val number --unsigned number --char*
----@param start number
----@return number
-function API.Math_AppendBytes64(val, start)
-	return Math_AppendBytes64(val, start)
-end
-
----@param val number --unsigned number --char*
----@param start number
----@return number
-function API.Math_AppendBytes64rev(val, start)
-	return Math_AppendBytes64rev(val, start)
-end
-
----@param val number --unsigned short
----@return userdata --PatternSearch
-function API.Math_Chopbytes16(val)
-	return Math_Chopbytes16(val)
-end
-
----@param val number
----@return userdata --PatternSearch
-function API.Math_Chopbytes32(val)
-	return Math_Chopbytes32(val)
-end
-
----@param val number
----@return userdata --PatternSearch
-function API.Math_Chopbytes64(val)
-	return Math_Chopbytes64(val)
-end
-
----@param inputaddresses userdata --vector<int>
+---@param inputaddresses table|number
 ---@param target number
 ---@return boolean
 function API.Math_Compare_int(inputaddresses, target)
 	return Math_Compare_int(inputaddresses, target)
-end
-
----@param SummAddress1 AllObject
----@param SummAddress2 AllObject
----@return boolean
-function API.Math_Compare_AllObject_dist_biggest(SummAddress1, SummAddress2)
-	return Math_Compare_AllObject_dist_biggest(SummAddress1, SummAddress2)
 end
 
 ---@return boolean
@@ -2098,21 +2088,21 @@ end
 ---@param y1 number
 ---@param x2 number
 ---@param y2 number
----@return userdata --vector<WPOINT>
+---@return table|WPOINT
 function API.Math_Bresenham_line(x1, y1, x2, y2)
 	return Math_Bresenham_line(x1, y1, x2, y2)
 end
 
 ---@param xy1 WPOINT
 ---@param xy2 WPOINT
----@return userdata --vector<WPOINT>
+---@return table|WPOINT
 function API.Math_Bresenham_lineW(xy1, xy2)
 	return Math_Bresenham_lineW(xy1, xy2)
 end
 
 ---@param xy1 FFPOINT
 ---@param xy2 FFPOINT
----@return userdata --vector<WPOINT>
+---@return table|WPOINT
 function API.Math_Bresenham_lineF(xy1, xy2)
 	return Math_Bresenham_lineF(xy1, xy2)
 end
@@ -2123,20 +2113,20 @@ function API.Bresenham_step(tilexy)
 	return Bresenham_step(tilexy)
 end
 
----@param objIds userdata --vector<int>
+---@param objIds table|number
 ---@param maxdistance number
 ---@param accuracy number
 ---@param usemap boolean
 ---@param action number
 ---@param sidetext string
----@param hlIds userdata --vector<int>
+---@param hlIds table|number
 ---@param localp_dist number --float
 ---@return boolean
 function API.FindHLvsLocalPlayer(objIds, maxdistance, accuracy, usemap, action, sidetext, hlIds, localp_dist)
 	return FindHLvsLocalPlayer(objIds, maxdistance, accuracy, usemap, action, sidetext, hlIds, localp_dist)
 end
 
----@param obj userdata --vector<int>
+---@param obj table|number
 ---@param maxdistance number
 ---@param sens number --float
 ---@return boolean
@@ -2152,7 +2142,7 @@ function API.RotateCamera(ItemXY, currxy, sens)
 	return RotateCamera(ItemXY, currxy, sens)
 end
 
----@param obj userdata --vector<int>
+---@param obj table|number
 ---@param maxdistance number
 ---@param accuracy number
 ---@param usemap boolean
@@ -2163,7 +2153,7 @@ function API.FindHObj(obj, maxdistance, accuracy, usemap, action, sidetext)
 	return FindHObj(obj, maxdistance, accuracy, usemap, action, sidetext)
 end
 
----@param items userdata --vector<int>
+---@param items table|number
 ---@param randomelement number
 ---@param action number
 ---@return boolean
@@ -2183,7 +2173,7 @@ function API.ClickInvOffset_(item, action, randx, randy, offsetx, offsety, sidet
 	return ClickInvOffset_(item, action, randx, randy, offsetx, offsety, sidetext)
 end
 
----@param obj userdata --vector<int>
+---@param obj table|number
 ---@param maxdistance number
 ---@return FFPOINT
 function API.FindObjTileName(obj, maxdistance)
@@ -2192,7 +2182,7 @@ end
 
 ---@param Line_index number
 ---@param size number
----@return userdata --vector<string>
+---@return table|string
 function API.GetChatMessage(Line_index, size)
 	return GetChatMessage(Line_index, size)
 end
@@ -2235,13 +2225,13 @@ function API.BankAllItems()
 	return BankAllItems()
 end
 
----@param Except_item userdata --vector<int>
+---@param Except_item table|number
 ---@return boolean
 function API.BankAllItem_InvExceptintM(Except_item)
 	return BankAllItem_InvExceptintM(Except_item)
 end
 
----@param Except_item userdata --vector<string>
+---@param Except_item table|string
 ---@return boolean
 function API.BankAllItem_InvExceptstrM(Except_item)
 	return BankAllItem_InvExceptstrM(Except_item)
@@ -2319,7 +2309,7 @@ function API.Bbar_ConvToSeconds(bar)
 end
 
 ---@param print_all_out boolean
----@return userdata --vector<Bbar>
+---@return table|Bbar
 function API.Buffbar_GetAllIDs(print_all_out)
 	return Buffbar_GetAllIDs(print_all_out)
 end
@@ -2371,7 +2361,8 @@ function API.ChatFind(text, limit)
 	return ChatFind(text, limit)
 end
 
----@return userdata --vector<ChatTexts>
+---old
+---@return table|ChatTexts
 function API.ChatGetMessages()
 	return ChatGetMessages()
 end
@@ -2397,7 +2388,7 @@ function API.CheckFamiliar()
 end
 
 ---@param print_all_out boolean
----@return userdata --vector<Bbar>
+---@return table|Bbar
 function API.DeBuffbar_GetAllIDs(print_all_out)
 	return DeBuffbar_GetAllIDs(print_all_out)
 end
@@ -2420,25 +2411,19 @@ function API.EquipInterfaceCheckvarbit()
 end
 
 ---@param name string
----@param model_ids userdata --vector<UINT64>
+---@param model_ids table|number
 ---@return boolean
 function API.FindModelCompare(name, model_ids)
 	return FindModelCompare(name, model_ids)
 end
 
----@param in userdata --vector<NAMEdata>
----@param compare_against string
----@return boolean
-function API.Find_NAMEdata_match(inn, compare_against)
-	return Find_NAMEdata_match(inn, compare_against)
-end
-
 ---@param bar_nr number
----@return userdata --vector<Abilitybar>
+---@return table|Abilitybar
 function API.GetABarInfo(bar_nr)
 	return GetABarInfo(bar_nr)
 end
 
+--print all 0-2
 ---@return void
 function API.GetABarInfo_DEBUG()
 	return GetABarInfo_DEBUG()
@@ -2446,14 +2431,14 @@ end
 
 ---@param bar_nr number
 ---@param ability_id number
----@return userdata -- Abilitybar
+---@return Abilitybar
 function API.GetAB_id(bar_nr, ability_id)
 	return GetAB_id(bar_nr, ability_id)
 end
 
 ---@param bar_nr number
 ---@param ability_name string
----@return userdata -- Abilitybar
+---@return Abilitybar
 function API.GetAB_name(bar_nr, ability_name)
 	return GetAB_name(bar_nr, ability_name)
 end
@@ -2480,7 +2465,7 @@ end
 
 ---@param entity_base number
 ---@param debug boolean
----@return userdata --vector<UINT64>
+---@return table|number
 function API.GetModel_ids(entity_base, debug)
 	return GetModel_ids(entity_base, debug)
 end
@@ -2587,7 +2572,7 @@ function API.LODEInterfaceCheckvarbit()
 end
 
 ---@param entity_base number
----@param model_ids userdata --vector<UINT64>
+---@param model_ids table|number
 ---@return boolean
 function API.ModelCompare(entity_base, model_ids)
 	return ModelCompare(entity_base, model_ids)
@@ -2613,9 +2598,9 @@ end
 
 ---@param chest number
 ---@param pushnumber number --char
----@param content_ids userdata --vector<int>
+---@param content_ids table|number
 ---@param size number
----@return userdata --vector<int>
+---@return table|number
 function API.OpenBankChest_am(chest, pushnumber, content_ids, size)
 	return OpenBankChest_am(chest, pushnumber, content_ids, size)
 end
@@ -2636,20 +2621,21 @@ function API.RandomEvents()
 	return RandomEvents()
 end
 
----@return userdata --vector <IInfo>
+--use containers instead
+---@return table|IInfo
 function API.ReadEquipment()
 	return ReadEquipment()
 end
 
 ---@param boxtext string
 ---@param secondedit boolean
----@return userdata --vector <string>
+---@return table|string
 function API.ScriptAskBox(boxtext, secondedit)
 	return ScriptAskBox(boxtext, secondedit)
 end
 
 ---@param boxtext string
----@param textchoices userdata --vector<string>
+---@param textchoices table|string
 ---@param button_name1 string
 ---@param button_name2 string
 ---@param Make string
@@ -2663,7 +2649,7 @@ end
 ---@param password boolean
 ---@param arrtype number
 ---@param filename string
----@return userdata --vector <NAMEdata>
+---@return table --<NAMEdata> prob not needed never
 function API.ScriptDialogWindow_input(boxtext, password, arrtype, filename)
 	return ScriptDialogWindow_input(boxtext, password, arrtype, filename)
 end
@@ -2674,8 +2660,8 @@ function API.SelectToolOpen(txt_to_find)
 	return SelectToolOpen(txt_to_find)
 end
 
----@param input userdata --vector<string>
----@return userdata --vector<int>
+---@param input table|string
+---@return table|number
 function API.StringsToInts(input)
 	return StringsToInts(input)
 end
@@ -2767,7 +2753,7 @@ function API.DoAction_Ability_check(name, m_action, offset, checkenabled, checkc
 	return DoAction_Ability_check(name, m_action, offset, checkenabled, checkcooldown)
 end
 
----@param Ab userdata -- Abilitybar
+---@param Ab Abilitybar
 ---@param m_action number
 ---@param offset number
 ---@return boolean
@@ -2799,55 +2785,61 @@ function API.DoAction_Bank_Inv(id, m_action, offset)
 	return DoAction_Bank_Inv(id, m_action, offset)
 end
 
----@param normal_tile WPOINT
----@return boolean
-function API.DoAction_BD_Tile(normal_tile)
-	return DoAction_BD_Tile(normal_tile)
-end
-
----@param obj number --object id
----@param range number --how far to look
----@return boolean
-function API.DoAction_BD_Obj(obj, range)
-	return DoAction_BD_Obj(obj, range)
-end
-
----@param npc number --npc id
----@param range number --how far to look
----@return boolean
-function API.DoAction_BD_NPC(npc, range)
-	return DoAction_BD_NPC(npc, range)
-end
-
+--For Bladed Dive and just Dive
 ---@param normal_tile WPOINT
 ---@return boolean
 function API.DoAction_Dive_Tile(normal_tile)
 	return DoAction_Dive_Tile(normal_tile)
 end
 
+--For Bladed Dive and just Dive
 ---@param normal_tile WPOINT
----@param normal_tile errorrange
+---@param sleep number
+---@return boolean
+function API.DoAction_Dive_Tile_sleep(normal_tile,sleep)
+	return DoAction_Dive_Tile(normal_tile,sleep)
+end
+
+---@param normal_tile WPOINT
+---@param errorrange number
 ---@return boolean
 function API.DoAction_Surge_Tile(normal_tile, errorrange)
 	return DoAction_Surge_Tile(normal_tile, errorrange)
 end
 
+--Auto-retaliate button
 ---@return boolean
 function API.DoAction_Button_AR()
 	return DoAction_Button_AR()
 end
 
+--call familiar button
+--[[
+0 - call familiar
+1 - cast special //legendary = no
+2 - attack //legendary = can't
+3 - summon pet
+4 - dismiss
+5 - follower details
+6 - interact
+7 - renew familiar
+8 - give bob
+9 - take bob
+10 - restore points
+]]--
 ---@param Possible_order number
 ---@return boolean
 function API.DoAction_Button_FO(Possible_order)
 	return DoAction_Button_FO(Possible_order)
 end
 
+--generate health
 ---@return boolean
 function API.DoAction_Button_GH()
 	return DoAction_Button_GH()
 end
 
+--quickpray
 ---@return boolean
 function API.DoAction_Button_QP()
 	return DoAction_Button_QP()
@@ -2862,7 +2854,7 @@ function API.DoAction_G_Items_Direct(action, route, obj)
 end
 
 ---@param action number
----@param obj userdata --vector<int>
+---@param obj table|number
 ---@param maxdistance number
 ---@param tile FFPOINT
 ---@param radius number --float
@@ -2872,7 +2864,7 @@ function API.DoAction_G_Items_r_norm(action, obj, maxdistance, tile, radius)
 end
 
 ---@param action number
----@param obj userdata --vector<int>
+---@param obj table|number
 ---@param maxdistance number
 ---@param tile FFPOINT
 ---@param radius number --float
@@ -2895,17 +2887,25 @@ function API.DoAction_Interface(command1, command2, command3, numbererface1, num
 	return DoAction_Interface(command1, command2, command3, numbererface1, numbererface2, numbererface3, offset, pixel_x, pixel_y)
 end
 
+--1 That mini logout button attached to minimap
 ---@return boolean
 function API.DoAction_Logout_mini()
 	return DoAction_Logout_mini()
 end
 
+--2 pick logout from settings menu
+---@return boolean
+function API.DoAction_then_lobby()
+	return DoAction_then_lobby()
+end
+
+--clicks loot all button if open
 ---@return boolean
 function API.DoAction_LootAll_Button()
 	return DoAction_LootAll_Button()
 end
 
----@param ids userdata --vector<int>
+---@param ids table|number
 ---@param maxdistance number
 ---@param tile FFPOINT
 ---@param radius number --float
@@ -2921,7 +2921,7 @@ end
 
 ---@param action number
 ---@param offset number
----@param obj userdata --vector<int>
+---@param obj table|number
 ---@param maxdistance number
 ---@param ignore_star boolean
 ---@param health number
@@ -2932,7 +2932,7 @@ end
 
 ---@param action number
 ---@param offset number
----@param obj userdata --vector<int>
+---@param obj table|number
 ---@param maxdistance number
 ---@param bottom_left WPOINT
 ---@param top_right WPOINT
@@ -2943,7 +2943,7 @@ end
 
 ---@param action number
 ---@param offset number
----@param obj userdata --vector<string>
+---@param obj table|string
 ---@param maxdistance number
 ---@param ignore_star boolean
 ---@param health number
@@ -2970,7 +2970,7 @@ end
 
 ---@param action number
 ---@param offset number
----@param obj userdata --vector<int>
+---@param obj table|number
 ---@param maxdistance number
 ---@return boolean
 function API.DoAction_Object_furthest(action, offset, obj, maxdistance)
@@ -2979,18 +2979,13 @@ end
 
 ---@param action number
 ---@param offset number
----@param obj userdata --vector<int>
+---@param obj table|number
 ---@param maxdistance number
 ---@param tile WPOINT
 ---@param tile_range number --float
 ---@return boolean
 function API.DoAction_Object_r(action, offset, obj, maxdistance, tile, tile_range)
 	return DoAction_Object_r(action, offset, obj, maxdistance, tile, tile_range)
-end
-
----@return boolean
-function API.DoAction_then_lobby()
-	return DoAction_then_lobby()
 end
 
 ---@param normal_tile WPOINT
@@ -3012,14 +3007,14 @@ function API.DoAction_VS_Player_action_Direct(obj, offset)
 	return DoAction_VS_Player_action_Direct(obj, offset)
 end
 
----@param obj userdata --vector<string>
+---@param obj table|string
 ---@param maxdistance number
 ---@return boolean
 function API.DoAction_VS_Player_Follow(obj, maxdistance)
 	return DoAction_VS_Player_Follow(obj, maxdistance)
 end
 
----@param obj userdata --vector<string>
+---@param obj table|string
 ---@param maxdistance number
 ---@return boolean
 function API.DoAction_VS_Player_Trade(obj, maxdistance)
@@ -3054,9 +3049,9 @@ end
 
 ---@param action number
 ---@param offset number
----@param obj userdata --vector<int>
+---@param obj table|number
 ---@param maxdistance number
----@param highlight userdata --vector<int>
+---@param highlight table|number
 ---@return boolean
 function API.DOFindHl(action, offset, obj, maxdistance, highlight)
 	return DOFindHl(action, offset, obj, maxdistance, highlight)
@@ -3064,9 +3059,9 @@ end
 
 ---@param action number
 ---@param offset number
----@param obj userdata --vector<int>
+---@param obj table|number
 ---@param maxdistance number
----@param highlight userdata --vector<int>
+---@param highlight table|number
 ---@param localp_dist number --float
 ---@return boolean
 function API.DOFindHLvsLocalPlayer(action, offset, obj, maxdistance, highlight, localp_dist)
@@ -3086,7 +3081,7 @@ function API.DoRandomEvent(randnpc)
 end
 
 ---@param value number
----@param arrayof userdata --vector<int>
+---@param arrayof table|number
 ---@return boolean
 function API.Math_ValueEquals(value, arrayof)
 	return Math_ValueEquals(value, arrayof)
@@ -3106,7 +3101,7 @@ function API.InvFindItem2(item, action)
 	return InvFindItem(item, action)
 end
 
----@param obj userdata --vector<int>
+---@param obj table|number
 ---@param maxdistance number
 ---@param accuracy number
 ---@param usemap boolean
@@ -3117,18 +3112,18 @@ function API.FindObj1(obj, maxdistance, accuracy, usemap, action, sidetext)
 	return FindObj(obj, maxdistance, accuracy, usemap, action, sidetext)
 end
 
----@param obj userdata --vector<int>
+---@param obj table|number
 ---@param maxdistance number
 ---@param accuracy number
 ---@param usemap boolean
 ---@param action number
----@param sidetext userdata --vector<string>
+---@param sidetext table|string
 ---@return boolean
 function API.FindObj2(obj, maxdistance, accuracy, usemap, action, sidetext)
 	return FindObj(obj, maxdistance, accuracy, usemap, action, sidetext)
 end
 
----@param AllStuff2 userdata --vector<AllObject>
+---@param AllStuff2 table|AllObject
 ---@param accuracy number
 ---@param usemap boolean
 ---@param action number
@@ -3138,11 +3133,11 @@ function API.ClickAllObj1(AllStuff2, accuracy, usemap, action, sidetext)
 	return ClickAllObj(AllStuff2, accuracy, usemap, action, sidetext)
 end
 
----@param AllStuff2 userdata --vector<AllObject>
+---@param AllStuff2 table|AllObject
 ---@param accuracy number
 ---@param usemap boolean
 ---@param action number
----@param sidetext userdata --vector<string>
+---@param sidetext table|string
 ---@return boolean
 function API.ClickAllObj2(AllStuff2, accuracy, usemap, action, sidetext)
 	return ClickAllObj(AllStuff2, accuracy, usemap, action, sidetext)
@@ -3157,10 +3152,10 @@ end
 8 tiles
 12 decor
 --]]
----@param obj userdata --vector<int>
+---@param obj table|number
 ---@param maxdistance number
----@param type number --vector<int> {}
----@return userdata --vector<AllObject>
+---@param type table|number {}
+---@return table|AllObject
 function API.GetAllObjArray1(obj, maxdistance, type)
 	return GetAllObjArray(obj, maxdistance,type)
 end
@@ -3174,11 +3169,11 @@ end
 8 tiles
 12 decor
 --]]
----@param obj userdata --vector<int>
+---@param obj table|number
 ---@param maxdistance number
----@param type number --vector<int> {}
+---@param type table|number {}
 ---@param tile WPOINT
----@return userdata --vector<AllObject>
+---@return table|AllObject
 function API.GetAllObjArray2(obj, maxdistance, type, tile)
 	return GetAllObjArray(obj, maxdistance, type, tile)
 end
@@ -3197,7 +3192,7 @@ function API.CheckTileforObjects2(tile, object, thresh)
 	return CheckTileforObjects(tile, object, thresh)
 end
 
----@param obj userdata --vector<int>
+---@param obj table|number
 ---@param maxdistance number
 ---@param accuracy number
 ---@param usemap boolean
@@ -3208,7 +3203,7 @@ function API.FindObjCheck_1(obj, maxdistance, accuracy, usemap, action, sidetext
 	return FindObjCheck_(obj, maxdistance, accuracy, usemap, action, sidetext)
 end
 
----@param obj userdata --vector<int>
+---@param obj table|number
 ---@param maxdistance number
 ---@param accuracy number
 ---@param usemap boolean
@@ -3242,13 +3237,15 @@ function API.ClickInv_2(item, randomelement, action, xrand, yrand)
 	return ClickInv_(item, randomelement, action, xrand, yrand)
 end
 
----@param xy userdata --POINT
+--old
+---@param xy table|number c POINT
 ---@param mouse number
 ---@return void
 function API.ClickTile_1(xy, mouse)
 	return ClickTile_(xy, mouse)
 end
 
+--old
 ---@param x number
 ---@param y number
 ---@param z number
@@ -3264,8 +3261,8 @@ function API.InvItemcount_1(item)
 	return InvItemcount_(item)
 end
 
----@param item userdata --vector<int>
----@return userdata --vector<int>
+---@param item table|number
+---@return table|number
 function API.InvItemcount_2(item)
 	return InvItemcount_(item)
 end
@@ -3276,7 +3273,7 @@ function API.InvItemFound1(item)
 	return InvItemFound(item)
 end
 
----@param items userdata --vector<int>
+---@param items table|number
 ---@return boolean
 function API.InvItemFound2(items)
 	return InvItemFound(items)
@@ -3288,7 +3285,7 @@ function API.SideTextEq1(text)
 	return SideTextEq(text)
 end
 
----@param text userdata --vector<string>
+---@param text table|string
 ---@return boolean
 function API.SideTextEq2(text)
 	return SideTextEq(text)
@@ -3366,14 +3363,14 @@ function API.KeyboardPress32(codes, keymod)
 end
 
 ---@param value number
----@param arrayof userdata --vector<IInfo>
+---@param arrayof table|IInfo
 ---@return boolean
 function API.Math_IInfo_ValueEquals1(value, arrayof)
 	return Math_IInfo_ValueEquals(value, arrayof)
 end
 
----@param value userdata --vector<int>
----@param arrayof userdata --vector<IInfo>
+---@param value table|IInfo
+---@param arrayof table|IInfo
 ---@return boolean
 function API.Math_IInfo_ValueEquals2(value, arrayof)
 	return Math_IInfo_ValueEquals(value, arrayof)
@@ -3435,8 +3432,8 @@ function API.PlayerInterActingWith_2(localmem)
 end
 
 ---@param target_under boolean
----@param lv_ID userdata --vector<InterfaceComp5>
----@return userdata --vector<IInfo>
+---@param lv_ID table|InterfaceComp5
+---@return table|IInfo
 function API.ScanForInterfaceTest2Get(target_under, lv_ID)
 	if type(lv_ID[1]) == "table" then
 		local ids = {}
@@ -3464,8 +3461,8 @@ function API.BankGetItemStack_str(itemname)
 	return BankGetItemStack(itemname)
 end
 
----@param item userdata --vector<int>
----@return userdata --vector<int>
+---@param item table|number
+---@return table|number
 function API.BankGetItemStack2(item)
 	return BankGetItemStack(item)
 end
@@ -3483,19 +3480,19 @@ function API.CheckInvStuff2(item1)
 	return CheckInvStuff(item1)
 end
 
----@param item1 userdata --vector<int>
----@return userdata --vector<bool>
+---@param item1 table|number
+---@return table|number
 function API.CheckInvStuff3(item1)
 	return CheckInvStuff(item1)
 end
 
----@param items userdata --vector<int>
+---@param items table|number
 ---@return boolean
 function API.CheckInvStuffCheckAll1(items)
 	return CheckInvStuffCheckAll(items)
 end
 
----@param items userdata --vector<int>
+---@param items table|number
 ---@param size number
 ---@return boolean
 function API.CheckInvStuffCheckAll2(items, size)
@@ -3533,42 +3530,42 @@ end
 
 -- probl some old scripts use it
 ---@param ability_name string
----@return userdata -- Abilitybar
+---@return Abilitybar
 function API.GetABs_name1(ability_name)
 	return GetABs_name(ability_name)
 end
 
 -- get ability data by name
 ---@param ability_name string
----@return userdata -- Abilitybar
+---@return Abilitybar
 function API.GetABs_name(ability_name)
 	return GetABs_name(ability_name)
 end
 
 -- gets ability data by matching icon id
 ---@param ability_id number
----@return userdata -- Abilitybar
+---@return Abilitybar
 function API.GetABs_id(ability_id)
 	return GetABs_id(ability_id)
 end
 
 -- gets ability data by matching icon ids
 ---@param ability_ids number
----@return userdata --vector<Abilitybar>
+---@return table|Abilitybar
 function API.GetABs_ids(ability_ids)
 	return GetABs_ids(ability_ids)
 end
 
 -- get ability data by names
----@param ability_names --vector<string>
----@return userdata --vector<Abilitybar>
+---@param ability_names table|string
+---@return table|Abilitybar
 function API.GetABs_names(ability_names)
 	return GetABs_names(ability_names)
 end
 
 -- gets ability data by matching icon ids, in order of input, for potions, super_restore = { 3024,3026,3028,3030 } <- full dose to smaller
 ---@param ability_ids number
----@return userdata Abilitybar --single slot
+---@return Abilitybar --single slot
 function API.GetAB_ids(ability_ids)
 	return GetAB_ids(ability_ids)
 end
@@ -3588,14 +3585,14 @@ end
 
 ---@param chest number
 ---@param pushnumber number --char
----@param content_ids userdata --vector<int>
+---@param content_ids table|number
 ---@return boolean
 function API.OpenBankChest3(chest, pushnumber, content_ids)
 	return OpenBankChest(chest, pushnumber, content_ids)
 end
 
 ---@param action number
----@param obj userdata --vector<int>
+---@param obj table|number
 ---@param maxdistance number
 ---@return boolean
 function API.DoAction_G_Items1(action, obj, maxdistance)
@@ -3603,7 +3600,7 @@ function API.DoAction_G_Items1(action, obj, maxdistance)
 end
 
 ---@param action number
----@param obj userdata --vector<int>
+---@param obj table|number
 ---@param maxdistance number
 ---@param atTile WPOINT
 ---@return boolean
@@ -3612,7 +3609,7 @@ function API.DoAction_G_Items2(action, obj, maxdistance, atTile)
 end
 
 ---@param action number
----@param obj userdata --vector<int>
+---@param obj table|number
 ---@param maxdistance number
 ---@param tile FFPOINT
 ---@param radius number --float
@@ -3623,7 +3620,7 @@ end
 
 ---@param action number
 ---@param action_route number
----@param obj userdata --vector<int>
+---@param obj table|number
 ---@param maxdistance number
 ---@param tile FFPOINT
 ---@param radius number --float
@@ -3641,7 +3638,7 @@ function API.DoAction_Inventory1(id, random, m_action, offset)
 	return DoAction_Inventory(id, random, m_action, offset)
 end
 
----@param ids userdata --vector<int>
+---@param ids table|number
 ---@param random number
 ---@param m_action number
 ---@param offset number
@@ -3661,7 +3658,7 @@ end
 
 ---@param action number
 ---@param offset number
----@param obj userdata --vector<int>
+---@param obj table|number
 ---@param maxdistance number
 ---@return boolean
 function API.DoAction_Object1(action, offset, obj, maxdistance)
@@ -3670,7 +3667,7 @@ end
 
 ---@param action number
 ---@param offset number
----@param obj userdata --vector<int>
+---@param obj table|number
 ---@param maxdistance number
 ---@param tile WPOINT
 ---@return boolean
@@ -3680,7 +3677,7 @@ end
 
 ---@param action number
 ---@param offset number
----@param obj userdata --vector<int>
+---@param obj table|number
 ---@param maxdistance number
 ---@param valid boolean
 ---@return boolean
@@ -3690,7 +3687,7 @@ end
 
 ---@param action number
 ---@param offset number
----@param obj userdata --vector<int>
+---@param obj table|number
 ---@param maxdistance number
 ---@param tile WPOINT
 ---@param valid boolean
@@ -3701,7 +3698,7 @@ end
 
 ---@param action number
 ---@param offset number
----@param obj userdata --vector<string>
+---@param obj table|string
 ---@param maxdistance number
 ---@param valid boolean
 ---@return boolean
@@ -3711,7 +3708,7 @@ end
 
 ---@param action number
 ---@param offset number
----@param obj userdata --vector<string>
+---@param obj table|string
 ---@param maxdistance number
 ---@param tile WPOINT
 ---@param valid boolean
@@ -3720,14 +3717,14 @@ function API.DoAction_Object_string2(action, offset, obj, maxdistance, tile, val
 	return DoAction_Object_string(action, offset, obj, maxdistance, tile, valid)
 end
 
----@param obj userdata --vector<string>
+---@param obj table|string
 ---@param maxdistance number
 ---@return boolean
 function API.DoAction_VS_Player_Attack1(obj, maxdistance)
 	return DoAction_VS_Player_Attack(obj, maxdistance)
 end
 
----@param obj userdata --vector<string>
+---@param obj table|string
 ---@param maxdistance number
 ---@param checkcombat boolean
 ---@param xstart number
@@ -3929,5 +3926,148 @@ function GrandExchange:FindOrder(itemId) end
 ---@param slot number The slot number of the order to cancel.
 ---@return boolean True if the order was successfully canceled.
 function GrandExchange:CancelOrder(slot) end
+
+--- Inventory LUADoc
+
+--- Represents an item in the Inventory.
+---@class InventoryItem
+---@field id number The ID of the item.
+---@field name string The name of the item.
+---@field amount number The size of the item stack.
+---@field slot number The inventory slot the item is in.
+---@field xp number The experience of the item.
+
+--- Represents the Inventory system.
+---@class Inventory
+Inventory = Inventory
+
+--- Checks whether the Inventory interface is currently open.
+---@return boolean `true` if the Inventory is open, `false` otherwise.
+function Inventory.IsOpen() end
+
+--- Checks whether the Inventory is full.
+---@return boolean `true` if the Inventory is full, `false` otherwise.
+function Inventory.IsFull() end
+
+--- Checks whether the Inventory is empty.
+---@return boolean `true` if the Inventory is empty, `false` otherwise.
+function Inventory.IsEmpty() end
+
+--- Checks if the Inventory contains a specific item.
+---
+--- Accepts an item ID.
+---@param item number The item ID (int) to check for
+---@return boolean `true` if the Inventory contains the item, `false` otherwise.
+---@overload fun(item: number): boolean
+function Inventory.Contains(item) end
+
+--- Checks whether an item is currently selected in the Inventory.
+---@return boolean `true` if an item is selected, `false` otherwise.
+function Inventory.IsItemSelected() end
+
+--- Checks for the number of free spaces in the inventory
+---@return number The number of free spaces in the inventory
+function Inventory.FreeSpaces() end
+
+--- Retrieves the experience of a specific item in the Inventory.
+---
+--- Accepts either an item ID or an item name.
+---@param itemID number|string The item ID (int) or item name (string) to check
+---@return number itemXP The experience of the item.
+---@overload fun(item: string): number
+function Inventory.GetItemXP(itemID) end
+
+--- Gets the current amount of a specific item in the Inventory.
+---
+--- Accepts either an item ID or an item name.
+---@param item number|string The item ID (int) or item name (string) to check
+---@return number amount The current amount of the item in the Inventory.
+---@overload fun(item: string): number
+function Inventory.GetItemAmount(item) end
+
+--- Eats a specified item from the Inventory.
+---
+--- Accepts either an item ID or an item name.
+---@param item number|string The item ID (int) or item name (string) to eat
+---@return boolean `true` if the item was eaten, `false` otherwise.
+---@overload fun(item: string): boolean
+function Inventory.Eat(item) end
+
+--- Uses a specified item from the Inventory.
+---
+--- Accepts either an item ID or an item name.
+---@param item number|string The item ID (int) or item name (string) to use
+---@return boolean `true` if the item was used, `false` otherwise.
+---@overload fun(item: string): boolean
+function Inventory.Use(item) end
+
+--- Rubs a piece of jewelry from the Inventory.
+---
+--- Accepts either an item ID or an item name.
+---@param item number|string The item ID (int) or item name (string) to rub
+---@return boolean `true` if the item was rubbed, `false` otherwise.
+---@overload fun(item: string): boolean
+function Inventory.Rub(item) end
+
+--- Equip a specified item from the Inventory.
+---
+--- Accepts either an item ID or an item name.
+---@param item number|string The item ID (int) or item name (string) to equip
+---@return boolean `true` if the item was equipped, `false` otherwise.
+---@overload fun(item: string): boolean
+function Inventory.Equip(item) end
+
+--- Drops a specified item from the Inventory.
+---
+--- Accepts either an item ID or an item name.
+---@param item number|string The item ID (int) or item name (string) to drop
+---@return boolean `true` if the item was successfully dropped, `false` otherwise.
+---@overload fun(item: string): boolean
+function Inventory.Drop(item) end
+
+--- Notes a specified item in the Inventory.
+---
+--- Accepts either an item ID or an item name.
+---@param item number|string The item ID (int) or item name (string) to note
+---@return boolean `true` if the item was noted, `false` otherwise.
+---@overload fun(item: string): boolean
+function Inventory.NoteItem(item) end
+
+--- Uses one item on another in the Inventory.
+---
+--- Accepts either an item ID or an item name as either the source or target.
+---@param source number|string The item ID (int) or item name (string) to use
+---@param target number|string The item ID (int) or item name (string) to use the source on
+---@return boolean `true` if the items were used, `false` otherwise.
+---@overload fun(source: string, target: string): boolean
+function Inventory.UseItemOnItem(source, target) end
+
+--- Retrieves all items currently in the Inventory.
+---
+--- Returns a list of InventoryItem objects.
+---@return InventoryItem[] List of all current inventory items.
+function Inventory:GetItems() end
+
+--- Retreives all occurances of an item from the inventory
+---@param item number|string The item ID (int) or item name (string) to check
+---@return InventoryItem[] List of inventory items.
+---@overload fun(item): InventoryItem[]
+function Inventory:GetItem(item) end
+
+--- Retrieves the item information for the given slot
+---
+---@param slot number The slot to retrieve the item from
+---@return InventoryItem The item information for the given slot
+function Inventory:GetSlotData(slot) end
+
+--- Generic DoAction
+---
+--- Generic DoAction function to build your own command.
+--- Required parameters can be obtained from DoAction debug
+---@param target number|string the item id or name 
+---@param action number the m_action
+---@param offset number the offset, typically will be an OFF_ACT
+---@return boolean
+function Inventory:DoAction(target, action, offset) end
 
 return API
