@@ -2,7 +2,7 @@ print("Run Lua script <NAME>.")
 
 local API = require("api")
 local UTILS = require("utils")
-local WC = require("SKILLS/WOODCUTTING")
+local WC = require("SKILLS.WOODCUTTING")
 
 local do_stuff = true
 local do_debug = true
