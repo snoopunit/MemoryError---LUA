@@ -53,49 +53,6 @@ function Fishing_and_Banking(spotType, bankType)
     API.RandomSleep2(2400, 0 ,600)
 end
 
-function Potionmaking() 
-    API.logDebug("Potionmaking()")
-    if BANK.doPreset(1) then
-        if not Inventory:IsFull() then
-            API.logWarn("Didn't grab a full inventory!")
-            API.Write_LoopyLoop(false)
-            return
-        end
-        if HERB.makeVials() then
-            waitForCraftingInterface()
-            if clickStart() then
-                while API.CheckAnim(75) do
-                    API.RandomSleep2(600,0,250)
-                end
-            end
-        end
-    else
-        API.logWarn("Failed to load preset 1!")
-        API.Write_LoopyLoop(false)
-        return
-    end
-    if BANK.doPreset(2) then
-        if not Inventory:IsFull() then
-            API.logWarn("Didn't grab a full inventory!")
-            API.Write_LoopyLoop(false)
-            return
-        end
-        if HERB.mixPotionsAtPortableWell() then
-            waitForCraftingInterface()
-            if clickStart() then
-                while API.CheckAnim(75) do
-                    API.RandomSleep2(600,0,250)
-                end
-            end
-        end
-    else    
-        API.logWarn("Failed to load preset 2!")
-        API.Write_LoopyLoop(false)
-        return
-    end
-end 
-
-
 
 --main loop
 API.Write_LoopyLoop(true)
@@ -117,7 +74,7 @@ do------------------------------------------------------------------------------
 
         if API.GetLocalPlayerName() == "" then    
             if getLevel("HERBLORE") < 120 then
-                Potionmaking()
+                HERB.makePotions()
             else
                 API.Write_LoopyLoop(false)
             end
@@ -125,7 +82,7 @@ do------------------------------------------------------------------------------
         
         if API.GetLocalPlayerName() == "" then
             if getLevel("HERBLORE") < 120 then
-                Potionmaking()
+                HERB.makePotions()
             else
                 API.Write_LoopyLoop(false)
             end
@@ -146,3 +103,4 @@ do------------------------------------------------------------------------------
     
 
 end----------------------------------------------------------------------------------
+
