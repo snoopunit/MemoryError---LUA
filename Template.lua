@@ -53,7 +53,6 @@ function Fishing_and_Banking(spotType, bankType)
     API.RandomSleep2(2400, 0 ,600)
 end
 
-
 --main loop
 API.Write_LoopyLoop(true)
 API.SetDrawLogs(true)
@@ -80,27 +79,6 @@ do------------------------------------------------------------------------------
             end
         end
         
-        if API.GetLocalPlayerName() == "" then
-            if getLevel("HERBLORE") < 120 then
-                HERB.makePotions()
-            else
-                API.Write_LoopyLoop(false)
-            end
-        end
-
-        if API.GetLocalPlayerName() == "" then 
-            --[[if getLevel("FIREMAKING") < 90 then
-                Woodcutting_and_Firemaking(TREES.WILLOW, LOGS.WILLOW)  
-            else
-                API.Write_LoopyLoop(false)
-            end]]
-
-            
-
-        end
-        
     end
-    
 
 end----------------------------------------------------------------------------------
-
