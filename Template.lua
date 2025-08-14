@@ -115,7 +115,7 @@ do------------------------------------------------------------------------------
 
     if do_stuff then
 
-        if API.GetLocalPlayerName() == "SirRylington" then    
+        if API.GetLocalPlayerName() == "" then    
             if getLevel("HERBLORE") < 120 then
                 Potionmaking()
             else
@@ -123,7 +123,7 @@ do------------------------------------------------------------------------------
             end
         end
         
-        if API.GetLocalPlayerName() == "snoopunit666" then
+        if API.GetLocalPlayerName() == "" then
             if getLevel("HERBLORE") < 120 then
                 Potionmaking()
             else
@@ -131,7 +131,7 @@ do------------------------------------------------------------------------------
             end
         end
 
-        if API.GetLocalPlayerName() == "playah8ah" then 
+        if API.GetLocalPlayerName() == "" then 
             --[[if getLevel("FIREMAKING") < 90 then
                 Woodcutting_and_Firemaking(TREES.WILLOW, LOGS.WILLOW)  
             else
@@ -144,4 +144,5 @@ do------------------------------------------------------------------------------
         
     end
     
+
 end----------------------------------------------------------------------------------
