@@ -578,7 +578,7 @@ end
 
 function EstimatedProfit()
     local potionType = potionTypeCombo.string_value
-    local profitPerPotion = API.GetExchangePrice(POTIONS.potionType)
+    local profitPerPotion = API.GetExchangePrice(POTIONS.potionType.ID)
     return GLOBALS.potionsMade * profitPerPotion
 end
 
@@ -716,7 +716,7 @@ function Herblore.makePotions()
             API.Write_LoopyLoop(false)
             return
         end 
-        
+
     end
     
     API.logDebug("Banking...")
