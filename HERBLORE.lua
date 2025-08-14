@@ -662,24 +662,33 @@ function Herblore.makePotions()
     Herblore.updateCurrentState("Banking...")
     
     if GLOBALS.makeUnf then
+
         if BANK.doPreset(GLOBALS.primaryPreset) then
+
             if not Inventory:IsFull() then
                 API.logWarn("Didn't grab a full inventory!")
                 API.Write_LoopyLoop(false)
                 return
             end
+
             if Inventory:Contains("Grimy") then
+
                 if GLOBALS.useSkillcape then
+
                     API.logDebug("Using herblore skillcape...")
                     Herblore.updateCurrentState("Using herblore skillcape...")
+
                     if not Herblore.skillCape() then
                         API.logWarn("Failed to use herblore skillcape!")
                         API.Write_LoopyLoop(false)
                         return false
                     end
+
                 else
+
                     API.logDebug("Cleaning herbs...")
                     Herblore.updateCurrentState("Cleaning herbs...")
+
                     if Herblore.cleanHerbs(GLOBALS.herbType.ID) then
                         doCrafting()
                     else 
@@ -687,23 +696,27 @@ function Herblore.makePotions()
                         API.Write_LoopyLoop(false)
                         return false
                     end
+
                 end
+
             end
+
             if HERB.makeVials() then
                 API.logDebug("Making unfinished potions...")
                 Herblore.updateCurrentState("Making unfinished potions...")
                 doCrafting()
-                else
-                    API.logWarn("Shutting down!") 
-                    API.Write_LoopyLoop(false)
-                    return
-                end     
+            else
+                API.logWarn("Shutting down!") 
+                API.Write_LoopyLoop(false)
+                return     
             end
+
         else
             API.logWarn("Failed to load preset 1!")
             API.Write_LoopyLoop(false)
             return
         end 
+        
     end
     
     API.logDebug("Banking...")
@@ -748,7 +761,7 @@ function Herblore.makePotions()
         API.Write_LoopyLoop(false)
         return
     end
-end 
 
+end 
 
 return Herblore
