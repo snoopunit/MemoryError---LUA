@@ -426,7 +426,7 @@ CLEAN_HERBS = {
 local imguiBackground = API.CreateIG_answer()
 imguiBackground.box_name = "imguiBackground"
 imguiBackground.box_start = FFPOINT.new(10, 10, 0)
-imguiBackground.box_size = FFPOINT.new(400, 180, 0) -- Reduced height for 3 dropdowns
+imguiBackground.box_size = FFPOINT.new(400, 180, 0) 
 imguiBackground.colour = ImColor.new(71, 71, 71)
 
 -- Dropdowns
@@ -434,7 +434,7 @@ local potionTypes = { "Prayer Renewal", "Saradomin Brew", "Super Restore",  "Ove
 local primaryPresets = { "Last", "1", "2" }
 local secondaryPresets = { "Last", "1", "2" }
 
-local dropdown_spacing = 40 -- Increased spacing for 3 dropdowns
+local dropdown_spacing = 40 
 
 local potionTypeCombo = API.CreateIG_answer()
 potionTypeCombo.box_name = "Potion Type"
@@ -458,7 +458,7 @@ secondaryPreset.string_value = secondaryPresets[1]
 local checkbox_width = 120
 local checkbox_spacing = 20
 local start_x = 30
-local start_y = 20 + dropdown_spacing * 3 + 10 -- Move checkboxes below dropdowns
+local start_y = 20 + dropdown_spacing * 3 + 10 
 
 local useSkillcapeBox = API.CreateIG_answer()
 useSkillcapeBox.box_name = "Use Skillcape"
@@ -571,7 +571,7 @@ function PotionsPerHour()
         return 0
     end
 
-    local elapsedTime = API.ScriptRuntime() / 3600 -- Convert seconds to hours
+    local elapsedTime = API.ScriptRuntime() / 3600 
     
     return math.floor(GLOBALS.potionsMade / elapsedTime)
 end
@@ -583,7 +583,7 @@ function EstimatedProfit()
 end
 
 function EstimatedProfitPerHour()
-    local elapsedTime = API.ScriptRuntime() / 3600 -- Convert seconds to hours
+    local elapsedTime = API.ScriptRuntime() / 3600
     
     return math.floor(EstimatedProfit() / elapsedTime)    
 end
@@ -749,5 +749,6 @@ function Herblore.makePotions()
         return
     end
 end 
+
 
 return Herblore
