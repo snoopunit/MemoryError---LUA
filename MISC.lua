@@ -125,4 +125,13 @@ function autoRetaliate(set)
 
 end
 
+function doCrafting()
+    waitForCraftingInterface()
+    if clickStart() then
+        while API.CheckAnim(75) do
+            API.RandomSleep2(600,0,250)
+        end
+    end
+end
+
 return Miscellaneous

@@ -210,11 +210,6 @@ local ENEMIES = {
     Oyu = "Oyu the Quietest"
 }
 
-local TIMERS = {
-    Script_Timer = API.SystemTime(),
-    AFK_Timer = API.SystemTime()
-}
-
 local ITEMS = {
     CHARMS = {
         blue_charm = 12163,
@@ -274,30 +269,29 @@ local DEBUFFS = {
     Enh_Excalibur = 14632
 }
 
+local PRAYERS = {
+    --UPDATE WEIRD PRAYER MAGIC DEFINITIONS TO BE ENTRIES IN THIS TABLE   
+}
 local PROTECT_MAGIC = {
     names = {"Olivia the Chronicler", "Oyu the Quietest"},
     BUFF_ID = 25959,
     SPELL_NAME = "Protect from Magic"
 }
-
 local PROTECT_MELEE = {
     names = {"Ahoeitu the Chef", "Xiang the Water-shaper", "Sarkhan the Serpentspeaker"},
     BUFF_ID = 25961,
     SPELL_NAME = "Protect from Melee"
 }
-
 local PROTECT_RANGED = {
     names = {},
     BUFF_ID = 25960,
     SPELL_NAME = "Protect from Ranged"
 }
-
 local PROTECT_NECRO = {
     names = {},
     BUFF_ID = nil, -- add this ID or it wont work
     SPELL_NAME = "Protect from Necromancy"
 }
-
 local SOUL_SPLIT = {
     names = {},
     BUFF_ID = nil, -- add this ID or it wont work
@@ -714,6 +708,7 @@ function inOrOut()
         return "outside"
     end
 end
+
 function resetMenu()
     local key = ''
     while API.Check_Dialog_Open() do
@@ -730,26 +725,7 @@ function resetMenu()
         API.RandomSleep2(600, 0, 250) 
     end    
 end
-function waitForParty()
-    local exitTimer = API.SystemTime()
-    while not PartyInRange(0) do
-        if Check_Timer(exitTimer) > 30000 then
-            print("Didn't find party after 30s!")
-            terminate()
-            return
-        end
-        if API.ReadLPNameP() == p1 or API.ReadLPNameP() == p2 then
-            local leader = findLeader(true)
-            if leader.Distance > 0 then
-                print("Moving to leader")
-                API.DoAction_WalkerF(leader.Tile_XYZ)
-                API.RandomSleep2(650, 0, 250)
-            end
-        end
-        antiban()
-        API.RandomSleep2(600, 0, 250)
-    end
-end
+
 function enterDungeon()
     while not PartyInRange(5) do
         API.logDebug("Waiting for party to be in range")
@@ -776,6 +752,7 @@ function enterDungeon()
         API.RandomSleep2(600, 0, 600)
     end   
 end
+
 function setupCoordOffset()
     local coords = API.PlayerCoord()  
 
@@ -819,192 +796,46 @@ function setupCoordOffset()
     ZONES.LAST_GROUP.BOT_RIGHT = WPOINT:new(START.x + 61, START.y - 5, 0)
 
 end
-function dungeonStart()
-    API.DoAction_WalkerW(ZONES.FIRST_CHECKPOINT)
-    API.RandomSleep2(1200, 0, 250)
-    while API.ReadPlayerMovin2() do
-        antiban()
-        API.RandomSleep2(600, 0, 250)
-    end
-    waitForParty()
-    local exitTimer = API.SystemTime()
-    while EnemiesWithinLocation({}, ZONES.FIRST_STAIRS_FIGHT, false) < 3 do
-        if Check_Timer(exitTimer) > 45000 then
-            print("Didn't find the enemies in 45s!")
-            terminate()
-            return
-        end
-        antiban()
-        API.RandomSleep2(600, 0, 250)
-    end
-end
-function movetoCathedral()
-    if API.ReadLPNameP() == Leader_Name then
-        API.DoAction_WalkerW(ZONES.CATHEDRAL_LEADER_CHECKPOINT)  
-    else
-        API.DoAction_WalkerW(ZONES.CATHEDRAL_FOLLOWER_CHECKPOINT)
-    end
-    API.RandomSleep2(1200, 0, 250)
-    while API.ReadPlayerMovin2() do
-        antiban()
-        API.RandomSleep2(600, 0, 250)
-    end
-end
+
 function combatZone(enemy, zone)
+
     print("Starting zone: "..zone.NAME)
     currentTarget = enemy
     currentZone = zone.NAME
+
     preCombatChecks()
+
     if API.ReadLPNameP() == Leader_Name then
 
-        --[[while EnemiesWithinLocation(currentTarget, zone) > 0 do
-            local npcsToFight = EnemiesWithinLocation(currentTarget, zone, true)
-            print("Enemies to fight: "..tostring(#npcsToFight))
-            for x = 1, #npcsToFight do
-                if npcsToFight[x].Life > 0 then
-                    API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, npcsToFight[x])
-                    API.RandomSleep2(600, 0, 250)
-                    doCombat()
-                end  
-            end
-        end]]
-
-        while API.LocalPlayer_IsInCombat_() do
-            doCombat()
+        toggleAutoRetaliate("off")
+        runToAggroTile()
+        waitForInCombat()
+        runToSafeTile()
+        waitForEnemiesToGroupUp()
+        toggleAutoRetaliate("on")
+        if not EnemiesAreFighting() then
+            fightEnemiesIfNeeded()
         end
-    else
-        local combatTimer = API.SystemTime()
+        waitUntilAllEnemiesWithinRangeAreDead()
         
-        while not API.IsInCombat_(Leader_Name) do
-            if API.IsInCombat_(Leader_Name) then 
-                break
-            end
-            print("Waiting for leader to enter combat...")
-            local elapsedTime = Check_Timer(combatTimer)
-            if (elapsedTime > 30000) then
-                print("Couldn't find leader in combat!")
-                terminate()
-                return    
-            end
-            local leader = findLeader(true)
-            if leader.Distance > 5 then
-                print("Moving to leader")
-                API.DoAction_WalkerF(leader.Tile_XYZ)
-                API.RandomSleep2(650, 0, 250)
-            end
-        end   
-        while API.IsInCombat_(Leader_Name) do
-            print(Leader_Name.." in combat!")
-            
-            if findEnemyNearLeader() then
-                print("Fighting: "..currentTarget)
-                doCombat()
-            end
-            local leader = findLeader(true)
-            if leader.Distance > 5 then
-                print("Moving to leader")
-                API.DoAction_WalkerF(leader.Tile_XYZ)
-                API.RandomSleep2(650, 0, 250)
-            end
-            print("Couldn't find any injured enemies with 10 tiles of leader!")
-            API.RandomSleep2(600, 0, 250)
-            if EnemiesWithinLocation(currentTarget, zone) == 0 then
-                break
-            end
-        end
+    else
+        
+        runToSafeTile()
+        waitForLeaderAtSafeTile()
+        fightEnemiesNearLeader()
+        waitUntilAllEnemiesWithinRangeAreDead()
+
     end
 
-    waitForParty()
-
-    if EnemiesWithinLocation(currentTarget, zone) == 0 then
-        combatState = combatState + 1
-    end
+    
 end
+
 function exitDungeon()
-    local offset = math.random(-2.2)
-    local randomCoords = WPOINT:new(START.x + offset, START.y + offset,0)
-    API.DoAction_WalkerW(randomCoords)
-    waitForParty()
-    local door = API.ReadAllObjectsArray({12}, {doorID}, {})
-    while door.Distance > 1 do
-        if door.Distance < 10 and PartyInRange(4) then break end
-        antiban()
-        API.RandomSleep2(600, 0, 250)
-    end
-    API.DoAction_Object1(0x39,API.OFF_ACT_GeneralObject_route0,{ doorID },50)
-    while not inOrOut() == "outside" do
-        API.RandomSleep2(600, 0, 250)
-    end  
+    
 end
+
 function doDungeon()
-    if combatState == 0 then
-        if dungeonState == 0 then
-            API.logDebug("Initializing dungeon...")
-            if inOrOut() ~= "outside" then
-                print("Move to the dungeon entrance before starting the script!")
-                terminate()
-                return
-            end
-            enterDungeon()
-            API.RandomSleep2(1800, 0, 250)
-            if inOrOut() ~= "inside" then
-                print("Failed to enter the dungeon!")
-                terminate()
-                return
-            end
-            dungeonState = 1   
-        elseif dungeonState == 1 then 
-            if not inOrOut() == "inside" then
-                print("Something's wrong. We're not inside the dungeon after enterDungeon()")
-                terminate()
-                return
-            else
-                setupCoordOffset()
-                dungeonState = 2
-            end
-        elseif dungeonState == 2 then
-            dungeonStart()
-            combatState = 1
-            dungeonState = 3
-        end    
-    elseif combatState == 1 then
-        combatZone(ENEMIES.Elite_Sotapanna, ZONES.FIRST_STAIRS_FIGHT)
-    elseif combatState == 2 then
-        combatZone(ENEMIES.Elite_Sotapanna, ZONES.RIGHT_SIDE_FIGHT)
-    elseif combatState == 3 then
-        combatZone(ENEMIES.Elite_Sotapanna, ZONES.LEFT_SIDE_FIGHT)
-    elseif combatState == 4 then
-        combatZone(ENEMIES.Elite_Sotapanna, ZONES.SECOND_STAIRS_FIGHT)
-    elseif combatState == 5 then
-        combatZone(ENEMIES.Elite_Sotapanna, ZONES.CATHEDRAL_OUTSIDE)
-    elseif combatState == 6 then
-        movetoCathedral()
-        combatZone(ENEMIES.Elite_Sotapanna, ZONES.CATHEDRAL_INSIDE)
-    elseif combatState == 7 then
-        combatZone(ENEMIES.Sarkhan, ZONES.SARKHAN_MINIBOSS)
-    elseif combatState == 8 then
-        combatZone(ENEMIES.Xiang, ZONES.XIANG_MINIBOSS)
-    elseif combatState == 9 then
-        combatZone(ENEMIES.Elite_Sotapanna, ZONES.TRAINING_GROUP)
-    elseif combatState == 10 then
-        combatZone(ENEMIES.Elite_Sotapanna, ZONES.CATHEDRAL_OUTSIDE_TWO)
-    elseif combatState == 11 then
-        combatZone(ENEMIES.Oyu, ZONES.OYU_MINIBOSS)
-    elseif combatState == 12 then
-        combatZone(ENEMIES.Olivia, ZONES.OLIVIA_MINIBOSS)
-    elseif combatState == 13 then
-        combatZone(ENEMIES.Elite_Sotapanna, ZONES.KITCHEN_OUTSIDE)
-    elseif combatState == 14 then
-        combatZone(ENEMIES.Ahoeitu, ZONES.AHOEITU_MINIBOSS)
-    elseif combatState == 15 then
-        combatZone(ENEMIES.Elite_Sotapanna, ZONES.KITCHEN_OUTSIDE_TWO)
-    elseif combatState == 16 then
-        combatZone(ENEMIES.Elite_Sotapanna, ZONES.LAST_GROUP)
-    elseif combatState == 17 then
-        exitDungeon()
-        combatState = 0
-        dungeonState = 0
-    end    
+    
 end
 --ZONE LOGIC
 
