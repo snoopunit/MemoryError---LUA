@@ -9,9 +9,6 @@ local FISH = require("FISHING")
 local HERB = require("HERBLORE")
 local MISC = require("MISC")
 
-local do_stuff = true
-local do_debug = true
-
 local Max_AFK = 5
 
 function Woodcutting_and_Firemaking(treeType, logType)
@@ -58,27 +55,11 @@ API.Write_LoopyLoop(true)
 API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(Max_AFK)
+HERB.drawGUI()
 
 while(API.Read_LoopyLoop())
 do-----------------------------------------------------------------------------------
 
-    if do_debug then
-        --API.DeBuffbar_GetAllIDs(true)
-        --API.Buffbar_GetAllIDs(true)
-        --BANK.getCoords(BANKERS.BURTHORPE)
-
-    end
-
-    if do_stuff then
-
-        if API.GetLocalPlayerName() == "" then    
-            if getLevel("HERBLORE") < 120 then
-                HERB.makePotions()
-            else
-                API.Write_LoopyLoop(false)
-            end
-        end
-        
-    end
-
+    startHerbloreRoutine()
+    
 end----------------------------------------------------------------------------------
