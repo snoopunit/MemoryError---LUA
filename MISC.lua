@@ -3,11 +3,11 @@ local UTILS = require("UTILS")
 
 local Miscellaneous = {}
 
-function getLevel(skill)
+function Miscellaneous.getLevel(skill)
     return API.XPLevelTable(API.GetSkillXP(skill))
 end
 
-function isChooseToolOpen()
+function Miscellaneous.isChooseToolOpen()
     if API.VB_FindPSettinOrder(2874, 0).state == 1277970 then
         return true
     else
@@ -15,7 +15,7 @@ function isChooseToolOpen()
     end
 end
 
-function waitForCraftingInterface()
+function Miscellaneous.waitForCraftingInterface()
     local failTimer = API.SystemTime()
     while not UTILS.isCraftingInterfaceOpen() do
         API.RandomSleep2(600,0,250)
@@ -28,9 +28,9 @@ function waitForCraftingInterface()
     return true
 end
 
-function waitForChooseToolToOpen()
+function Miscellaneous.waitForChooseToolToOpen()
     local failTimer = API.SystemTime()
-    while not isChooseToolOpen() do
+    while not Miscellaneous.isChooseToolOpen() do
         API.RandomSleep2(250,0,250)
         if API.SystemTime() - failTimer > 30000 then
             API.logWarn("Failed to open Choose Tool Menu!")
@@ -41,9 +41,9 @@ function waitForChooseToolToOpen()
     return true
 end
 
-function waitForChooseToolToClose()
+function Miscellaneous.waitForChooseToolToClose()
     local failTimer = API.SystemTime()
-    while isChooseToolOpen() do
+    while Miscellaneous.isChooseToolOpen() do
         API.RandomSleep2(250,0,250)
         if API.SystemTime() - failTimer > 30000 then
             API.logWarn("Failed to close Choose Tool Menu!")
@@ -54,7 +54,7 @@ function waitForChooseToolToClose()
     return true
 end
 
-function chooseToolOption(option)
+function Miscellaneous.chooseToolOption(option)
     if option == "Light" then
         option = 12
     elseif option == "Fletch" then
@@ -68,16 +68,16 @@ function chooseToolOption(option)
         API.logDebug("Crafting Interface option is not valid: ", option)
         return false
     end
-    if not isChooseToolOpen() then
+    if not Miscellaneous.isChooseToolOpen() then
         API.logDebug("Choose Tool Interface not detected!")
         return false
     end
     API.DoAction_Interface(0xffffffff,0xffffffff,0,1179,option,-1,API.OFF_ACT_GeneralInterface_Choose_option)
-    waitForChooseToolToClose()
+    Miscellaneous.waitForChooseToolToClose()
     return true
 end
 
-function clickStart()
+function Miscellaneous.clickStart()
     API.logInfo("Starting production...")
     if not UTILS.isCraftingInterfaceOpen() then
         API.logWarn("Failed to detect Crafting Interface...")
@@ -87,7 +87,7 @@ function clickStart()
     return API.DoAction_Interface(0xffffffff,0xffffffff,0,1370,30,-1,API.OFF_ACT_GeneralInterface_Choose_option)  
 end
 
-function autoRetaliate(set)
+function Miscellaneous.autoRetaliate(set)
 
     function toggleAutoRetaliate()
         if API.DoAction_Interface(0xffffffff,0xffffffff,1,1430,57,-1,API.OFF_ACT_GeneralInterface_route) then
@@ -125,10 +125,11 @@ function autoRetaliate(set)
 
 end
 
-function doCrafting()
-    waitForCraftingInterface()
-    if clickStart() then
+function Miscellaneous.doCrafting()
+    Miscellaneous.waitForCraftingInterface()
+    if Miscellaneous.clickStart() then
         while API.CheckAnim(75) do
+            API.logDebug("Waiting for crafting to finish...")
             API.RandomSleep2(600,0,250)
         end
     end
