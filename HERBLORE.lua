@@ -10,9 +10,10 @@ GLOBALS = {
     useSkillcape = false,
     useWell = false,
     potionType = "None",
-    primaryPreset = "1",
-    secondaryPreset = "2",
     potionsMade = 0,
+    potionsPerHour = 0,
+    estProfit = 0,
+    estProfitPerHour = 0,
     currentState = "Idle"
 }
 
@@ -422,150 +423,6 @@ CLEAN_HERBS = {
     Clean_Argway = { Name = "Clean argway", ID = 20000 }
 }
 
-----GUI----
-local imguiBackground = API.CreateIG_answer()
-imguiBackground.box_name = "imguiBackground"
-imguiBackground.box_start = FFPOINT.new(10, 10, 0)
-imguiBackground.box_size = FFPOINT.new(400, 180, 0) 
-imguiBackground.colour = ImColor.new(71, 71, 71)
-
--- Dropdowns
-local potionTypes = { "Prayer Renewal", "Saradomin Brew", "Super Restore",  "Overload" }
-local primaryPresets = { "Last", "1", "2" }
-local secondaryPresets = { "Last", "1", "2" }
-
-local dropdown_spacing = 40 
-
-local potionTypeCombo = API.CreateIG_answer()
-potionTypeCombo.box_name = "Potion Type"
-potionTypeCombo.box_start = FFPOINT.new(30, 20, 0)
-potionTypeCombo.stringsArr = potionTypes
-potionTypeCombo.string_value = potionTypes[1]
-
-local primaryPreset = API.CreateIG_answer()
-primaryPreset.box_name = "Primary Bank Preset"
-primaryPreset.box_start = FFPOINT.new(30, 20 + dropdown_spacing, 0)
-primaryPreset.stringsArr = primaryPresets
-primaryPreset.string_value = primaryPresets[1]
-
-local secondaryPreset = API.CreateIG_answer()
-secondaryPreset.box_name = "Secondary Bank Preset"
-secondaryPreset.box_start = FFPOINT.new(30, 20 + dropdown_spacing * 2, 0)
-secondaryPreset.stringsArr = secondaryPresets
-secondaryPreset.string_value = secondaryPresets[1]
-
--- Checkboxes
-local checkbox_width = 120
-local checkbox_spacing = 20
-local start_x = 30
-local start_y = 20 + dropdown_spacing * 3 + 10 
-
-local useSkillcapeBox = API.CreateIG_answer()
-useSkillcapeBox.box_name = "Use Skillcape"
-useSkillcapeBox.box_start = FFPOINT.new(start_x, start_y, 0)
-useSkillcapeBox.box_size = FFPOINT.new(checkbox_width, 30, 0)
-useSkillcapeBox.tooltip_text = "Use Herblore Skillcape effect"
-useSkillcapeBox.box_ticked = GLOBALS.useSkillcape
-
-local useWellBox = API.CreateIG_answer()
-useWellBox.box_name = "Use Well"
-useWellBox.box_start = FFPOINT.new(start_x + checkbox_width + checkbox_spacing, start_y, 0)
-useWellBox.box_size = FFPOINT.new(checkbox_width, 30, 0)
-useWellBox.tooltip_text = "Use Portable Well"
-useWellBox.box_ticked = GLOBALS.useWell
-
--- Buttons
-local setButton = API.CreateIG_answer()
-setButton.box_name = "SET"
-setButton.box_start = FFPOINT.new(80, start_y + 50, 0)
-setButton.box_size = FFPOINT.new(80, 30, 0)
-
-local startButton = API.CreateIG_answer()
-startButton.box_name = "START"
-startButton.box_start = FFPOINT.new(220, start_y + 50, 0)
-startButton.box_size = FFPOINT.new(80, 30, 0)
-
-function Herblore.drawGUI()
-    -- Dropdowns
-    if potionTypeCombo.return_click then
-        potionTypeCombo.return_click = false
-        potionType = potionTypeCombo.string_value
-        API.logDebug("Selected Potion Type: "..potionType)
-    end
-    if primaryPreset.return_click then
-        primaryPreset.return_click = false
-        primaryPresets = primaryPreset.string_value
-        API.logDebug("Selected Primary Preset: "..primaryPresets)
-    end
-    if secondaryPreset.return_click then
-        secondaryPreset.return_click = false
-        secondaryPresets = secondaryPreset.string_value
-        API.logDebug("Selected Secondary Preset: "..secondaryPresets)
-    end
-
-    -- Checkboxes
-    if useSkillcapeBox.return_click then
-        useSkillcapeBox.return_click = false
-        useSkillcapeBox.box_ticked = not useSkillcapeBox.box_ticked
-        API.logDebug("Use Skillcape: "..tostring(useSkillcapeBox.box_ticked))
-    end
-    if useWellBox.return_click then
-        useWellBox.return_click = false
-        useWellBox.box_ticked = not useWellBox.box_ticked
-        API.logDebug("Use Well: "..tostring(useWellBox.box_ticked))
-    end
-
-    -- SET button: apply GUI config to GLOBALS
-    if setButton.return_click then
-        setButton.return_click = false
-        GLOBALS.useSkillcape = useSkillcapeBox.box_ticked
-        GLOBALS.useWell = useWellBox.box_ticked
-        -- Convert potionType string to key in POTIONS table
-        local selectedPotionType = potionTypeCombo.string_value
-        for key, value in pairs(POTIONS) do
-            if value.Name == selectedPotionType then
-                GLOBALS.potionType = value
-                break
-            end
-        end
-        GLOBALS.primaryPreset = primaryPreset.string_value
-        GLOBALS.secondaryPreset = secondaryPreset.string_value
-        API.logDebug("Config SET")
-    end
-
-    function setupPresets()
-        if GLOBALS.primaryPreset == "1" then
-            GLOBALS.primaryPreset = 1
-        elseif GLOBALS.primaryPreset == "2" then
-            GLOBALS.primaryPreset = 2
-        end
-
-        if GLOBALS.secondaryPreset == "1" then
-            GLOBALS.secondaryPreset = 1
-        elseif GLOBALS.secondaryPreset == "2" then
-            GLOBALS.secondaryPreset = 2
-        end
-    end
-
-    -- START button: close GUI and start main loop
-    if startButton.return_click then
-        startButton.return_click = false
-        API.DisableImGui()
-        setupPresets()
-        API.logDebug("Script started.")
-    end
-
-    -- Draw GUI
-    API.DrawSquareFilled(imguiBackground)
-    API.DrawComboBox(potionTypeCombo, false)
-    API.DrawComboBox(primaryPreset, false)
-    API.DrawComboBox(secondaryPreset, false)
-    API.DrawCheckbox(useSkillcapeBox)
-    API.DrawCheckbox(useWellBox)
-    API.DrawButton(setButton)
-    API.DrawButton(startButton)
-end
-
 function PotionsPerHour()
     if GLOBALS.potionsMade == 0 then
         return 0
@@ -576,9 +433,8 @@ function PotionsPerHour()
     return math.floor(GLOBALS.potionsMade / elapsedTime)
 end
 
-function EstimatedProfit()
-    local potionType = potionTypeCombo.string_value
-    local profitPerPotion = API.GetExchangePrice(POTIONS.potionType.ID)
+function EstimatedProfit() 
+    local profitPerPotion = API.GetExchangePrice(GLOBALS.potionType.ID)
     return GLOBALS.potionsMade * profitPerPotion
 end
 
@@ -589,32 +445,142 @@ function EstimatedProfitPerHour()
 end
 
 ----METRICS----
-METRICS = {
-    {"Current State: ", tostring(GLOBALS.currentState)},
-    {"Potion Type: ", tostring(potionTypeCombo.string_value)},
-    {"Primary Preset: ", tostring(primaryPresets.string_value)},
-    {"Secondary Preset: ", tostring(secondaryPresets.string_value)},
-    {"# of potions: ", tostring(GLOBALS.potionsMade)},
-    {"# of potions/hr: ", tostring(PotionsPerHour())},
-    {"Est. profit: ", tostring(EstimatedProfit())},
-    {"Est. profit/hr: ", tostring(EstimatedProfitPerHour())},
-}
+function Herblore.metrics() 
+    GLOBALS.potionsPerHour = PotionsPerHour()
+    GLOBALS.estProfit = EstimatedProfit()
+    GLOBALS.estProfitPerHour = EstimatedProfitPerHour()
+    return {
+        {"Current State: ", tostring(GLOBALS.currentState)},
+        {"Potion Type: ", tostring(GLOBALS.potionType.Name)},
+        {"GE Value: ", tostring(API.GetExchangePrice(GLOBALS.potionType.ID))},
+        {"# of potions: ", tostring(GLOBALS.potionsMade)},
+        {"# of potions/hr: ", tostring(GLOBALS.potionsPerHour)},
+        {"Est. profit: ", tostring(GLOBALS.estProfit)},
+        {"Est. profit/hr: ", tostring(GLOBALS.estProfitPerHour)}
+    }
+end
 function Herblore.updatePotionNum(potionsMade)
     GLOBALS.potionsMade = (GLOBALS.potionsMade + potionsMade)
-    API.DrawTable(METRICS)
+    API.DrawTable(Herblore.metrics())
 end
 function Herblore.updateCurrentState(state)
     GLOBALS.currentState = state
-    API.logDebug("Current State: "..state)
-    API.DrawTable(METRICS)
+    API.logDebug("Current State: "..GLOBALS.currentState)
+    API.DrawTable(Herblore.metrics())
 end
 
 ----METRICS----
 
+function Herblore.drawGUI()
+
+    imguiBackground = API.CreateIG_answer()
+    imguiBackground.box_name = "imguiBackground"
+    imguiBackground.box_start = FFPOINT.new(50, 30, 0)
+    imguiBackground.box_size = FFPOINT.new(400, 225, 0)
+    imguiBackground.colour = ImColor.new(99, 99, 99, 225)
+    imguiBackground.string_value = ""
+
+    potionTypes = { "Prayer renewal (3)", "Saradomin brew (3)", "Super restore (3)", "Overload (3)" }
+
+    local gui_center_x = imguiBackground.box_start.x + (imguiBackground.box_size.x / 2)
+    local dropdown_width = 300
+    local dropdown_height = 20
+    local dropdown_x = gui_center_x - (dropdown_width / 2) - 20
+    local dropdown_y = 40 
+
+    potionTypeCombo = API.CreateIG_answer()
+    potionTypeCombo.box_name = "Potion Type"
+    potionTypeCombo.box_start = FFPOINT.new(dropdown_x, dropdown_y, 0)
+    potionTypeCombo.stringsArr = potionTypes
+    potionTypeCombo.string_value = potionTypes[1]
+    potionTypeCombo.colour = ImColor.new(0, 255, 255)
+    potionTypeCombo.tooltip_text = "Choose the potion type you wish to craft."
+
+    --set default potionType 
+    local selectedPotionType = potionTypeCombo.string_value
+    for key, value in pairs(POTIONS) do
+        if value.Name == selectedPotionType then
+            GLOBALS.potionType = value
+            break
+        end
+    end
+
+    local checkbox_width = 140
+    local checkbox_height = 20
+    local checkbox_spacing = 10
+    local checkbox_start_x = dropdown_x
+    local checkbox_start_y = dropdown_y + dropdown_height + 20  
+
+    useSkillcapeBox = API.CreateIG_answer()
+    useSkillcapeBox.box_name = "Use Skillcape"
+    useSkillcapeBox.box_start = FFPOINT.new(checkbox_start_x, checkbox_start_y, 0)
+    useSkillcapeBox.box_size = FFPOINT.new(checkbox_width, checkbox_height, 0)
+    useSkillcapeBox.tooltip_text = "Use Herblore Skillcape effect"
+    useSkillcapeBox.box_ticked = GLOBALS.useSkillcape
+    useSkillcapeBox.colour = ImColor.new(0, 0, 255)
+
+    useWellBox = API.CreateIG_answer()
+    useWellBox.box_name = "Use Well"
+    useWellBox.box_start = FFPOINT.new(checkbox_start_x, checkbox_start_y + checkbox_height + checkbox_spacing, 0)
+    useWellBox.box_size = FFPOINT.new(checkbox_width, checkbox_height, 0)
+    useWellBox.tooltip_text = "Use Portable Well"
+    useWellBox.box_ticked = GLOBALS.useWell
+    useWellBox.colour = ImColor.new(0, 0, 255)
+
+    makeUnfBox = API.CreateIG_answer()
+    makeUnfBox.box_name = "Make UNF"
+    makeUnfBox.box_start = FFPOINT.new(checkbox_start_x, checkbox_start_y + (checkbox_height + checkbox_spacing) * 2, 0)
+    makeUnfBox.box_size = FFPOINT.new(checkbox_width, checkbox_height, 0)
+    makeUnfBox.tooltip_text = "Make unfinished potions"
+    makeUnfBox.box_ticked = GLOBALS.makeUnf
+    makeUnfBox.colour = ImColor.new(0, 0, 255)
+
+    -- Center START and QUIT buttons
+    local button_y = checkbox_start_y + (checkbox_height + checkbox_spacing) * 3 + 10
+    local button_width = 80
+    local button_height = 30
+    local button_spacing = 20
+    local total_button_width = button_width * 2 + button_spacing
+    local buttons_start_x = gui_center_x - (total_button_width / 2)
+
+    startButton = API.CreateIG_answer()
+    startButton.box_name = "START"
+    startButton.box_start = FFPOINT.new(buttons_start_x - 40, button_y, 0)
+    startButton.box_size = FFPOINT.new(button_width, button_height, 0)
+    startButton.colour = ImColor.new(0, 0, 255, 255)
+    startButton.tooltip_text = "Start the script."
+
+    quitButton = API.CreateIG_answer()
+    quitButton.box_name = "QUIT"
+    quitButton.box_start = FFPOINT.new(buttons_start_x + button_width + button_spacing - 20, button_y, 0)
+    quitButton.box_size = FFPOINT.new(button_width, button_height, 0)
+    quitButton.colour = ImColor.new(0, 0, 255, 255)
+    quitButton.tooltip_text = "Close the script."
+
+    API.DrawSquareFilled(imguiBackground)
+    API.DrawComboBox(potionTypeCombo)
+    API.DrawCheckbox(useSkillcapeBox)
+    API.DrawCheckbox(useWellBox)
+    API.DrawCheckbox(makeUnfBox)
+    API.DrawBox(startButton)
+    API.DrawBox(quitButton)
+
+end
+
+function Herblore.clearGUI()
+    imguiBackground.remove = true
+    potionTypeCombo.remove = true
+    useSkillcapeBox.remove = true
+    useWellBox.remove = true
+    makeUnfBox.remove = true
+    startButton.remove = true
+    quitButton.remove = true
+end
+
 function Herblore.makeVials()
     API.logDebug("Clicking Water Vials...")
-    if Inventory:Contains(POTIONS.Water_Vial) then
-        if not Inventory:DoAction(POTIONS.Water_Vial,1,API.OFF_ACT_GeneralInterface_route) then
+    if Inventory:Contains(POTIONS.Water_Vial.ID) then
+        if not Inventory:DoAction(POTIONS.Water_Vial.Name,1,API.OFF_ACT_GeneralInterface_route) then
             API.logWarn("Failed to Inventory:DoAction on Water Vials!")
             return false
         else
@@ -631,9 +597,9 @@ function Herblore.mixPotionsAtPortableWell()
     return API.DoAction_Object1(0x29,API.OFF_ACT_GeneralObject_route0,{ OBJECTS.Portable_Well },50)
 end
 
-function Herblore.mixPotionsInventory(potionID)
-    API.logDebug("Inventory:DoAction 'Mix' on ",tostring(potionID))
-    return Inventory:DoAction(potionID, 1, API.OFF_ACT_GeneralInterface_route)
+function Herblore.mixPotionsInventory()
+    API.logDebug("Inventory:DoAction 'Mix'")
+    return Inventory:DoAction("unfinished", 1, API.OFF_ACT_GeneralInterface_route)
 end
 
 function Herblore.cleanHerbs(herbID)
@@ -658,12 +624,11 @@ end
 
 function Herblore.makePotions() 
 
-    API.logDebug("Banking")
     Herblore.updateCurrentState("Banking...")
     
     if GLOBALS.makeUnf then
 
-        if BANK.doPreset(GLOBALS.primaryPreset) then
+        if BANK.doPreset(1) then
 
             if not Inventory:IsFull() then
                 API.logWarn("Didn't grab a full inventory!")
@@ -675,7 +640,6 @@ function Herblore.makePotions()
 
                 if GLOBALS.useSkillcape then
 
-                    API.logDebug("Using herblore skillcape...")
                     Herblore.updateCurrentState("Using herblore skillcape...")
 
                     if not Herblore.skillCape() then
@@ -686,11 +650,10 @@ function Herblore.makePotions()
 
                 else
 
-                    API.logDebug("Cleaning herbs...")
                     Herblore.updateCurrentState("Cleaning herbs...")
 
                     if Herblore.cleanHerbs(GLOBALS.herbType.ID) then
-                        doCrafting()
+                        MISC.doCrafting()
                     else 
                         API.logWarn("Failed to clean herbs!")
                         API.Write_LoopyLoop(false)
@@ -701,10 +664,9 @@ function Herblore.makePotions()
 
             end
 
-            if HERB.makeVials() then
-                API.logDebug("Making unfinished potions...")
+            if Herblore.makeVials() then
                 Herblore.updateCurrentState("Making unfinished potions...")
-                doCrafting()
+                MISC.doCrafting()
             else
                 API.logWarn("Shutting down!") 
                 API.Write_LoopyLoop(false)
@@ -719,39 +681,29 @@ function Herblore.makePotions()
 
     end
     
-    API.logDebug("Banking...")
     Herblore.updateCurrentState("Banking...")
 
-    if BANK.doPreset(GLOBALS.secondaryPreset) then
+    if BANK.doPreset(2) then
         if not Inventory:IsFull() then
             API.logWarn("Didn't grab a full inventory!")
             API.Write_LoopyLoop(false)
             return
         end
         if GLOBALS.useWell then
-            API.logDebug("Using Portable Well...")
             Herblore.updateCurrentState("Using Portable Well...")
-            if HERB.mixPotionsAtPortableWell() then
-                doCrafting()
+            if Herblore.mixPotionsAtPortableWell() then
+                MISC.doCrafting()
             else
                 API.logWarn("Unable to mix at portable well!") 
                 API.Write_LoopyLoop(false)
                 return
             end
         else
-            API.logDebug("Crafting Potions...")
             Herblore.updateCurrentState("Crafting Potions...")
-            if Inventory:Contains(GLOBALS.potionType.ID) then
-                API.logDebug("Mixing potions in inventory...")
-                if HERB.mixPotionsInventory(GLOBALS.potionType.ID) then
-                    doCrafting()
-                else
-                    API.logWarn("Failed to mix potions in inventory!")
-                    API.Write_LoopyLoop(false)
-                    return
-                end
+            if Herblore.mixPotionsInventory() then
+                MISC.doCrafting()
             else
-                API.logWarn("No potions found in inventory!")
+                API.logWarn("Failed to mix potions in inventory!")
                 API.Write_LoopyLoop(false)
                 return
             end
@@ -762,6 +714,69 @@ function Herblore.makePotions()
         return
     end
 
+    Herblore.updateCurrentState("Updating METRICS")
+    Herblore.updatePotionNum(Inventory:GetItemAmount(GLOBALS.potionType.Name))
+    API.DrawTable(Herblore.metrics())
+
 end 
+
+function startHerbloreRoutine()
+
+    while GLOBALS.currentState == "Idle" do
+
+        if potionTypeCombo.return_click then
+            potionTypeCombo.return_click = false
+            local selectedPotionType = potionTypeCombo.string_value
+            for key, value in pairs(POTIONS) do
+                if value.Name == selectedPotionType then
+                    GLOBALS.potionType = value
+                    break
+                end
+            end
+            API.logDebug("Selected Potion Type: "..GLOBALS.potionType.Name)
+        end
+
+        if useSkillcapeBox.return_click then
+            useSkillcapeBox.return_click = false
+            GLOBALS.useSkillcape = useSkillcapeBox.box_ticked
+            API.logDebug("Use Skillcape: "..tostring(useSkillcapeBox.box_ticked))
+        end
+
+        if useWellBox.return_click then
+            useWellBox.return_click = false
+            GLOBALS.useWell = useWellBox.box_ticked
+            API.logDebug("Use Well: "..tostring(useWellBox.box_ticked))
+        end
+
+        if makeUnfBox.return_click then
+            makeUnfBox.return_click = false
+            GLOBALS.makeUnf = makeUnfBox.box_ticked
+            API.logDebug("Make UNF: "..tostring(makeUnfBox.box_ticked))
+        end
+
+        if startButton.return_click then
+            startButton.return_click = false
+            if GLOBALS.potionType == "None" then
+                API.logWarn("Potion Type not selected!")
+            else
+                Herblore.clearGUI()
+                Herblore.updateCurrentState("Starting...")
+            end
+        end
+
+        if quitButton.return_click then
+            API.Write_LoopyLoop(false)
+            return
+        end
+
+        API.RandomSleep2(250,0,250)
+
+    end
+
+    if GLOBALS.currentState ~= "Idle" then
+        Herblore.makePotions()
+    end
+
+end
 
 return Herblore
