@@ -622,6 +622,14 @@ function Herblore.skillCape()
     end
 end
 
+function Herblore.findGrimyHerbs()
+    for x, herb in pairs(GRIMY_HERBS) do
+        if Inventory:Contains(herb.Name) then
+            return herb
+        end
+    end
+end
+
 function Herblore.makePotions() 
 
     Herblore.updateCurrentState("Banking...")
@@ -635,8 +643,10 @@ function Herblore.makePotions()
                 API.Write_LoopyLoop(false)
                 return
             end
+            
+            local herbToClean = Herblore.findGrimyHerbs()
 
-            if Inventory:Contains("Grimy") then
+            if herbToClean then
 
                 if GLOBALS.useSkillcape then
 
@@ -652,7 +662,7 @@ function Herblore.makePotions()
 
                     Herblore.updateCurrentState("Cleaning herbs...")
 
-                    if Herblore.cleanHerbs(GLOBALS.herbType.ID) then
+                    if Herblore.cleanHerbs(herbToClean.ID) then
                         MISC.doCrafting()
                     else 
                         API.logWarn("Failed to clean herbs!")
