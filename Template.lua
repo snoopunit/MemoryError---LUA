@@ -3,11 +3,14 @@ print("TESTING TEMPLATE")
 local API = require("api")
 local UTILS = require("UTILS")
 local WC = require("WOODCUTTING")
-local BANK = require("BANKING")
-local FIRE = require("FIREMAKING")
-local FISH = require("FISHING")
-local HERB = require("HERBLORE")
-local MISC = require("MISC")
+local COOK = require("lib/COOKING")
+local BANK = require("lib/BANKING")
+local FIRE = require("lib/FIREMAKING")
+local FISH = require("lib/FISHING")
+local HERB = require("lib/HERBLORE")
+local MINE = require("lib/MINING")
+local MISC = require("lib/MISC")
+local TASK = require("lib/TASK")
 
 local makeIncense = true
 local Max_AFK = 5
@@ -33,16 +36,11 @@ function setTreeAndLogType()
         local chosenTree, chosenLog = TIERS[1].tree, TIERS[1].log -- default to normal
 
         for i = #TIERS, 1, -1 do
-        
             local t = TIERS[i]
-
             if wcLvl >= t.wc and fmLvl >= t.fm then
-
                 chosenTree, chosenLog = t.tree, t.log
-                break
-                
+                break       
             end
-
         end
 
         return chosenTree, chosenLog
@@ -101,14 +99,13 @@ function Fishing_and_Banking(spotType, bankType)
 end
 
 --main loop
-
 API.Write_LoopyLoop(true)
 API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(Max_AFK)
 
---HERB.drawGUI()
-setTreeAndLogType()
+HERB.drawGUI()
+--setTreeAndLogType()
 
 
 while(API.Read_LoopyLoop())
@@ -117,8 +114,8 @@ do------------------------------------------------------------------------------
 
 
 
-    --startHerbloreRoutine()
-    Woodcutting_and_Firemaking(treeToUse, logToUse)
+    startHerbloreRoutine()
+    ---Woodcutting_and_Firemaking(treeToUse, logToUse)
 
     
 
