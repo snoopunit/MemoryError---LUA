@@ -197,7 +197,11 @@ function Miscellaneous.autoRetaliate(set)
 end
 
 function Miscellaneous.detectMakeXProgressWindow()
-    return API.VB_FindPSettinOrder({{1251, 35, 0},{1251, 35, 1},{1251, 35, 2}})
+    if API.VB_FindPSettinOrder(1251, 35).state == 0 then
+        return true
+    else
+        return false
+    end
 end
 
 function Miscellaneous.doCrafting()
