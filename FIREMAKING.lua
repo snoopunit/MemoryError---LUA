@@ -1,30 +1,18 @@
 local API = require("api")
-
 local WC = require("WOODCUTTING")
-
-
+local MISC = require("MISC")
 
 local Firemaking = {}
 
-
-
 local ANIM = {
-
     CHOPPING = 36456,
-
     LIGHTING = 16783
-
 }
 
-
-
---@return table/boolean -- returns table of obj if we find a fire or false if we dont
-
+---@return num/boolean -- returns number of objs if we find a fire or false if we dont
 function Firemaking.findFires()
 
     local fires = API.ReadAllObjectsArray({0},{-1},{"Fire"})
-
-
 
     if #fires > 0 then
 
@@ -40,13 +28,9 @@ function Firemaking.findFires()
 
         end
 
-
-
         API.logDebug("Found: "..tostring(#newFires).." fire(s).")
 
-    
-
-        return newFires
+        return #newFires
 
     else
 
@@ -56,10 +40,7 @@ function Firemaking.findFires()
 
 end
 
-
-
---@return boolean -- returns true if the Cook/Add to Fire interface is present
-
+---@return boolean -- returns true if the Cook/Add to Fire interface is present
 function Firemaking.findBonfireInterface()
 
    
@@ -70,136 +51,29 @@ function Firemaking.findBonfireInterface()
 
 end
 
+---@return boolean -- returns true if we Use action on a fire
+function Firemaking.useFire()
 
-
---@return boolean -- returns true if we Use action on a fire
-
-function useFire()
-
-    local fires = Firemaking.findFires()
-
-    
-
-    if not fires then
-
+    if not Firemaking.findFires() then
         print("No fires found")
-
         return false
-
     end
 
-
-
-    for _, fire in pairs(fires) do
-
-
-
-        API.DoAction_Object1(0x2e,API.GeneralObject_route_useon,{ fire.Id },50)
-
-        
-
-
-
-        if API.DoAction_Object1(0x2e,API.GeneralObject_route_useon,{  },50) then
-
+    if Interact:Object("Fire", "Use", 30) then
+        API.RandomSleep2(800, 0, 600)
+        while API.CheckAnim(60) do
             API.RandomSleep2(800, 0, 600)
-
-            while API.ReadPlayerMovin2() do
-
-                API.RandomSleep2(50, 0, 50)
-
-            end
-
-            return true
-
         end
-
+        if MISC.isChooseToolOpen() then
+            return true
+        end
     end
-
-
 
     return false
 
-
-
 end
 
-
-
-function Firemaking.useLogOnFire(logType)
-
-    print("Clicking log: "..logType.name)
-
-    if Inventory:DoAction(logType.id, 3, API.OFF_ACT_GeneralInterface_route) then
-
-        if not Interact:Object("Fire", "Use "..logType.name, 10) then
-
-            API.logWarn("Failed to interact with fire using "..logType.name)
-            return false
-
-        end
-
-    end
-
-    API.RandomSleep2(1200,0,600)
-
-    if API.CheckAnim(60) then
-
-        API.logInfo("Successfully added "..logType.name.." to the fire.")
-        return true
-
-    else
-
-        API.logWarn("Failed to add "..logType.name.." to the fire.")
-        return false
-
-    end
-
-end
-
-
-
---@return boolean -- returns true if we successfully 'add to bonfire' action on a fire
-
-function Firemaking.addToBonfire()
-
-
-
-    if not Firemaking.findBonfireInterface() then
-
-        API.logWarn("Couldn't find bonfire interface!")
-
-        return false
-
-    end
-
-    API.LogInfo("Adding "..logType.name.."s to the bonfire.")
-
-    return API.DoAction_Interface(0xffffffff,0xffffffff,0,1179,17,-1,API.OFF_ACT_GeneralInterface_Choose_option)
-
-
-
-end
-
-
-
---@param logType -- keyValue from LOGS table -- requires WOODCUTTING.lua
-
---@return boolean -- returns true if we find a log in the inv and light action on it
-
-function Firemaking.lightLog(logType)
-
-    API.logInfo("Starting a "..logType.name.." fire.")
-
-    --return API.DoAction_Inventory1(logType.id,0,2,API.OFF_ACT_GeneralInterface_route)
-    return Inventory:DoAction(logType.id, 2, API.OFF_ACT_GeneralInterface_route)
-
-end
-
-
-
---@return obj/nil -- returns the brazier obj or nil if none foudn
-
+---@return obj/nil -- returns the brazier obj or nil if none foudn
 function Firemaking.findBrazier()
 
     API.logWarn("updateTrees() function has not been implemented yet!")
@@ -208,10 +82,7 @@ function Firemaking.findBrazier()
 
 end
 
-
-
---@return boolean -- returns true if we successfully action on the brazier
-
+---@return boolean -- returns true if we successfully action on the brazier
 function Firemaking.useBrazier()
 
     API.logWarn("updateTrees() function has not been implemented yet!")
@@ -220,23 +91,62 @@ function Firemaking.useBrazier()
 
 end
 
+---@return boolean -- logType -- keyValue from LOGS table -- action -- 1-Craft, 2-Light, 3-Use, 4-Drop
+function Firemaking.useLogs(logType, action)
 
-
-function Firemaking.makeIncense(logType)
-
-    API.logInfo("Making incense with "..logType.name..".")
-
-    return Inventory:DoAction(logType.id, 1, API.OFF_ACT_GeneralInterface_route)
+    if action ~= 1 and action ~= 2 and action ~= 3 and action ~= 4 then
+        API.logDebug("Firemaking useLogs action is not valid: ", action)
+        return false
+    end
+    return Inventory:DoAction(logType.id, action, API.OFF_ACT_GeneralInterface_route)
 
 end
 
+---@return boolean -- returns true if we successfully 'add to bonfire' on an existing fire
+function Firemaking.addToBonfire(logType)
 
+    if Firemaking.useFire() then
+        MISC.chooseToolOption("Bonfire")
+        MISC.waitForChooseToolToClose()
+    end
 
-function Firemaking.craftIncense()
+    API.RandomSleep2(1200,0,600)
 
-    API.logInfo("Crafting incense.")
+    if API.CheckAnim(60) then
+        API.logInfo("Successfully added "..logType.name.." to the fire.")
+        return true
+    else
+        API.logWarn("Failed to add "..logType.name.." to the fire.")
+        return false
+    end
 
-    return API.DoAction_Interface(0xffffffff,0xffffffff,0,1370,30,-1,API.OFF_ACT_GeneralInterface_Choose_option)
+end
+
+function Firemaking.makeIncense(logType)
+
+    if not Firemaking.useLogs(logType, 1) then
+        API.logWarn("Failed to use logs: "..logType.name)
+        return false
+    else
+        API.logInfo("Using logs: "..logType.name)
+        API.RandomSleep2(1200, 0, 600)
+        if MISC.isChooseToolOpen() then
+            MISC.chooseToolOption("Incense")
+            API.RandomSleep2(1200, 0, 600)
+        end
+        if not MISC.doCrafting() then
+            API.logWarn("Failed to start crafting incense with "..logType.name)
+            return false
+        end
+    end
+
+    if API.CheckAnim(60) then
+        API.logInfo("Successfully made incense with "..logType.name..".")
+        return true
+    else
+        API.logWarn("Failed to make incense with "..logType.name..".")
+        return false
+    end
 
 end
 

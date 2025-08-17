@@ -1,10 +1,8 @@
 local API = require("api")
-
-
+local UTILS = require("UTILS")
+local MISC = require("MISC")
 
 local Woodcutting = {}
-
-
 
 TREES = {
 
@@ -106,65 +104,10 @@ WOOD_BOXES = {
 
 }
 
-
-
-
 ---@param object TREES.treeType
 ---@return boolean -- returns true if we successfully start chopping a tree
 function Woodcutting.chop(treeType)
-
-    --[[API.logDebug("Searching for: "..treeType.name.."s")
-    local trees = API.ReadAllObjectsArray({12},{-1},{treeType.name})
-    API.logDebug("Found: "..#trees)
-    if #trees == nil or #trees == 0 then
-
-        API.logWarn("Couldn't find any: "..treeType.name.."s")
-
-        API.Write_LoopyLoop(false)
-
-        return false  
-
-    end
-    local validTrees = {}
-    for _, tree in ipairs(trees) do
-
-        if tree.Action == "Chop down" and tree.Bool1 == 0 and tree.Distance < 30 then
-
-            table.insert(validTrees, tree)
-
-        end
-
-    end
-    API.logDebug("Valid: "..#validTrees)
-    local playerX, playerY = API.PlayerCoord().x, API.PlayerCoord().y
-    -- Sort trees by distance
-    table.sort(validTrees, function(a, b)
-
-        local distA = a.Distance or API.Math_DistanceW(a.Tile.x, a.Tile.y, playerX, playerY)
-
-        local distB = b.Distance or API.Math_DistanceW(b.Tile.x, b.Tile.y, playerX, playerY)
-
-        return distA < distB
-
-    end)
-    for _, tree in ipairs(validTrees) do
-
-        if API.DoAction_Object_r(0x3b,API.OFF_ACT_GeneralObject_route0,{ tree.Id },50,WPOINT.new(tree.Tile_XYZ.x,tree.Tile_XYZ.y,0),5) then
-
-            API.RandomSleep2(800, 0, 250)
-
-            if API.ReadPlayerMovin2() or API.CheckAnim(50) then
-
-                return true
-
-            end
-
-        end
-
-    end]]
-
     return Interact:Object(treeType.name, "Chop down", 30)
-
 end
 
 ---@return any -- returns the key of wood box found in inv or nil if none
@@ -204,59 +147,9 @@ function Woodcutting.findWoodBox()
 
 end
 
----@return string|nil -- returns the key of log type found in inv or nil if none
-function Woodcutting.findLogType()
-
-    local invItems = API.ReadInvArrays33()
-
-
-
-    API.logDebug("Found " .. #invItems .. " items in inventory")
-
-
-
-    for logKey, logInfo in pairs(LOGS) do
-
-        for _, item in ipairs(invItems) do
-
-            if item.textitem == "<col=ff9040>" .. logInfo.name then
-
-                API.logDebug("Found: " .. logInfo.name)
-
-                if logInfo.id ~= item.itemid1 then
-
-                    API.logDebug("Updating " .. logInfo.name .. " ID from " .. (logInfo.id or "nil") .. " to " .. item.itemid1)
-
-                    Woodcutting.LOGS[logKey].id = item.itemid1
-
-                end
-
-                API.logDebug("Log type found: " .. logKey)
-
-                return logKey  -- This returns the actual key from the LOGS table
-
-            end
-
-        end
-
-    end
-
-
-
-    API.logDebug("No logs found in inventory")
-
-    return nil
-
-end
-
-
-
 ---@param boxType table -- The wood box entry from Woodcutting.WOOD_BOXES table
-
 ---@param logType table -- The log type entry from Woodcutting.LOGS table
-
 ---@return number -- returns the # of logs of the specified type within the Wood Box
-
 function Woodcutting.woodBoxCount(boxType, logType) 
 
     if not boxType then
@@ -317,12 +210,8 @@ function Woodcutting.woodBoxCount(boxType, logType)
 
 end
 
-
-
 ---@param boxId number
-
 ---@return capacity number -- returns the max capacity of current wood box or nil if none
-
 function Woodcutting.woodBoxCapacity(boxType)
 
     local baseCapacities = {
@@ -367,10 +256,7 @@ function Woodcutting.woodBoxCapacity(boxType)
 
 end
 
-
-
 ---@return boolean -- returns true if the Wood Box gets filled with an # of items
-
 function Woodcutting.fillWoodBox()
 
     local box = Woodcutting.findWoodBox()
@@ -385,10 +271,7 @@ function Woodcutting.fillWoodBox()
 
 end
 
-
-
 ---@return boolean -- returns true if we activate the use option for our Wood Box
-
 function Woodcutting.useWoodBox()
 
     local box = Woodcutting.findWoodBox()
@@ -397,14 +280,9 @@ function Woodcutting.useWoodBox()
 
 end
 
-
-
 ---@param boxID number -- Id of wood box
-
 ---@param itemID number -- Id of item to check
-
 ---@return boolean -- returns true if the Wood Box is full
-
 function Woodcutting.woodBoxFull(boxType, logType)
 
     --API.logDebug("Checking if "..Woodcutting.WOOD_BOXES[boxType].name.." is full")
@@ -419,130 +297,8 @@ function Woodcutting.woodBoxFull(boxType, logType)
 
 end
 
-
-
---@return boolean -- returns trus if we successfully use ore box on the bank. waits for us to reach out destination
-
-function Woodcutting.useBoxOnBank()
-
-    local banks = API.ReadAllObjectsArray({0,1,12},{-1},{"Banker","Counter","Bank Chest","Bank Booth"})
-
-
-
-    if banks == nil or #bank == 0 then
-
-        API.logWarn("Didn't find any banks to deposit with!")
-
-        return false
-
-    end
-
-
-
-    local box = Woodcutting.findWoodBox()
-
-
-
-    if not box then
-
-        API.logWarn("Didn't find any wood boxes to deposit with!")
-
-        return false
-
-    end
-
-
-
-    local log = Woodcutting.findLogType()
-
-
-
-    if not log then
-
-        API.logWarn("Didn't find any logs!")
-
-        return false
-
-    end
-
-
-
-    local ValidBanks = {}
-
-
-
-    for _, bank in pairs(banks) do
-
-        if bank.Action == "Bank" or bank.Action == "Use" then
-
-            table.insert(bank, validBanks)
-
-        end
-
-    end
-
-
-
-    if #validBanks == 0 then
-
-        API.logWarn("Didn't find any valid banks!")
-
-        return false
-
-    end
-
-
-
-    for _, bank in pairs(validBanks) do
-
-        Woodcutting.useWoodBox()
-
-        API.RandomSleep2(600, 0, 600)
-
-        if API.DoAction_Object1(0x24,API.OFF_ACT_GeneralObject_route00,{ bank.Id },50) then
-
-            break
-
-        end
-
-    end
-
-
-
-    API.RandomSleep2(800, 0, 600)
-
-
-
-    while API.ReadPlayerMovin2() do
-
-        API.RandomSleep2(50, 0, 50)
-
-    end
-
-
-
-    API.RandomSleep2(1200,0,1200)
-
-
-
-    if Woodcutting.woodBoxCount(box, log) > 0 then
-
-        API.logWarn("Box count: "..tostring(Woodcutting.woodBoxCount(box, log)))
-
-        return false
-
-    end
-
-    return true
-
-end
-
-
-
 ---@param treeType string
-
 ---@return boolean -- returns true when inv is full. fills the wood box along the way if we have one
-
 function Woodcutting.gather(treeType, logType)
 
     local boxType = Woodcutting.findWoodBox()
@@ -604,7 +360,5 @@ function Woodcutting.gather(treeType, logType)
     return true
 
 end
-
-
 
 return Woodcutting
