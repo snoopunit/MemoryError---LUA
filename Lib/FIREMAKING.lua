@@ -96,9 +96,17 @@ function Firemaking.useLogs(logType, action)
 
     if action ~= 1 and action ~= 2 and action ~= 3 and action ~= 4 then
         API.logDebug("Firemaking useLogs action is not valid: ", action)
+        API.Write_LoopyLoop(false)
         return false
     end
-    return Inventory:DoAction(logType.id, action, API.OFF_ACT_GeneralInterface_route)
+    
+    local result = Inventory:DoAction(logType.id, action, API.OFF_ACT_GeneralInterface_route)
+
+    if not result then
+        API.logDebug("Failed to do action: "..tostring(action).." on logs: "..logType.name)
+        API.Write_LoopyLoop(false)
+        return false
+    end
 
 end
 
@@ -126,6 +134,7 @@ function Firemaking.makeIncense(logType)
 
     if not Firemaking.useLogs(logType, 1) then
         API.logWarn("Failed to use logs: "..logType.name)
+        API.Write_LoopyLoop(false)
         return false
     else
         API.logInfo("Using logs: "..logType.name)
@@ -144,6 +153,7 @@ function Firemaking.makeIncense(logType)
         return true
     else
         API.logWarn("Failed to make incense with "..logType.name..".")
+        API.Write_LoopyLoop(false)
         return false
     end
 

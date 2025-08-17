@@ -57,13 +57,11 @@ function Woodcutting_and_Firemaking(treeType, logType)
         while Inventory:GetItemAmount(logType.name) > 2 do
             if makeIncense then
                 if not FIRE.makeIncense(logType) then
-                    API.Write_LoopyLoop(false)
                     return
                 end
             else
                 if not FIRE.addToBonfire(logType) then
                     if not FIRE.useLogs(logType, 2) then
-                        API.Write_LoopyLoop(false)
                         return
                     end
                 end
