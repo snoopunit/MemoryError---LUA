@@ -1,12 +1,6 @@
 local API = require("api")
-
 local UTILS = require("UTILS")
-
-
-
 local Miscellaneous = {}
-
-
 
 function Miscellaneous.getLevel(skill)
 
@@ -208,7 +202,7 @@ function Miscellaneous.doCrafting()
 
     if Miscellaneous.clickStart() then
         API.RandomSleep2(800,0,600)
-        if API.CheckAnim(60) then
+        if not UTILS.isCraftingInterfaceOpen() then
             return true
         else
             return false        
