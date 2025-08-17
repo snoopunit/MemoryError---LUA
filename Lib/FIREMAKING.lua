@@ -136,8 +136,8 @@ function Firemaking.makeIncense(logType)
         if MISC.isChooseToolOpen() then
             MISC.chooseToolOption("Incense")
             API.RandomSleep2(1200, 0, 600)
-            MISC.doCrafting()
         end
+        MISC.doCrafting()
     end
 
     if API.isProcessing() then
