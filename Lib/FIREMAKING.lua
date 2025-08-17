@@ -101,7 +101,7 @@ function Firemaking.useLogs(logType, action)
     end
 
     return Inventory:DoAction(logType.id, action, API.OFF_ACT_GeneralInterface_route)
-    
+
 end
 
 ---@return boolean -- returns true if we successfully 'add to bonfire' on an existing fire
@@ -136,6 +136,7 @@ function Firemaking.makeIncense(logType)
         if MISC.isChooseToolOpen() then
             MISC.chooseToolOption("Incense")
             API.RandomSleep2(1200, 0, 600)
+            MISC.doCrafting()
         end
     end
 
