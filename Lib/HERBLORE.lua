@@ -34,95 +34,50 @@ OBJECTS = {
 }
 
 POTIONS = {
-
     -- Unfinished potions
-
     Guam_Potion_Unfinished = { Name = "Guam potion (unfinished)", ID = 91 },
-
     Marrentill_Potion_Unfinished = { Name = "Marrentill potion (unfinished)", ID = 93 },
-
     Tarromin_Potion_Unfinished = { Name = "Tarromin potion (unfinished)", ID = 95 },
-
     Harralander_Potion_Unfinished = { Name = "Harralander potion (unfinished)", ID = 97 },
-
     Ranarr_Potion_Unfinished = { Name = "Ranarr potion (unfinished)", ID = 99 },
-
     Irit_Potion_Unfinished = { Name = "Irit potion (unfinished)", ID = 101 },
-
     Avantoe_Potion_Unfinished = { Name = "Avantoe potion (unfinished)", ID = 103 },
-
     Kwuarm_Potion_Unfinished = { Name = "Kwuarm potion (unfinished)", ID = 105 },
-
     Cadantine_Potion_Unfinished = { Name = "Cadantine potion (unfinished)", ID = 107 },
-
     Dwarf_Weed_Potion_Unfinished = { Name = "Dwarf weed potion (unfinished)", ID = 109 },
-
     Torstol_Potion_Unfinished = { Name = "Torstol potion (unfinished)", ID = 111 },
-
     Snapdragon_Potion_Unfinished = { Name = "Snapdragon potion (unfinished)", ID = 3004 },
-
     Toadflax_Potion_Unfinished = { Name = "Toadflax potion (unfinished)", ID = 3002 },
-
     Spirit_Weed_Potion_Unfinished = { Name = "Spirit weed potion (unfinished)", ID = 12181 },
-
     Lantadyme_Potion_Unfinished = { Name = "Lantadyme potion (unfinished)", ID = 2483 },
-
     Wergali_Potion_Unfinished = { Name = "Wergali potion (unfinished)", ID = 14856 },
-
     Rogue_Purse_Potion_Unfinished = { Name = "Rogue purse potion (unfinished)", ID = 4840 },
-
     Fellstalk_Potion_Unfinished = { Name = "Fellstalk potion (unfinished)", ID = 21628 },
-
     Argway_Potion_Unfinished = { Name = "Argway potion (unfinished)", ID = 20000 },
-
     Shengo_Potion_Unfinished = { Name = "Shengo potion (unfinished)", ID = 20001 },
-
     Samaden_Potion_Unfinished = { Name = "Samaden potion (unfinished)", ID = 20002 },
-
     Ugune_Potion_Unfinished = { Name = "Ugune potion (unfinished)", ID = 19999 },
-
     Erzille_Potion_Unfinished = { Name = "Erzille potion (unfinished)", ID = 19998 },
-
     Sagewort_Potion_Unfinished = { Name = "Sagewort potion (unfinished)", ID = 17538 },
-
     Valerian_Potion_Unfinished = { Name = "Valerian potion (unfinished)", ID = 17540 },
-
     Aloe_Potion_Unfinished = { Name = "Aloe potion (unfinished)", ID = 17542 },
-
     Wormwood_Potion_Unfinished = { Name = "Wormwood potion (unfinished)", ID = 17544 },
-
     Magebane_Potion_Unfinished = { Name = "Magebane potion (unfinished)", ID = 17546 },
-
     Featherfoil_Potion_Unfinished = { Name = "Featherfoil potion (unfinished)", ID = 17548 },
-
     Winters_Grip_Potion_Unfinished = { Name = "Winter's grip potion (unfinished)", ID = 17550 },
-
     Lycopus_Potion_Unfinished = { Name = "Lycopus potion (unfinished)", ID = 17552 },
-
     Buckthorn_Potion_Unfinished = { Name = "Buckthorn potion (unfinished)", ID = 17554 },
-
     Arbuck_Potion_Unfinished = { Name = "Arbuck potion (unfinished)", ID = 48241 },
-
     Bloodweed_Potion_Unfinished = { Name = "Bloodweed potion (unfinished)", ID = 37973 },
 
-
-
     -- Finished potions (3-dose, main)
-
     Strength_Potion_3 = { Name = "Strength potion (3)", ID = 115 },
-
     Attack_Potion_3 = { Name = "Attack potion (3)", ID = 121 },
-
     Restore_Potion_3 = { Name = "Restore potion (3)", ID = 127 },
-
     Defence_Potion_3 = { Name = "Defence potion (3)", ID = 133 },
-
     Prayer_Potion_3 = { Name = "Prayer potion (3)", ID = 139 },
-
     Super_Attack_3 = { Name = "Super attack (3)", ID = 145 },
-
     Fishing_Potion_3 = { Name = "Fishing potion (3)", ID = 151 },
-
     Super_Strength_3 = { Name = "Super strength (3)", ID = 157 },
 
     Super_Defence_3 = { Name = "Super defence (3)", ID = 163 },
@@ -1187,6 +1142,7 @@ function Herblore.findGrimyHerbs()
 
     for x, herb in pairs(GRIMY_HERBS) do
         if Inventory:Contains(herb.Name) then
+            API.logDebug("Found Grimy Herb: "..herb.Name)
             return herb
         end
     end
