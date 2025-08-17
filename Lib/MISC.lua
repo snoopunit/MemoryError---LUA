@@ -197,7 +197,7 @@ function Miscellaneous.autoRetaliate(set)
 end
 
 function Miscellaneous.detectMakeXProgressWindow()
-    return API.ScanForInterfaceTest2Get(false,[{1251, 35, 0},{1251, 35, 1},{1251, 35, 2}])
+    return API.ScanForInterfaceTest2Get(false,{{1251, 35, 0},{1251, 35, 1},{1251, 35, 2}})
 end
 
 function Miscellaneous.doCrafting()
