@@ -99,15 +99,9 @@ function Firemaking.useLogs(logType, action)
         API.Write_LoopyLoop(false)
         return false
     end
+
+    return Inventory:DoAction(logType.id, action, API.OFF_ACT_GeneralInterface_route)
     
-    local result = Inventory:DoAction(logType.id, action, API.OFF_ACT_GeneralInterface_route)
-
-    if not result then
-        API.logDebug("Failed to do action: "..tostring(action).." on logs: "..logType.name)
-        API.Write_LoopyLoop(false)
-        return false
-    end
-
 end
 
 ---@return boolean -- returns true if we successfully 'add to bonfire' on an existing fire
