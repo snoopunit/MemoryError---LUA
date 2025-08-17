@@ -98,8 +98,8 @@ API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(Max_AFK)
 
---HERB.drawGUI()
-setTreeAndLogType()
+HERB.drawGUI()
+--setTreeAndLogType()
 
 
 while(API.Read_LoopyLoop())
@@ -108,8 +108,8 @@ do------------------------------------------------------------------------------
 
 
 
-    --startHerbloreRoutine()
-    Woodcutting_and_Firemaking(treeToUse, logToUse)
+    startHerbloreRoutine()
+    --Woodcutting_and_Firemaking(treeToUse, logToUse)
     
 
 end----------------------------------------------------------------------------------
