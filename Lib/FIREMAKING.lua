@@ -1,6 +1,6 @@
 local API = require("api")
-local WC = require("WOODCUTTING")
-local MISC = require("MISC")
+local WC = require("lib/WOODCUTTING")
+local MISC = require("lib/MISC")
 
 local Firemaking = {}
 

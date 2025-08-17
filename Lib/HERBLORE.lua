@@ -1,7 +1,7 @@
 local API = require("api")
 local UTILS = require("UTILS")
-local MISC = require("MISC")
-local BANK = require("BANKING")
+local MISC = require("lib/MISC")
+local BANK = require("lib/BANKING")
 
 local Herblore = {}
 

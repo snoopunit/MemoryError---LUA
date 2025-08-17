@@ -1,6 +1,6 @@
 local API = require("api")
 local UTILS = require("UTILS")
-local MISC = require("MISC")
+local MISC = require("lib/MISC")
 
 local Woodcutting = {}
 
