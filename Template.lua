@@ -116,7 +116,7 @@ do------------------------------------------------------------------------------
 
     --startHerbloreRoutine()
     ---Woodcutting_and_Firemaking(treeToUse, logToUse)
-    print(tostring(MISC.detectMakeXProgressWindow()))
+    print(tostring(API.isProcessing()))
     API.RandomSleep2(500, 0, 500)
     
 
