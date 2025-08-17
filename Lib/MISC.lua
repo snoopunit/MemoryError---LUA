@@ -197,7 +197,7 @@ function Miscellaneous.autoRetaliate(set)
 end
 
 function Miscellaneous.detectMakeXProgressWindow()
-    if API.VB_FindPSettinOrder(1251, 35).state == 0 then
+    if API.VB_FindPSettinOrder(1251, 0).state == 0 then
         return true
     else
         return false
