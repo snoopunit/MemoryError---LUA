@@ -1226,11 +1226,7 @@ function Herblore.makePotions()
                     Herblore.updateCurrentState("Cleaning herbs...")
 
                     if Herblore.cleanHerbs(herbToClean.ID) then
-                        if MISC.doCrafting() then
-                            while API.CheckAnim(75) do
-                                API.RandomSleep2(250,0,250)
-                            end
-                        end
+                        MISC.doCrafting()
                     else 
                         API.logWarn("Failed to clean herbs!")
                         API.Write_LoopyLoop(false)
@@ -1243,11 +1239,7 @@ function Herblore.makePotions()
 
             if Herblore.makeVials() then
                 Herblore.updateCurrentState("Making unfinished potions...")
-                if MISC.doCrafting() then
-                    while API.CheckAnim(75) do
-                        API.RandomSleep2(250,0,250)
-                    end
-                end
+                MISC.doCrafting()
             else
                 API.logWarn("Shutting down!") 
                 API.Write_LoopyLoop(false)
@@ -1275,11 +1267,7 @@ function Herblore.makePotions()
         if GLOBALS.useWell then
             Herblore.updateCurrentState("Using Portable Well...")
             if Herblore.mixPotionsAtPortableWell() then
-                if MISC.doCrafting() then
-                    while API.CheckAnim(75) do
-                        API.RandomSleep2(250,0,250)
-                    end
-                end
+                MISC.doCrafting()
             else
                 API.logWarn("Unable to mix at portable well!") 
                 API.Write_LoopyLoop(false)
@@ -1288,11 +1276,7 @@ function Herblore.makePotions()
         else
             Herblore.updateCurrentState("Crafting Potions...")
             if Herblore.mixPotionsInventory() then
-                if MISC.doCrafting() then
-                    while API.CheckAnim(75) do
-                        API.RandomSleep2(250,0,250)
-                    end
-                end
+                MISC.doCrafting()
             else
                 API.logWarn("Failed to mix potions in inventory!")
                 API.Write_LoopyLoop(false)

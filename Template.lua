@@ -59,10 +59,6 @@ function Woodcutting_and_Firemaking(treeType, logType)
                 if not FIRE.makeIncense(logType) then
                     API.Write_LoopyLoop(false)
                     return
-                else
-                    while API.CheckAnim(75) do
-                        API.RandomSleep2(600, 0, 250)
-                    end
                 end
             else
                 if not FIRE.addToBonfire(logType) then
@@ -104,7 +100,7 @@ API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(Max_AFK)
 
---HERB.drawGUI()
+HERB.drawGUI()
 --setTreeAndLogType()
 
 
@@ -114,10 +110,8 @@ do------------------------------------------------------------------------------
 
 
 
-    --startHerbloreRoutine()
+    startHerbloreRoutine()
     ---Woodcutting_and_Firemaking(treeToUse, logToUse)
-    print(tostring(API.isProcessing()))
-    API.RandomSleep2(500, 0, 500)
     
 
 end----------------------------------------------------------------------------------

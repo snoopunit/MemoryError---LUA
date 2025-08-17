@@ -196,19 +196,20 @@ function Miscellaneous.autoRetaliate(set)
 
 end
 
-function Miscellaneous.detectMakeXProgressWindow()
-    return API.VB_FindPSettinOrder(1251, 35, -1).state
-end
-
 function Miscellaneous.doCrafting()
 
     Miscellaneous.waitForCraftingInterface()
 
     if Miscellaneous.clickStart() then
         API.RandomSleep2(800,0,600)
-        if not UTILS.isCraftingInterfaceOpen() then
+        if API.isProcessing() then
+            while API.isProcessing() do
+                API.RandomSleep2(600,0,500)
+            end
             return true
         else
+            API.logWarn("Failed to do crafting after cleaning herbs!")
+            API.Write_LoopyLoop(false)
             return false        
         end
     end

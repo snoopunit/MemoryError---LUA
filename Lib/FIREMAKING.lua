@@ -134,14 +134,13 @@ function Firemaking.makeIncense(logType)
             MISC.chooseToolOption("Incense")
             API.RandomSleep2(1200, 0, 600)
         end
-        if not MISC.doCrafting() then
-            API.logWarn("Failed to start crafting incense with "..logType.name)
-            return false
-        end
     end
 
-    if API.CheckAnim(60) then
+    if API.isProcessing() then
         API.logInfo("Successfully made incense with "..logType.name..".")
+        while API.isProcessing() do
+            API.RandomSleep2(600,0,500)
+        end
         return true
     else
         API.logWarn("Failed to make incense with "..logType.name..".")
