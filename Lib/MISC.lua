@@ -197,7 +197,7 @@ function Miscellaneous.autoRetaliate(set)
 end
 
 function Miscellaneous.detectMakeXProgressWindow()
-    return API.VB_FindPSettinOrder(1251, 0).state
+    return API.VB_FindPSettinOrder(1251, 35).state
 end
 
 function Miscellaneous.doCrafting()
