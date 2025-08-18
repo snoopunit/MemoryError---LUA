@@ -1,7 +1,6 @@
 local API = require("api")
 local UTILS = require("UTILS")
 local MISC = require("lib/MISC")
-local FIRE = require("lib/FIREMAKING")
 
 local Woodcutting = {}
 
@@ -108,7 +107,6 @@ function Woodcutting.setTreeAndLogType()
     end
 
     GLOBALS.treeType, GLOBALS.logType = pickTier(wcLvl, fmLvl)
-    --FIRE.GLOBALS.logType = GLOBALS.logType
     API.logDebug("Chosen Tree: " .. GLOBALS.treeType.name)
     API.logDebug("Chosen Log: " .. GLOBALS.logType.name)
     API.logDebug("update WC.setTreeAndLogType() if wrong tree selected!")
