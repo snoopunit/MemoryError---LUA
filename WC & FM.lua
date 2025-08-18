@@ -37,8 +37,8 @@ API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(Max_AFK)
 --WC.setTreeAndLogType()
-API.logDebug("WC Tree Type: " .. GLOBALS.treeType.name)
-API.logDebug("WC Log Type: " .. GLOBALS.logType.name)
+API.logDebug("WC Tree Type: " .. WC.getTreeType().name)
+API.logDebug("WC Log Type: " .. WC.getLogType().name)
 --FIRE.GLOBALS.logType = WC.GLOBALS.logType
 
 while(API.Read_LoopyLoop())

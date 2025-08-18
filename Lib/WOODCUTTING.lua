@@ -113,6 +113,22 @@ function Woodcutting.setTreeAndLogType()
     
 end
 
+function Woodcutting.getLogType()
+    if GLOBALS.logType == nil then
+        API.logWarn("Log type is not set. Cannot return log type.")
+        return nil
+    end
+    return GLOBALS.logType
+end
+
+function Woodcutting.getTreeType()
+    if GLOBALS.treeType == nil then
+        API.logWarn("Tree type is not set. Cannot return tree type.")
+        return nil
+    end
+    return GLOBALS.treeType
+end
+
 ----METRICS----
 function Woodcutting.metrics()
     if GLOBALS.treeType == nil or GLOBALS.logType == nil then
