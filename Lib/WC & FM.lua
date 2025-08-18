@@ -7,6 +7,7 @@ local WC = require("lib/WOODCUTTING")
 local FIRE = require("lib/FIREMAKING")
 
 local Max_AFK = 5
+local makeIncense = true
 
 function Woodcutting_and_Firemaking(treeType, logType)
 
