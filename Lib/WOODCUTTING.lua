@@ -15,10 +15,10 @@ GLOBALS = {
 METRICS = {
     CURRENT_STATE = {"Current State: ", GLOBALS.currentState},
     TREE_TYPE = {"Tree Type: ", GLOBALS.treeType.Name},
-    NUM_TREES = {"# of trees chopped: ", fmt(GLOBALS.treesChopped)},
-    NUM_TREES_PER_HR = {"# of trees/hr: ", fmt(MISC.itemsPerHour(GLOBALS.treesChopped))},
-    NUM_LOGS = {"# of logs: ", fmt(GLOBALS.logsGathered)},
-    NUM_LOGS_PER_HR = {"# of logs/hr: ", fmt(MISC.itemsPerHour(GLOBALS.logsGathered))}
+    NUM_TREES = {"# of trees chopped: ", MISC.fmt(GLOBALS.treesChopped)},
+    NUM_TREES_PER_HR = {"# of trees/hr: ", MISC.fmt(MISC.itemsPerHour(GLOBALS.treesChopped))},
+    NUM_LOGS = {"# of logs: ", MISC.fmt(GLOBALS.logsGathered)},
+    NUM_LOGS_PER_HR = {"# of logs/hr: ", MISC.fmt(MISC.itemsPerHour(GLOBALS.logsGathered))}
 }
 
 TREES = {
