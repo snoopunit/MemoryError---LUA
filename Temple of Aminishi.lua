@@ -708,7 +708,6 @@ function inOrOut()
         return "outside"
     end
 end
-
 function resetMenu()
     local key = ''
     while API.Check_Dialog_Open() do
@@ -725,7 +724,6 @@ function resetMenu()
         API.RandomSleep2(600, 0, 250) 
     end    
 end
-
 function enterDungeon()
     while not PartyInRange(5) do
         API.logDebug("Waiting for party to be in range")
@@ -752,7 +750,6 @@ function enterDungeon()
         API.RandomSleep2(600, 0, 600)
     end   
 end
-
 function setupCoordOffset()
     local coords = API.PlayerCoord()  
 
@@ -796,7 +793,6 @@ function setupCoordOffset()
     ZONES.LAST_GROUP.BOT_RIGHT = WPOINT:new(START.x + 61, START.y - 5, 0)
 
 end
-
 function combatZone(enemy, zone)
 
     print("Starting zone: "..zone.NAME)
@@ -829,7 +825,6 @@ function combatZone(enemy, zone)
 
     
 end
-
 function exitDungeon()
     
 end
