@@ -13,12 +13,12 @@ function Woodcutting_and_Firemaking()
 
     if API.InvFull_() then
         if makeIncense then
-            if not FIRE.makeIncense(logType) then
+            if not FIRE.makeIncense() then
                 return
             end
         else
-            if not FIRE.addToBonfire(logType) then
-                if not FIRE.useLogs(logType, 2) then
+            if not FIRE.addToBonfire() then
+                if not FIRE.useLogs(2) then
                     return
                 end
             end
