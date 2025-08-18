@@ -4,54 +4,26 @@ local MISC = require("lib/MISC")
 
 local Woodcutting = {}
 
-GLOBALS = {
-    woodBoxType = nil,
-    treeType = nil,
-    logType = nil,
-    treesChopped = 0,
-    logsGathered = 0,
-    estProfit = 0,
-    estProfitPerHour = 0
-}
-
 TREES = {
 
     TREE =              {name = "Tree",                 id = nil},
-
     ACHEY =             {name = "Achey tree",           id = nil},
-
     OAK =               {name = "Oak",                  id = nil},
-
     WILLOW =            {name = "Willow",               id = nil},
-
     TEAK =              {name = "Teak",                 id = nil},
-
     MAPLE =             {name = "Maple Tree",           id = nil},
-
     ACADIA =            {name = "Acadia tree",          id = nil},
-
     MAHOGANY =          {name = "Mahogany",             id = nil},
-
     ARCTIC_PINE =       {name = "Arctic pine",          id = nil},
-
     EUCALYPTUS =        {name = "Eucalyptus tree",      id = nil},
-
     YEW =               {name = "Yew",                  id = nil},
-
     IVY =               {name = "Ivy",                  id = nil},
-
-    MAGIC =             {name = "Magic tree",           id = nil},
-
+    MAGIC =             {name = "Magic tree",           id = nil}
     ELDER =             {name = "Elder tree",           id = nil},
-
     CRYSTAL =           {name = "Crystal tree",         id = nil},
-
     BLOODWOOD =         {name = "Bloodwood tree",       id = nil},
-
-    BLISTERWOOD =       {name = "Blisterwood tree",     id = nil},
-
+    BLISTERWOOD =       {name = "Blisterwood tree",     id = nil}
     GOLDEN_BAMBOO =     {name = "Golden bamboo",        id = nil},
-
     OVERGROWN_IDOLS =   {name = "Overgrown idols",      id = nil}
 
 }
@@ -112,6 +84,16 @@ WOOD_BOXES = {
 
     ELDER =     {name = "Elder wood box",       id = 54913}
 
+}
+
+GLOBALS = {
+    woodBoxType = nil,
+    treeType = nil,
+    logType = nil,
+    treesChopped = 0,
+    logsGathered = 0,
+    estProfit = 0,
+    estProfitPerHour = 0
 }
 
 function Woodcutting.setTreeAndLogType()
