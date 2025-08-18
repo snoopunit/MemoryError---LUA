@@ -33,7 +33,7 @@ API.Write_LoopyLoop(true)
 API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(Max_AFK)
-Woodcutting.setTreeAndLogType()
+WC.setTreeAndLogType()
 
 while(API.Read_LoopyLoop())
 do-----------------------------------------------------------------------------------
