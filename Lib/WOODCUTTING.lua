@@ -166,37 +166,6 @@ end
 ---@return any -- returns the key of wood box found in inv or nil if none
 function Woodcutting.findWoodBox()
 
-    local invItems = API.ReadInvArrays33()
-
-    
-
-    for tableKey, tableInfo in pairs(WOOD_BOXES) do
-
-        for _, item in ipairs(invItems) do
-
-            if item.textitem == "<col=b8d1d1>"..tableInfo.name then
-
-                API.logDebug("Found: "..tableInfo.name.." check if ID needs updating")
-
-                if tableInfo.id ~= item.itemid1 then
-
-                    API.logDebug("Updating " .. tableInfo.name .. " ID from " .. (tableInfo.id or "nil") .. " to " .. item.itemid1)
-
-                    WOOD_BOXES[tableKey].id = item.itemid1
-
-                end
-
-                API.logDebug("tableKey: "..tableKey)
-
-                return tableKey  -- This returns the actual key from the WOOD_BOXES table
-
-            end
-
-        end
-
-    end
-
-    return nil
 
 end
 
@@ -218,37 +187,18 @@ function Woodcutting.woodBoxCapacity()
         [55774] = 150, -- Magic wood box
         [55775] = 160  -- Elder wood box
     }
-    local woodcuttingLevel = API.XPLevelTable(API.GetSkillXP("WOODCUTTING"))
-    local baseCapacity = baseCapacities[GLOBALS.boxType.id]
-    if baseCapacity then
-        local levelBonus = math.floor(woodcuttingLevel / 10) * 10
-        return math.min(baseCapacity + levelBonus, baseCapacity + 100)
-    else
-        return nil  -- Return nil if the boxId is not recognized
-    end
+    
 end
 
 ---@return boolean -- returns true if the Wood Box gets filled with an # of items
 function Woodcutting.fillWoodBox()
 
-    local box = Woodcutting.findWoodBox()
-
-    if box then
-
-        API.logInfo("Filling: "..WOOD_BOXES[box].name)
-
-        return API.DoAction_Inventory1(WOOD_BOXES[box].id,0,1,API.OFF_ACT_GeneralInterface_route)
-
-    end
+    
 
 end
 
 ---@return boolean -- returns true if we activate the use option for our Wood Box
 function Woodcutting.useWoodBox()
-
-    local box = Woodcutting.findWoodBox()
-
-    return API.DoAction_Inventory1(box.id,0,0,API.OFF_ACT_Bladed_interface_route) --API.DoAction_Inventory1(box.id,0,1,API.OFF_ACT_GeneralInterface_route)
 
 end
 
