@@ -66,9 +66,9 @@ WOOD_BOXES = {
 
 GLOBALS = {
     currentState = "Idle",
-    boxType = nil,
-    treeType = nil,
-    logType = nil, 
+    boxType = WOOD_BOXES.WOOD, -- Default wood box type
+    treeType = TREES.TREE, -- Default tree type
+    logType = LOGS.LOGS, -- Default log type
     treesChopped = 0,
     logsGathered = 0,
     estProfit = 0,
