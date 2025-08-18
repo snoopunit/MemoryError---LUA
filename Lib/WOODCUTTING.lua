@@ -87,6 +87,7 @@ WOOD_BOXES = {
 }
 
 GLOBALS = {
+    currentState = "Idle",
     woodBoxType = nil,
     treeType = nil,
     logType = nil,
@@ -95,6 +96,20 @@ GLOBALS = {
     estProfit = 0,
     estProfitPerHour = 0
 }
+
+----METRICS----
+function Woodcutting.metrics()
+    local METRICS = {
+        {"Current State: ", GLOBALS.currentState},
+        {"Tree Type: ", GLOBALS.treeType.Name},
+        {"GE Value: ", MISC.fmt(API.GetExchangePrice(GLOBALS.logType.ID))},
+        {"# of logs: ", MISC.fmt(GLOBALS.logsGathered)},
+        {"# of logs/hr: ", MISC.fmt(MISC.itemsPerHour(GLOBALS.logsGathered))},
+        {"Est. profit: ", MISC.fmt(MISC.EstimatedProfit(GLOBALS.logType.ID, GLOBALS.logsGathered))},
+        {"Est. profit/hr: ", MISC.fmt(MISC.EstimatedProfitPerHour(GLOBALS.logType.ID, GLOBALS.logsGathered))}
+    }
+    API.DrawTable(METRICS)
+end
 
 function Woodcutting.setTreeAndLogType()
 
