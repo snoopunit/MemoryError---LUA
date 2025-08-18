@@ -18,7 +18,7 @@ TREES = {
     EUCALYPTUS =        {name = "Eucalyptus tree",      id = nil},
     YEW =               {name = "Yew",                  id = nil},
     IVY =               {name = "Ivy",                  id = nil},
-    MAGIC =             {name = "Magic tree",           id = nil}
+    MAGIC =             {name = "Magic tree",           id = nil},
     ELDER =             {name = "Elder tree",           id = nil},
     CRYSTAL =           {name = "Crystal tree",         id = nil},
     BLOODWOOD =         {name = "Bloodwood tree",       id = nil},
