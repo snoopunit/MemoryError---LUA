@@ -32,35 +32,20 @@ TREES = {
 LOGS = {
 
     LOGS =              {name = "Logs",                 id = 1511},
-
     ACHEY =             {name = "Achey tree logs",      id = 2862},
-
     OAK =               {name = "Oak logs",             id = 1521},
-
     WILLOW =            {name = "Willow logs",          id = 1519},
-
     TEAK =              {name = "Teak logs",            id = 6333},
-
     MAPLE =             {name = "Maple logs",           id = 1517},
-
     MAHOGANY =          {name = "Mahogany logs",        id = 6332},
-
     ARCTIC_PINE =       {name = "Arctic pine logs",     id = 10810},
-
     EUCALYPTUS =        {name = "Eucalyptus logs",      id = 12581},
-
     YEW =               {name = "Yew logs",             id = 1515},
-
     MAGIC =             {name = "Magic logs",           id = 1513},
-
     ELDER =             {name = "Elder logs",           id = 29556},
-
     CRYSTAL =           {name = "Crystal logs",         id = 49692},
-
     BLOODWOOD =         {name = "Bloodwood logs",       id = 24121},
-
     BLISTERWOOD =       {name = "Blisterwood logs",     id = 49669},
-
     BAMBOO =            {name = "Bamboo",               id = 21777}
 
 }
@@ -68,21 +53,13 @@ LOGS = {
 WOOD_BOXES = {
 
     WOOD =      {name = "Wood box",             id = 54895},
-
     OAK =       {name = "Oak wood box",         id = 54897},
-
     WILLOW =    {name = "Willow wood box",      id = 54899},
-
     TEAK =      {name = "Teak wood box",        id = nil},
-
     MAPLE =     {name = "Maple wood box",       id = nil},
-
     MAHOGANY =  {name = "Mahogany wood box",    id = nil},
-
     YEW =       {name = "Yew wood box",         id = nil},
-
     MAGIC =     {name = "Magic wood box",       id = nil},
-
     ELDER =     {name = "Elder wood box",       id = 54913}
 
 }
@@ -131,7 +108,7 @@ function Woodcutting.setTreeAndLogType()
     end
 
     GLOBALS.treeType, GLOBALS.logType = pickTier(wcLvl, fmLvl)
-    FIRE.GLOBALS.logType = GLOBALS.logType
+    --FIRE.GLOBALS.logType = GLOBALS.logType
     API.logDebug("Chosen Tree: " .. GLOBALS.treeType.name)
     API.logDebug("Chosen Log: " .. GLOBALS.logType.name)
     API.logDebug("update WC.setTreeAndLogType() if wrong tree selected!")
