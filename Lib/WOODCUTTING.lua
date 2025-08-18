@@ -63,7 +63,7 @@ WOOD_BOXES = {
 
 }
 
-GLOBALS = {
+Woodcutting.GLOBALS = {
     currentState = "Idle",
     boxType = WOOD_BOXES.WOOD, -- Default wood box type
     treeType = TREES.TREE, -- Default tree type
