@@ -1,6 +1,7 @@
 local API = require("api")
 local UTILS = require("UTILS")
 local MISC = require("lib/MISC")
+local FIRE = require("lib/FIREMAKING")
 
 local Woodcutting = {}
 
@@ -88,7 +89,7 @@ WOOD_BOXES = {
 
 GLOBALS = {
     currentState = "Idle",
-    woodBoxType = nil,
+    boxType = nil,
     treeType = nil,
     logType = nil, 
     treesChopped = 0,
@@ -129,11 +130,12 @@ function Woodcutting.setTreeAndLogType()
     
     end
 
-    treeToUse, logToUse = pickTier(wcLvl, fmLvl)
-    API.logDebug("Tree Type: "..treeToUse.name)
-    API.logDebug("Log Type: "..logToUse.name)
-    return treeToUse, logToUse
-
+    GLOBALS.treeType, GLOBALS.logType = pickTier(wcLvl, fmLvl)
+    FIRE.GLOBALS.logType = GLOBALS.logType
+    API.logDebug("Chosen Tree: " .. GLOBALS.treeType.name)
+    API.logDebug("Chosen Log: " .. GLOBALS.logType.name)
+    API.logDebug("update WC.setTreeAndLogType() if wrong tree selected!")
+    
 end
 
 ----METRICS----
@@ -155,11 +157,10 @@ function Woodcutting.metrics()
     API.DrawTable(METRICS)
 end
 
----@param object TREES.treeType
 ---@return boolean -- returns true if we successfully start chopping a tree
-function Woodcutting.chop(treeType)
-    API.logDebug("Woodcutting.chop(): " .. treeType.name)
-    return Interact:Object(treeType.name, "Chop down", 30)
+function Woodcutting.chop()
+    API.logDebug("Woodcutting.chop(): " .. GLOBALS.treeType.name)
+    return Interact:Object(GLOBALS.treeType.name, "Chop down", 30)
 end
 
 ---@return any -- returns the key of wood box found in inv or nil if none
@@ -199,113 +200,32 @@ function Woodcutting.findWoodBox()
 
 end
 
----@param boxType table -- The wood box entry from Woodcutting.WOOD_BOXES table
----@param logType table -- The log type entry from Woodcutting.LOGS table
 ---@return number -- returns the # of logs of the specified type within the Wood Box
-function Woodcutting.woodBoxCount(boxType, logType) 
-
-    if not boxType then
-
-        API.logDebug("boxType is nil")
-
-        return 0
-
-    end
-
-    if not Woodcutting.WOOD_BOXES[boxType] then
-
-        API.logDebug("No wood box found for type: " .. tostring(boxType))
-
-        return 0
-
-    end
-
-    if not Woodcutting.WOOD_BOXES[boxType].id then
-
-        API.logDebug("No id found for wood box type: " .. tostring(boxType))
-
-        return 0
-
-    end
-
-
-
-    local container = API.Container_Get_all(WOOD_BOXES[boxType].id)
-
-    
-
-    if not container then
-
-        API.logDebug("Container is nil for wood box id: " .. tostring(WOOD_BOXES[boxType].id))
-
-        return 0
-
-    end
-
-
-
-    for _, item in pairs(container) do
-
-        if item.item_id ~= -1 and item.item_id == LOGS[logType].id then
-
-            API.logDebug("Logs found: "..item.item_stack)
-
-            return item.item_stack
-
-        end
-
-    end
-
-    API.logDebug("No logs found in wood box")
-
-    return 0 
+function Woodcutting.woodBoxCount() 
 
 end
 
----@param boxId number
 ---@return capacity number -- returns the max capacity of current wood box or nil if none
-function Woodcutting.woodBoxCapacity(boxType)
-
+function Woodcutting.woodBoxCapacity()
     local baseCapacities = {
-
         [55767] = 70,  -- Wood box
-
         [55768] = 80,  -- Oak wood box
-
         [55769] = 90,  -- Willow wood box
-
         [55770] = 100, -- Teak wood box
-
         [55771] = 110, -- Maple wood box
-
         [55772] = 130, -- Mahogany wood box
-
         [55773] = 140, -- Yew wood box
-
         [55774] = 150, -- Magic wood box
-
         [55775] = 160  -- Elder wood box
-
     }
-
-
-
     local woodcuttingLevel = API.XPLevelTable(API.GetSkillXP("WOODCUTTING"))
-
     local baseCapacity = baseCapacities[boxType.id]
-
     if baseCapacity then
-
         local levelBonus = math.floor(woodcuttingLevel / 10) * 10
-
         return math.min(baseCapacity + levelBonus, baseCapacity + 100)
-
     else
-
         return nil  -- Return nil if the boxId is not recognized
-
     end
-
 end
 
 ---@return boolean -- returns true if the Wood Box gets filled with an # of items
@@ -332,81 +252,41 @@ function Woodcutting.useWoodBox()
 
 end
 
----@param boxID number -- Id of wood box
----@param itemID number -- Id of item to check
 ---@return boolean -- returns true if the Wood Box is full
-function Woodcutting.woodBoxFull(boxType, logType)
-
-    --API.logDebug("Checking if "..Woodcutting.WOOD_BOXES[boxType].name.." is full")
-
-    if Woodcutting.woodBoxCount(boxType, logType) == Woodcutting.woodBoxCapacity(WOOD_BOXES[boxType]) then
-
-        return true
-
-    end
-
-    return false
+function Woodcutting.woodBoxFull()
 
 end
 
----@param treeType string
 ---@return boolean -- returns true when inv is full. fills the wood box along the way if we have one
-function Woodcutting.gather(treeType, logType)
+function Woodcutting.gather()
 
-    local boxType = Woodcutting.findWoodBox()
-
-    local checkWoodBox = boxType ~= nil
-
+    GLOBALS.boxType = Woodcutting.findWoodBox()
+    local checkWoodBox = GLOBALS.boxType ~= nil
     local failSafe = 0
 
-
-
-    while not API.InvFull_() and (not checkWoodBox or not Woodcutting.woodBoxFull(boxType, logType)) and API.Read_LoopyLoop() do        
-
-        if not Woodcutting.chop(treeType) then
-
-            API.logWarn("Unable to chop tree: "..treeType.name)
-
+    while not API.InvFull_() and (not checkWoodBox or not Woodcutting.woodBoxFull()) and API.Read_LoopyLoop() do        
+        if not Woodcutting.chop() then
+            API.logWarn("Unable to chop tree: "..GLOBALS.treeType.name)
             failSafe = (failSafe + 1)
-
             if failSafe >= 10 then
-
                 API.Write_LoopyLoop(false)
-
                 return false
-
             end
-
         else
-
-            API.logInfo("Chopping tree: "..treeType.name)
-
+            API.logInfo("Chopping tree: "..GLOBALS.treeType.name)
             while API.CheckAnim(75) do
-
                 if checkWoodBox then
-
                     if API.Invfreecount_() < math.random(0,8) then
-
-                        if not Woodcutting.woodBoxFull(boxType, logType) then
-
+                        if not Woodcutting.woodBoxFull() then
                             Woodcutting.fillWoodBox()
-
                             API.RandomSleep2(600, 0, 250)
-
                         end
-
                     end
-
                 end
-
                 API.DoRandomEvents()
-
                 API.RandomSleep2(600, 0, 250)
-
             end
-
         end
-
     end
 
     return true

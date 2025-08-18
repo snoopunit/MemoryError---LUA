@@ -10,6 +10,7 @@ local ANIM = {
 }
 
 GLOBALS = {
+    logType = nil, 
     makeIncense = false,
     logsBurnt = 0,
     incenseMade = 0,
@@ -93,8 +94,8 @@ function Firemaking.useBrazier()
 
 end
 
----@return boolean -- logType -- keyValue from LOGS table -- action -- 1-Craft, 2-Light, 3-Use, 4-Drop
-function Firemaking.useLogs(logType, action)
+---@return number action -- 1-Craft, 2-Light, 3-Use, 4-Drop
+function Firemaking.useLogs(action)
 
     if action ~= 1 and action ~= 2 and action ~= 3 and action ~= 4 then
         API.logDebug("Firemaking useLogs action is not valid: ", action)
@@ -102,12 +103,12 @@ function Firemaking.useLogs(logType, action)
         return false
     end
 
-    return Inventory:DoAction(logType.id, action, API.OFF_ACT_GeneralInterface_route)
+    return Inventory:DoAction(GLOBALS.logType.id, action, API.OFF_ACT_GeneralInterface_route)
 
 end
 
 ---@return boolean -- returns true if we successfully 'add to bonfire' on an existing fire
-function Firemaking.addToBonfire(logType)
+function Firemaking.addToBonfire()
 
     if Firemaking.useFire() then
         MISC.chooseToolOption("Bonfire")
@@ -117,23 +118,23 @@ function Firemaking.addToBonfire(logType)
     API.RandomSleep2(1200,0,600)
 
     if API.CheckAnim(60) then
-        API.logInfo("Successfully added "..logType.name.." to the fire.")
+        API.logInfo("Successfully added "..GLOBALS.logType.name.." to the fire.")
         return true
     else
-        API.logWarn("Failed to add "..logType.name.." to the fire.")
+        API.logWarn("Failed to add "..GLOBALS.logType.name.." to the fire.")
         return false
     end
 
 end
 
-function Firemaking.makeIncense(logType)
+function Firemaking.makeIncense()
 
-    if not Firemaking.useLogs(logType, 1) then
-        API.logWarn("Failed to use logs: "..logType.name)
+    if not Firemaking.useLogs(1) then
+        API.logWarn("Failed to use logs: "..GLOBALS.logType.name)
         API.Write_LoopyLoop(false)
         return false
     else
-        API.logInfo("Using logs: "..logType.name)
+        API.logInfo("Using logs: "..GLOBALS.logType.name)
         API.RandomSleep2(1200, 0, 600)
         if MISC.isChooseToolOpen() then
             MISC.chooseToolOption("Incense")
@@ -142,12 +143,12 @@ function Firemaking.makeIncense(logType)
         MISC.doCrafting()
     end
 
-    if Inventory:GetItemAmount(logType.name) < 2 then
-        API.logInfo("Successfully made incense with "..logType.name..".")
+    if Inventory:GetItemAmount(GLOBALS.logType.name) < 2 then
+        API.logInfo("Successfully made incense with "..GLOBALS.logType.name..".")
     
         return true
     else
-        API.logWarn("Failed to make incense with "..logType.name..".")
+        API.logWarn("Failed to make incense with "..GLOBALS.logType.name..".")
         API.Write_LoopyLoop(false)
         return false
     end
