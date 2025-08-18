@@ -829,7 +829,7 @@ function Herblore.metrics()
 
     local function fmt(value)
         if value > 999 then
-            return Miscellaneous.comma_value(value)
+            return MISC.comma_value(value)
         end
         return tostring(value)
     end
