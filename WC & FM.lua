@@ -38,5 +38,7 @@ local treeToUse, logToUse = WC.setTreeAndLogType()
 
 while(API.Read_LoopyLoop())
 do-----------------------------------------------------------------------------------
-    Woodcutting_and_Firemaking(treeToUse, logToUse)
+    WC.metrics()
+    API.RandomSleep2(50,0,50)
+    --Woodcutting_and_Firemaking(treeToUse, logToUse)
 end----------------------------------------------------------------------------------
