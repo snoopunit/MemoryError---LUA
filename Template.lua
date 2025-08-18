@@ -2,7 +2,6 @@ print("TESTING TEMPLATE")
 
 local API = require("api")
 local UTILS = require("UTILS")
-local WC = require("lib/WOODCUTTING")
 local COOK = require("lib/COOKING")
 local BANK = require("lib/BANKING")
 local FIRE = require("lib/FIREMAKING")
