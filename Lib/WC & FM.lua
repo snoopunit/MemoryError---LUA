@@ -9,6 +9,86 @@ local FIRE = require("lib/FIREMAKING")
 local makeIncense = true
 local Max_AFK = 5
 
+local GLOBALS = {
+    logsCut = 0,
+    logType = { ID = 0, Name = "None" },
+    logsPerHour = 0,
+    incenseMade = 0,
+    incensePerHour = 0,
+    estProfit = 0,
+    estProfitPerHour = 0,
+    currentState = "Idle"
+}
+
+function PotionsPerHour()
+
+    if GLOBALS.potionsMade == 0 then
+
+        return 0
+
+    end
+
+
+
+    local elapsedTime = API.ScriptRuntime() / 3600 
+
+    
+
+    return math.floor(GLOBALS.potionsMade / elapsedTime)
+
+end
+
+function EstimatedProfit() 
+
+    local profitPerPotion = API.GetExchangePrice(GLOBALS.potionType.ID)
+
+    return GLOBALS.potionsMade * profitPerPotion
+
+end
+
+function EstimatedProfitPerHour()
+
+    local elapsedTime = API.ScriptRuntime() / 3600
+
+    
+
+    return math.floor(EstimatedProfit() / elapsedTime)    
+
+end
+
+function metrics() 
+
+    GLOBALS.potionsPerHour = PotionsPerHour()
+    GLOBALS.estProfit = EstimatedProfit()
+    GLOBALS.estProfitPerHour = EstimatedProfitPerHour()
+
+    local function fmt(value)
+        if value > 999 then
+            return MISC.comma_value(value)
+        end
+        return tostring(value)
+    end
+
+    return {
+        {"Current State: ", GLOBALS.currentState},
+        {"Potion Type: ", GLOBALS.potionType.Name},
+        {"GE Value: ", fmt(API.GetExchangePrice(GLOBALS.potionType.ID))},
+        {"# of potions: ", fmt(GLOBALS.potionsMade)},
+        {"# of potions/hr: ", fmt(GLOBALS.potionsPerHour)},
+        {"Est. profit: ", fmt(GLOBALS.estProfit)},
+        {"Est. profit/hr: ", fmt(GLOBALS.estProfitPerHour)}
+    }
+
+end
+
+function Herblore.updatePotionNum(potionsMade)
+
+    GLOBALS.potionsMade = (GLOBALS.potionsMade + potionsMade)
+
+    API.DrawTable(Herblore.metrics())
+
+end
+
 function setTreeAndLogType()
 
     local wcLvl = MISC.getLevel("WOODCUTTING")
