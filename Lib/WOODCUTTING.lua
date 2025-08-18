@@ -89,27 +89,13 @@ WOOD_BOXES = {
 GLOBALS = {
     currentState = "Idle",
     woodBoxType = nil,
-    treeType = TREES.TREE,
-    logType = LOGS.LOGS, 
+    treeType = nil,
+    logType = nil, 
     treesChopped = 0,
     logsGathered = 0,
     estProfit = 0,
     estProfitPerHour = 0
 }
-
-----METRICS----
-function Woodcutting.metrics()
-    local METRICS = {
-        {"Current State: ", GLOBALS.currentState},
-        {"Tree Type: ", GLOBALS.treeType.name},
-        {"GE Value: ", MISC.fmt(API.GetExchangePrice(GLOBALS.logType.ID))},
-        {"# of logs: ", MISC.fmt(GLOBALS.logsGathered)},
-        {"# of logs/hr: ", MISC.fmt(MISC.itemsPerHour(GLOBALS.logsGathered))},
-        {"Est. profit: ", MISC.fmt(MISC.EstimatedProfit(GLOBALS.logType.ID, GLOBALS.logsGathered))},
-        {"Est. profit/hr: ", MISC.fmt(MISC.EstimatedProfitPerHour(GLOBALS.logType.ID, GLOBALS.logsGathered))}
-    }
-    API.DrawTable(METRICS)
-end
 
 function Woodcutting.setTreeAndLogType()
 
@@ -148,6 +134,25 @@ function Woodcutting.setTreeAndLogType()
     API.logDebug("Log Type: "..logToUse.name)
     return treeToUse, logToUse
 
+end
+
+----METRICS----
+function Woodcutting.metrics()
+    if treeType == nil or logType == nil then
+        API.logWarn("Tree type or log type is not set. Cannot display metrics.")
+        return
+    end
+
+    local METRICS = {
+        {"Current State: ", GLOBALS.currentState},
+        {"Tree Type: ", GLOBALS.treeType.name},
+        {"GE Value: ", MISC.fmt(API.GetExchangePrice(GLOBALS.logType.id))},
+        {"# of logs: ", MISC.fmt(GLOBALS.logsGathered)},
+        {"# of logs/hr: ", MISC.fmt(MISC.itemsPerHour(GLOBALS.logsGathered))},
+        {"Est. profit: ", MISC.fmt(MISC.EstimatedProfit(GLOBALS.logType.id, GLOBALS.logsGathered))},
+        {"Est. profit/hr: ", MISC.fmt(MISC.EstimatedProfitPerHour(GLOBALS.logType.id, GLOBALS.logsGathered))}
+    }
+    API.DrawTable(METRICS)
 end
 
 ---@param object TREES.treeType
