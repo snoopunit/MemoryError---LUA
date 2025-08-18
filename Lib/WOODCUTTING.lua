@@ -101,7 +101,7 @@ GLOBALS = {
 function Woodcutting.metrics()
     local METRICS = {
         {"Current State: ", GLOBALS.currentState},
-        {"Tree Type: ", GLOBALS.treeType.Name},
+        {"Tree Type: ", GLOBALS.treeType.name},
         {"GE Value: ", MISC.fmt(API.GetExchangePrice(GLOBALS.logType.ID))},
         {"# of logs: ", MISC.fmt(GLOBALS.logsGathered)},
         {"# of logs/hr: ", MISC.fmt(MISC.itemsPerHour(GLOBALS.logsGathered))},
