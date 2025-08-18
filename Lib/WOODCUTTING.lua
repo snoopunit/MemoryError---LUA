@@ -147,10 +147,9 @@ function Woodcutting.setTreeAndLogType()
     end
 
     GLOBALS.treeType, GLOBALS.logType = pickTier(wcLvl, fmLvl)
-
+    API.logDebug("Tree type: "..GLOBALS.treeType.name..", Log type: "..GLOBALS.logType.name)
+    
 end
-
-
 
 ---@param object TREES.treeType
 ---@return boolean -- returns true if we successfully start chopping a tree
