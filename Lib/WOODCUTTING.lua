@@ -12,6 +12,15 @@ GLOBALS = {
     logsGathered = 0,
 }
 
+METRICS = {
+    CURRENT_STATE = {"Current State: ", GLOBALS.currentState},
+    TREE_TYPE = {"Tree Type: ", GLOBALS.treeType.Name},
+    NUM_TREES = {"# of trees chopped: ", fmt(GLOBALS.treesChopped)},
+    NUM_TREES_PER_HR = {"# of trees/hr: ", fmt(MISC.itemsPerHour(GLOBALS.treesChopped))},
+    NUM_LOGS = {"# of logs: ", fmt(GLOBALS.logsGathered)},
+    NUM_LOGS_PER_HR = {"# of logs/hr: ", fmt(MISC.itemsPerHour(GLOBALS.logsGathered))}
+}
+
 TREES = {
 
     TREE =              {name = "Tree",                 id = nil},
@@ -114,25 +123,13 @@ WOOD_BOXES = {
 
 function Woodcutting.metrics() 
 
-    GLOBALS.potionsPerHour = MISC.itemsPerHour(GLOBALS.potionsMade)
-    GLOBALS.estProfit = MISC.EstimatedProfit(GLOBALS.potionType.ID, GLOBALS.potionsMade)
-    GLOBALS.estProfitPerHour = MISC.EstimatedProfitPerHour(GLOBALS.potionType.ID, GLOBALS.potionsMade)
-
-    local function fmt(value)
-        if value > 999 then
-            return MISC.comma_value(value)
-        end
-        return tostring(value)
-    end
-
     return {
-        {"Current State: ", GLOBALS.currentState},
-        {"Potion Type: ", GLOBALS.potionType.Name},
-        {"GE Value: ", fmt(API.GetExchangePrice(GLOBALS.potionType.ID))},
-        {"# of potions: ", fmt(GLOBALS.potionsMade)},
-        {"# of potions/hr: ", fmt(GLOBALS.potionsPerHour)},
-        {"Est. profit: ", fmt(GLOBALS.estProfit)},
-        {"Est. profit/hr: ", fmt(GLOBALS.estProfitPerHour)}
+        METRICS.CURRENT_STATE,
+        METRICS.TREE_TYPE,
+        METRICS.NUM_TREES,
+        METRICS.NUM_TREES_PER_HR,
+        METRICS.NUM_LOGS,
+        METRICS.NUM_LOGS_PER_HR
     }
 
 end

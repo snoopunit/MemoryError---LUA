@@ -21,6 +21,16 @@ GLOBALS = {
 
 }
 
+METRICS = {
+    CURRENT_STATE = {"Current State: ", GLOBALS.currentState},
+    POTION_TYPE = {"Potion Type: ", GLOBALS.potionType.Name},
+    GE_VALUE = {"GE Value: ", MISC.fmt(API.GetExchangePrice(GLOBALS.potionType.ID))},
+    POTION_NUM = {"# of potions: ", MISC.fmt(GLOBALS.potionsMade)},
+    POTION_PER_HR = {"# of potions/hr: ", MISC.fmt(MISC.itemsPerHour(GLOBALS.potionsMade))},
+    EST_PROFIT = {"Est. profit: ", MISC.fmt(MISC.EstimatedProfit(GLOBALS.potionType.ID, GLOBALS.potionsMade))},
+    EST_PROFIT_PER_HR = {"Est. profit/hr: ", MISC.fmt(MISC.EstimatedProfitPerHour(GLOBALS.potionType.ID, GLOBALS.potionsMade))}
+}
+
 OBJECTS = {
 
     Portable_Well = { Name = "Portable Well", ID = 89770 }
@@ -779,27 +789,6 @@ CLEAN_HERBS = {
 }
 
 ----METRICS----
-function Herblore.metrics() 
-
-    local function fmt(value)
-        if value > 999 then
-            return MISC.comma_value(value)
-        end
-        return tostring(value)
-    end
-
-    return {
-        {"Current State: ", GLOBALS.currentState},
-        {"Potion Type: ", GLOBALS.potionType.Name},
-        {"GE Value: ", fmt(API.GetExchangePrice(GLOBALS.potionType.ID))},
-        {"# of potions: ", fmt(GLOBALS.potionsMade)},
-        {"# of potions/hr: ", fmt(MISC.itemsPerHour(GLOBALS.potionsMade))},
-        {"Est. profit: ", fmt(MISC.EstimatedProfit(GLOBALS.potionType.ID, GLOBALS.potionsMade))},
-        {"Est. profit/hr: ", fmt(MISC.EstimatedProfitPerHour(GLOBALS.potionType.ID, GLOBALS.potionsMade))}
-    }
-
-end
-
 function Herblore.updatePotionNum(potionsMade)
 
     GLOBALS.potionsMade = (GLOBALS.potionsMade + potionsMade)
@@ -1198,7 +1187,7 @@ function Herblore.makePotions()
 
     Herblore.updateCurrentState("Updating METRICS")
     Herblore.updatePotionNum(Inventory:GetItemAmount(GLOBALS.potionType.Name))
-    API.DrawTable(Herblore.metrics())
+    API.DrawTable(METRICS)
 
 end 
 

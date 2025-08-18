@@ -16,6 +16,14 @@ function Miscellaneous.comma_value(amount)
     end
     return formatted
 end
+
+function Miscellaneous.fmt(value)
+    if value > 999 then
+        return MISC.comma_value(value)
+    end
+    return tostring(value)
+end
+
 ---@param item number
 ---@return number
 function Miscellaneous.itemsPerHour(item)
