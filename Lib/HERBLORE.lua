@@ -430,6 +430,10 @@ METRICS = {
 }
 
 ----METRICS----
+function Herblore.metrics()
+    API.DrawTable({METRICS.CURRENT_STATE, METRICS.POTION_TYPE, METRICS.GE_VALUE, METRICS.POTION_NUM, METRICS.POTION_PER_HR, METRICS.EST_PROFIT, METRICS.EST_PROFIT_PER_HR})
+end
+
 function Herblore.updatePotionNum(potionsMade)
 
     GLOBALS.potionsMade = (GLOBALS.potionsMade + potionsMade)
