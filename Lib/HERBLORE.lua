@@ -438,7 +438,7 @@ function Herblore.updatePotionNum(potionsMade)
 
     GLOBALS.potionsMade = (GLOBALS.potionsMade + potionsMade)
 
-    API.DrawTable(METRICS)
+    Herblore.metrics()
 
 end
 
@@ -448,7 +448,7 @@ function Herblore.updateCurrentState(state)
 
     API.logDebug("Current State: "..GLOBALS.currentState)
 
-    API.DrawTable(METRICS)
+    Herblore.metrics()
 
 end
 ----METRICS----
@@ -832,7 +832,7 @@ function Herblore.makePotions()
 
     Herblore.updateCurrentState("Updating METRICS")
     Herblore.updatePotionNum(Inventory:GetItemAmount(GLOBALS.potionType.Name))
-    API.DrawTable(METRICS)
+    Herblore.metrics()
 
 end 
 
