@@ -2,6 +2,19 @@ local API = require("api")
 local UTILS = require("UTILS")
 local Miscellaneous = {}
 
+function Miscellaneous.comma_value(amount)
+    local formatted = tostring(amount) -- Convert the number to a string
+    while true do
+        -- Replace a sequence of digits followed by three digits with the same sequence, a comma, and the three digits
+        formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", '%1,%2')
+        -- If no more replacements were made (k == 0), break the loop
+        if (k == 0) then
+            break
+        end
+    end
+    return formatted
+end
+
 function Miscellaneous.getLevel(skill)
 
     return API.XPLevelTable(API.GetSkillXP(skill))

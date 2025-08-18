@@ -824,27 +824,24 @@ end
 function Herblore.metrics() 
 
     GLOBALS.potionsPerHour = PotionsPerHour()
-
     GLOBALS.estProfit = EstimatedProfit()
-
     GLOBALS.estProfitPerHour = EstimatedProfitPerHour()
 
+    local function fmt(value)
+        if value > 999 then
+            return Miscellaneous.comma_value(value)
+        end
+        return tostring(value)
+    end
+
     return {
-
-        {"Current State: ", tostring(GLOBALS.currentState)},
-
-        {"Potion Type: ", tostring(GLOBALS.potionType.Name)},
-
-        {"GE Value: ", tostring(API.GetExchangePrice(GLOBALS.potionType.ID))},
-
-        {"# of potions: ", tostring(GLOBALS.potionsMade)},
-
-        {"# of potions/hr: ", tostring(GLOBALS.potionsPerHour)},
-
-        {"Est. profit: ", tostring(GLOBALS.estProfit)},
-
-        {"Est. profit/hr: ", tostring(GLOBALS.estProfitPerHour)}
-
+        {"Current State: ", GLOBALS.currentState},
+        {"Potion Type: ", GLOBALS.potionType.Name},
+        {"GE Value: ", fmt(API.GetExchangePrice(GLOBALS.potionType.ID))},
+        {"# of potions: ", fmt(GLOBALS.potionsMade)},
+        {"# of potions/hr: ", fmt(GLOBALS.potionsPerHour)},
+        {"Est. profit: ", fmt(GLOBALS.estProfit)},
+        {"Est. profit/hr: ", fmt(GLOBALS.estProfitPerHour)}
     }
 
 end
