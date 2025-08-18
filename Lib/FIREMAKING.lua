@@ -9,6 +9,12 @@ local ANIM = {
     LIGHTING = 16783
 }
 
+GLOBALS = {
+    makeIncense = false,
+    logsBurnt = 0,
+    incenseMade = 0,
+}
+
 ---@return num/boolean -- returns number of objs if we find a fire or false if we dont
 function Firemaking.findFires()
 
@@ -42,10 +48,6 @@ end
 
 ---@return boolean -- returns true if the Cook/Add to Fire interface is present
 function Firemaking.findBonfireInterface()
-
-   
-
-    --Full IDs: { { 1179,0,-1,-1,0 }, { 1179,99,-1,0,0 }, { 1179,99,14,99,0 } }
 
     return #API.ScanForInterfaceTest2Get(true, { { 1179,0,-1,-1,0 }}) > 0
 
