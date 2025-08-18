@@ -2,6 +2,8 @@ local API = require("api")
 local UTILS = require("UTILS")
 local Miscellaneous = {}
 
+---@param amount number
+---@return string
 function Miscellaneous.comma_value(amount)
     local formatted = tostring(amount) -- Convert the number to a string
     while true do
@@ -13,6 +15,31 @@ function Miscellaneous.comma_value(amount)
         end
     end
     return formatted
+end
+---@param item number
+---@return number
+function Miscellaneous.itemsPerHour(item)
+    if item == 0 then
+        return 0
+    end
+    local elapsedTime = API.ScriptRuntime() / 3600 
+    return math.floor(item / elapsedTime)
+end
+
+---@param ID number
+---@param Num number
+---@return number
+function Miscellaneous.EstimatedProfit(ID, Num) 
+    local profitPerItem = API.GetExchangePrice(ID)
+    return Num * profitPerItem
+end
+
+---@param ID number
+---@param Num number
+---@return number
+function Miscellaneous.EstimatedProfitPerHour(ID, Num)
+    local elapsedTime = API.ScriptRuntime() / 3600
+    return math.floor(Miscellaneous.EstimatedProfit(ID, Num) / elapsedTime)    
 end
 
 function Miscellaneous.getLevel(skill)

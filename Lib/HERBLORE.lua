@@ -784,48 +784,12 @@ CLEAN_HERBS = {
 
 }
 
-function PotionsPerHour()
-
-    if GLOBALS.potionsMade == 0 then
-
-        return 0
-
-    end
-
-
-
-    local elapsedTime = API.ScriptRuntime() / 3600 
-
-    
-
-    return math.floor(GLOBALS.potionsMade / elapsedTime)
-
-end
-
-function EstimatedProfit() 
-
-    local profitPerPotion = API.GetExchangePrice(GLOBALS.potionType.ID)
-
-    return GLOBALS.potionsMade * profitPerPotion
-
-end
-
-function EstimatedProfitPerHour()
-
-    local elapsedTime = API.ScriptRuntime() / 3600
-
-    
-
-    return math.floor(EstimatedProfit() / elapsedTime)    
-
-end
-
 ----METRICS----
 function Herblore.metrics() 
 
-    GLOBALS.potionsPerHour = PotionsPerHour()
-    GLOBALS.estProfit = EstimatedProfit()
-    GLOBALS.estProfitPerHour = EstimatedProfitPerHour()
+    GLOBALS.potionsPerHour = MISC.itemsPerHour(GLOBALS.potionsMade)
+    GLOBALS.estProfit = MISC.EstimatedProfit(GLOBALS.potionType.ID, GLOBALS.potionsMade)
+    GLOBALS.estProfitPerHour = MISC.EstimatedProfitPerHour(GLOBALS.potionType.ID, GLOBALS.potionsMade)
 
     local function fmt(value)
         if value > 999 then
