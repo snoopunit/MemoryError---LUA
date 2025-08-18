@@ -38,7 +38,7 @@ end
 ---@param itemNum number
 ---@return number
 function Miscellaneous.EstimatedProfit(itemID, itemNum) 
-    local profitPerItem = API.GetExchangePrice(ID)
+    local profitPerItem = API.GetExchangePrice(itemID)
     return itemNum * profitPerItem
 end
 
