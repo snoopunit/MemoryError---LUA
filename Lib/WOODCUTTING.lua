@@ -76,6 +76,14 @@ Woodcutting.GLOBALS = {
 
 function Woodcutting.setTreeAndLogType()
 
+    if not API.GetLocalPlayerAddress() then
+        API.logError("Woodcutting.setTreeAndLogType(): Local player address not found.")
+        API.logDebug("Setting defaults for script.")
+        Woodcutting.GLOBALS.treeType = TREES.TREE
+        Woodcutting.GLOBALS.logType = LOGS.LOGS
+        return
+    end
+
     local wcLvl = MISC.getLevel("WOODCUTTING")
     local fmLvl = MISC.getLevel("FIREMAKING")
 
