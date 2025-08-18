@@ -6,7 +6,7 @@ local MISC = require("lib/MISC")
 local WC = require("lib/WOODCUTTING")
 local FIRE = require("lib/FIREMAKING")
 
-prin("Required modules loaded")
+print("Required modules loaded")
 
 local Max_AFK = 5
 local makeIncense = true
