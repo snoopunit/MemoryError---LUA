@@ -6,7 +6,7 @@ local Woodcutting = {}
 
 GLOBALS = {
     woodBoxType = nil,
-    treeType = nil,
+    treeType = "None",
     logType = nil,
     treesChopped = 0,
     logsGathered = 0,
@@ -14,7 +14,7 @@ GLOBALS = {
 
 METRICS = {
     CURRENT_STATE = {"Current State: ", GLOBALS.currentState},
-    TREE_TYPE = {"Tree Type: ", GLOBALS.treeType.Name or "None"},
+    TREE_TYPE = {"Tree Type: ", GLOBALS.treeType.Name},
     NUM_TREES = {"# of trees chopped: ", fmt(GLOBALS.treesChopped)},
     NUM_TREES_PER_HR = {"# of trees/hr: ", fmt(MISC.itemsPerHour(GLOBALS.treesChopped))},
     NUM_LOGS = {"# of logs: ", fmt(GLOBALS.logsGathered)},
