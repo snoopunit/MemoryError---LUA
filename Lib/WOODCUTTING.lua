@@ -144,6 +144,8 @@ function Woodcutting.setTreeAndLogType()
     end
 
     treeToUse, logToUse = pickTier(wcLvl, fmLvl)
+    API.logDebug("Tree Type: "..treeToUse.name)
+    API.logDebug("Log Type: "..logToUse.name)
     return treeToUse, logToUse
 
 end
