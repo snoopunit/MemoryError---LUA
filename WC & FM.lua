@@ -36,7 +36,7 @@ API.Write_LoopyLoop(true)
 API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(Max_AFK)
-WC.setTreeAndLogType()
+--WC.setTreeAndLogType()
 FIRE.GLOBALS.logType = WC.GLOBALS.logType
 
 while(API.Read_LoopyLoop())
