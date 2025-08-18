@@ -6,19 +6,12 @@ local Woodcutting = {}
 
 GLOBALS = {
     woodBoxType = nil,
-    treeType = "None",
+    treeType = nil,
     logType = nil,
     treesChopped = 0,
     logsGathered = 0,
-}
-
-METRICS = {
-    CURRENT_STATE = {"Current State: ", GLOBALS.currentState},
-    TREE_TYPE = {"Tree Type: ", GLOBALS.treeType.Name},
-    NUM_TREES = {"# of trees chopped: ", MISC.fmt(GLOBALS.treesChopped)},
-    NUM_TREES_PER_HR = {"# of trees/hr: ", MISC.fmt(MISC.itemsPerHour(GLOBALS.treesChopped))},
-    NUM_LOGS = {"# of logs: ", MISC.fmt(GLOBALS.logsGathered)},
-    NUM_LOGS_PER_HR = {"# of logs/hr: ", MISC.fmt(MISC.itemsPerHour(GLOBALS.logsGathered))}
+    estProfit = 0,
+    estProfitPerHour = 0
 }
 
 TREES = {
@@ -121,19 +114,6 @@ WOOD_BOXES = {
 
 }
 
-function Woodcutting.metrics() 
-
-    return {
-        METRICS.CURRENT_STATE,
-        METRICS.TREE_TYPE,
-        METRICS.NUM_TREES,
-        METRICS.NUM_TREES_PER_HR,
-        METRICS.NUM_LOGS,
-        METRICS.NUM_LOGS_PER_HR
-    }
-
-end
-
 function Woodcutting.setTreeAndLogType()
 
     local wcLvl = MISC.getLevel("WOODCUTTING")
@@ -169,6 +149,8 @@ function Woodcutting.setTreeAndLogType()
     GLOBALS.treeType, GLOBALS.logType = pickTier(wcLvl, fmLvl)
 
 end
+
+
 
 ---@param object TREES.treeType
 ---@return boolean -- returns true if we successfully start chopping a tree
