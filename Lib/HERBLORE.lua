@@ -419,19 +419,18 @@ GLOBALS = {
     currentState = "Idle"
 }
 
-METRICS = {
-    CURRENT_STATE = {"Current State: ", GLOBALS.currentState},
-    POTION_TYPE = {"Potion Type: ", GLOBALS.potionType.Name},
-    GE_VALUE = {"GE Value: ", MISC.fmt(API.GetExchangePrice(GLOBALS.potionType.ID))},
-    POTION_NUM = {"# of potions: ", MISC.fmt(GLOBALS.potionsMade)},
-    POTION_PER_HR = {"# of potions/hr: ", MISC.fmt(MISC.itemsPerHour(GLOBALS.potionsMade))},
-    EST_PROFIT = {"Est. profit: ", MISC.fmt(MISC.EstimatedProfit(GLOBALS.potionType.ID, GLOBALS.potionsMade))},
-    EST_PROFIT_PER_HR = {"Est. profit/hr: ", MISC.fmt(MISC.EstimatedProfitPerHour(GLOBALS.potionType.ID, GLOBALS.potionsMade))}
-}
-
 ----METRICS----
 function Herblore.metrics()
-    API.DrawTable({METRICS.CURRENT_STATE, METRICS.POTION_TYPE, METRICS.GE_VALUE, METRICS.POTION_NUM, METRICS.POTION_PER_HR, METRICS.EST_PROFIT, METRICS.EST_PROFIT_PER_HR})
+    METRICS = {
+        {"Current State: ", GLOBALS.currentState},
+        {"Potion Type: ", GLOBALS.potionType.Name},
+        {"GE Value: ", MISC.fmt(API.GetExchangePrice(GLOBALS.potionType.ID))},
+        {"# of potions: ", MISC.fmt(GLOBALS.potionsMade)},
+        {"# of potions/hr: ", MISC.fmt(MISC.itemsPerHour(GLOBALS.potionsMade))},
+        {"Est. profit: ", MISC.fmt(MISC.EstimatedProfit(GLOBALS.potionType.ID, GLOBALS.potionsMade))},
+        {"Est. profit/hr: ", MISC.fmt(MISC.EstimatedProfitPerHour(GLOBALS.potionType.ID, GLOBALS.potionsMade))}
+    }
+    API.DrawTable(METRICS)
 end
 
 function Herblore.updatePotionNum(potionsMade)
