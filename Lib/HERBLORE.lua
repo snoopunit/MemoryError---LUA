@@ -421,7 +421,7 @@ GLOBALS = {
 
 ----METRICS----
 function Herblore.metrics()
-    METRICS = {
+    local METRICS = {
         {"Current State: ", GLOBALS.currentState},
         {"Potion Type: ", GLOBALS.potionType.Name},
         {"GE Value: ", MISC.fmt(API.GetExchangePrice(GLOBALS.potionType.ID))},
