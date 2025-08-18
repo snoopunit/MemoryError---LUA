@@ -140,7 +140,7 @@ end
 
 ----METRICS----
 function Woodcutting.metrics()
-    if treeType == nil or logType == nil then
+    if GLOBALS.treeType == nil or GLOBALS.logType == nil then
         API.logWarn("Tree type or log type is not set. Cannot display metrics.")
         return
     end
