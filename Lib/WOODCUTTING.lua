@@ -219,7 +219,7 @@ function Woodcutting.woodBoxCapacity()
         [55775] = 160  -- Elder wood box
     }
     local woodcuttingLevel = API.XPLevelTable(API.GetSkillXP("WOODCUTTING"))
-    local baseCapacity = baseCapacities[boxType.id]
+    local baseCapacity = baseCapacities[GLOBALS.boxType.id]
     if baseCapacity then
         local levelBonus = math.floor(woodcuttingLevel / 10) * 10
         return math.min(baseCapacity + levelBonus, baseCapacity + 100)
