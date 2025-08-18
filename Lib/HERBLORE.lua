@@ -429,8 +429,6 @@ METRICS = {
     EST_PROFIT_PER_HR = {"Est. profit/hr: ", MISC.fmt(MISC.EstimatedProfitPerHour(GLOBALS.potionType.ID, GLOBALS.potionsMade))}
 }
 
-}
-
 ----METRICS----
 function Herblore.updatePotionNum(potionsMade)
 
