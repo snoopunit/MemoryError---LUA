@@ -22,7 +22,7 @@ TREES = {
     ELDER =             {name = "Elder tree",           id = nil},
     CRYSTAL =           {name = "Crystal tree",         id = nil},
     BLOODWOOD =         {name = "Bloodwood tree",       id = nil},
-    BLISTERWOOD =       {name = "Blisterwood tree",     id = nil}
+    BLISTERWOOD =       {name = "Blisterwood tree",     id = nil},
     GOLDEN_BAMBOO =     {name = "Golden bamboo",        id = nil},
     OVERGROWN_IDOLS =   {name = "Overgrown idols",      id = nil}
 
@@ -96,6 +96,8 @@ GLOBALS = {
     estProfitPerHour = 0
 }
 
+
+
 function Woodcutting.setTreeAndLogType()
 
     local wcLvl = MISC.getLevel("WOODCUTTING")
@@ -128,8 +130,8 @@ function Woodcutting.setTreeAndLogType()
     
     end
 
-    GLOBALS.treeType, GLOBALS.logType = pickTier(wcLvl, fmLvl)
-    API.logDebug("Tree type: "..GLOBALS.treeType.name..", Log type: "..GLOBALS.logType.name)
+    treeToUse, logToUse = pickTier(wcLvl, fmLvl)
+    return treeToUse, logToUse
 
 end
 

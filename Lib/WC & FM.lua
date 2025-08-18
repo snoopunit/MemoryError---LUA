@@ -8,23 +8,23 @@ local FIRE = require("lib/FIREMAKING")
 
 local Max_AFK = 5
 
-function Woodcutting_and_Firemaking()
+function Woodcutting_and_Firemaking(treeType, logType)
 
     if API.InvFull_() then
         if makeIncense then
-            if not FIRE.makeIncense(WC.GLOBALS.logType) then
+            if not FIRE.makeIncense(logType) then
                 return
             end
         else
-            if not FIRE.addToBonfire(WC.GLOBALS.logType) then
-                if not FIRE.useLogs(WC.GLOBALS.logType, 2) then
+            if not FIRE.addToBonfire(logType) then
+                if not FIRE.useLogs(logType, 2) then
                     return
                 end
             end
         end
         API.RandomSleep2(800, 0, 600)
     else
-        WC.gather(WC.GLOBALS.treeType, WC.GLOBALS.logType)
+        WC.gather(treeType, logType)
     end
 
 end
@@ -33,9 +33,9 @@ API.Write_LoopyLoop(true)
 API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(Max_AFK)
-WC.setTreeAndLogType()
+local treeToUse, logToUse = WC.setTreeAndLogType()
 
 while(API.Read_LoopyLoop())
 do-----------------------------------------------------------------------------------
-    Woodcutting_and_Firemaking()
+    Woodcutting_and_Firemaking(treeToUse, logToUse)
 end----------------------------------------------------------------------------------
