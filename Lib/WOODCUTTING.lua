@@ -106,52 +106,52 @@ function Woodcutting.setTreeAndLogType()
     
     end
 
-    GLOBALS.treeType, GLOBALS.logType = pickTier(wcLvl, fmLvl)
-    API.logDebug("Chosen Tree: " .. GLOBALS.treeType.name)
-    API.logDebug("Chosen Log: " .. GLOBALS.logType.name)
+    Woodcutting.GLOBALS.treeType, Woodcutting.GLOBALS.logType = pickTier(wcLvl, fmLvl)
+    API.logDebug("Chosen Tree: " .. Woodcutting.GLOBALS.treeType.name)
+    API.logDebug("Chosen Log: " .. Woodcutting.GLOBALS.logType.name)
     API.logDebug("update WC.setTreeAndLogType() if wrong tree selected!")
     
 end
 
 function Woodcutting.getLogType()
-    if GLOBALS.logType == nil then
+    if Woodcutting.GLOBALS.logType == nil then
         API.logWarn("Log type is not set. Cannot return log type.")
         return nil
     end
-    return GLOBALS.logType
+    return Woodcutting.GLOBALS.logType
 end
 
 function Woodcutting.getTreeType()
-    if GLOBALS.treeType == nil then
+    if Woodcutting.GLOBALS.treeType == nil then
         API.logWarn("Tree type is not set. Cannot return tree type.")
         return nil
     end
-    return GLOBALS.treeType
+    return Woodcutting.GLOBALS.treeType
 end
 
 ----METRICS----
 function Woodcutting.metrics()
-    if GLOBALS.treeType == nil or GLOBALS.logType == nil then
+    if Woodcutting.GLOBALS.treeType == nil or Woodcutting.GLOBALS.logType == nil then
         API.logWarn("Tree type or log type is not set. Cannot display metrics.")
         return
     end
 
     local METRICS = {
-        {"Current State: ", GLOBALS.currentState},
-        {"Tree Type: ", GLOBALS.treeType.name},
-        {"GE Value: ", MISC.fmt(API.GetExchangePrice(GLOBALS.logType.id))},
-        {"# of logs: ", MISC.fmt(GLOBALS.logsGathered)},
-        {"# of logs/hr: ", MISC.fmt(MISC.itemsPerHour(GLOBALS.logsGathered))},
-        {"Est. profit: ", MISC.fmt(MISC.EstimatedProfit(GLOBALS.logType.id, GLOBALS.logsGathered))},
-        {"Est. profit/hr: ", MISC.fmt(MISC.EstimatedProfitPerHour(GLOBALS.logType.id, GLOBALS.logsGathered))}
+        {"Current State: ", Woodcutting.GLOBALS.currentState},
+        {"Tree Type: ", Woodcutting.GLOBALS.treeType.name},
+        {"GE Value: ", MISC.fmt(API.GetExchangePrice(Woodcutting.GLOBALS.logType.id))},
+        {"# of logs: ", MISC.fmt(Woodcutting.GLOBALS.logsGathered)},
+        {"# of logs/hr: ", MISC.fmt(MISC.itemsPerHour(Woodcutting.GLOBALS.logsGathered))},
+        {"Est. profit: ", MISC.fmt(MISC.EstimatedProfit(Woodcutting.GLOBALS.logType.id, Woodcutting.GLOBALS.logsGathered))},
+        {"Est. profit/hr: ", MISC.fmt(MISC.EstimatedProfitPerHour(Woodcutting.GLOBALS.logType.id, Woodcutting.GLOBALS.logsGathered))}
     }
     API.DrawTable(METRICS)
 end
 
 ---@return boolean -- returns true if we successfully start chopping a tree
 function Woodcutting.chop()
-    API.logDebug("Woodcutting.chop(): " .. GLOBALS.treeType.name)
-    return Interact:Object(GLOBALS.treeType.name, "Chop down", 30)
+    API.logDebug("Woodcutting.chop(): " .. Woodcutting.GLOBALS.treeType.name)
+    return Interact:Object(Woodcutting.GLOBALS.treeType.name, "Chop down", 30)
 end
 
 ---@return any -- returns the key of wood box found in inv or nil if none
@@ -198,20 +198,20 @@ end
 ---@return boolean -- returns true when inv is full. fills the wood box along the way if we have one
 function Woodcutting.gather()
 
-    GLOBALS.boxType = Woodcutting.findWoodBox()
-    local checkWoodBox = GLOBALS.boxType ~= nil
+    Woodcutting.GLOBALS.boxType = Woodcutting.findWoodBox()
+    local checkWoodBox = Woodcutting.GLOBALS.boxType ~= nil
     local failSafe = 0
 
     while not API.InvFull_() and (not checkWoodBox or not Woodcutting.woodBoxFull()) and API.Read_LoopyLoop() do        
         if not Woodcutting.chop() then
-            API.logWarn("Unable to chop tree: "..GLOBALS.treeType.name)
+            API.logWarn("Unable to chop tree: "..Woodcutting.GLOBALS.treeType.name)
             failSafe = (failSafe + 1)
             if failSafe >= 10 then
                 API.Write_LoopyLoop(false)
                 return false
             end
         else
-            API.logInfo("Chopping tree: "..GLOBALS.treeType.name)
+            API.logInfo("Chopping tree: "..Woodcutting.GLOBALS.treeType.name)
             while API.CheckAnim(75) do
                 if checkWoodBox then
                     if API.Invfreecount_() < math.random(0,8) then
