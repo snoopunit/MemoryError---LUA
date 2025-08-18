@@ -201,14 +201,14 @@ function Miscellaneous.doCrafting()
     Miscellaneous.waitForCraftingInterface()
 
     if Miscellaneous.clickStart() then
-        API.RandomSleep2(1200,0,600)
+        API.RandomSleep2(2000,0,600)
         if API.isProcessing() then
             while API.isProcessing() do
                 API.RandomSleep2(600,0,500)
             end
             return true
         else
-            API.logWarn("Failed to do find processing window!")
+            API.logWarn("MISC.doCrafting(): Failed to find processing window!")
             API.Write_LoopyLoop(false)
             return false        
         end
