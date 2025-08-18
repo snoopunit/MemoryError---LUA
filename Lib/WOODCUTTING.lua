@@ -169,7 +169,8 @@ function Woodcutting.findWoodBox()
 end
 
 ---@return number -- returns the # of logs of the specified type within the Wood Box
-function Woodcutting.woodBoxCount() 
+function Woodcutting.woodBoxCount()
+    return 0
 end
 
 ---@return capacity number -- returns the max capacity of current wood box or nil if none
@@ -185,19 +186,22 @@ function Woodcutting.woodBoxCapacity()
         [55774] = 150, -- Magic wood box
         [55775] = 160  -- Elder wood box
     }
-
+    return 0
 end
 
 ---@return boolean -- returns true if the Wood Box gets filled with an # of items
 function Woodcutting.fillWoodBox()
+    return false
 end
 
 ---@return boolean -- returns true if we activate the use option for our Wood Box
 function Woodcutting.useWoodBox()
+    return false
 end
 
 ---@return boolean -- returns true if the Wood Box is full
 function Woodcutting.woodBoxFull()
+    return false
 end
 
 ---@return boolean -- returns true when inv is full. fills the wood box along the way if we have one
