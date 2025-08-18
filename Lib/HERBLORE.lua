@@ -17,12 +17,6 @@ GLOBALS = {
 
     potionsMade = 0,
 
-    potionsPerHour = 0,
-
-    estProfit = 0,
-
-    estProfitPerHour = 0,
-
     currentState = "Idle"
 
 }
@@ -787,10 +781,6 @@ CLEAN_HERBS = {
 ----METRICS----
 function Herblore.metrics() 
 
-    GLOBALS.potionsPerHour = MISC.itemsPerHour(GLOBALS.potionsMade)
-    GLOBALS.estProfit = MISC.EstimatedProfit(GLOBALS.potionType.ID, GLOBALS.potionsMade)
-    GLOBALS.estProfitPerHour = MISC.EstimatedProfitPerHour(GLOBALS.potionType.ID, GLOBALS.potionsMade)
-
     local function fmt(value)
         if value > 999 then
             return MISC.comma_value(value)
@@ -803,9 +793,9 @@ function Herblore.metrics()
         {"Potion Type: ", GLOBALS.potionType.Name},
         {"GE Value: ", fmt(API.GetExchangePrice(GLOBALS.potionType.ID))},
         {"# of potions: ", fmt(GLOBALS.potionsMade)},
-        {"# of potions/hr: ", fmt(GLOBALS.potionsPerHour)},
-        {"Est. profit: ", fmt(GLOBALS.estProfit)},
-        {"Est. profit/hr: ", fmt(GLOBALS.estProfitPerHour)}
+        {"# of potions/hr: ", fmt(MISC.itemsPerHour(GLOBALS.potionsMade))},
+        {"Est. profit: ", fmt(MISC.EstimatedProfit(GLOBALS.potionType.ID, GLOBALS.potionsMade))},
+        {"Est. profit/hr: ", fmt(MISC.EstimatedProfitPerHour(GLOBALS.potionType.ID, GLOBALS.potionsMade))}
     }
 
 end
