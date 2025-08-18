@@ -34,20 +34,20 @@ function Miscellaneous.itemsPerHour(item)
     return math.floor(item / elapsedTime)
 end
 
----@param ID number
----@param Num number
+---@param itemID number
+---@param itemNum number
 ---@return number
-function Miscellaneous.EstimatedProfit(ID, Num) 
+function Miscellaneous.EstimatedProfit(itemID, itemNum) 
     local profitPerItem = API.GetExchangePrice(ID)
-    return Num * profitPerItem
+    return itemNum * profitPerItem
 end
 
----@param ID number
----@param Num number
+---@param itemID number
+---@param itemNum number
 ---@return number
-function Miscellaneous.EstimatedProfitPerHour(ID, Num)
+function Miscellaneous.EstimatedProfitPerHour(itemID, itemNum)
     local elapsedTime = API.ScriptRuntime() / 3600
-    return math.floor(Miscellaneous.EstimatedProfit(ID, Num) / elapsedTime)    
+    return math.floor(Miscellaneous.EstimatedProfit(itemID, itemNum) / elapsedTime)    
 end
 
 function Miscellaneous.getLevel(skill)
