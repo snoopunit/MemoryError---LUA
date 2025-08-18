@@ -214,17 +214,26 @@ function Miscellaneous.doCrafting()
     Miscellaneous.waitForCraftingInterface()
 
     if Miscellaneous.clickStart() then
-        API.RandomSleep2(2000,0,600)
-        if API.isProcessing() then
-            while API.isProcessing() do
-                API.RandomSleep2(600,0,500)
+        local craftingTimer = API.SystemTime()
+
+        while not API.isProcessing() do
+
+            API.RandomSleep2(600,0,500)
+
+            if API.SystemTime() - craftingTimer > 10000 then
+                API.logWarn("Crafting process took too long to start!")
+                API.Write_LoopyLoop(false)
+                return false
             end
-            return true
-        else
-            API.logWarn("MISC.doCrafting(): Failed to find processing window!")
-            API.Write_LoopyLoop(false)
-            return false        
+            
         end
+
+        while API.isProcessing() do
+            API.RandomSleep2(600,0,500)
+        end
+
+        return true
+        
     end
 
 end
