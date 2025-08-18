@@ -96,8 +96,6 @@ GLOBALS = {
     estProfitPerHour = 0
 }
 
-
-
 function Woodcutting.setTreeAndLogType()
 
     local wcLvl = MISC.getLevel("WOODCUTTING")
