@@ -166,7 +166,7 @@ function Woodcutting.setTreeAndLogType()
     
     end
 
-    treeToUse, logToUse = pickTier(wcLvl, fmLvl)
+    GLOBALS.treeType, GLOBALS.logType = pickTier(wcLvl, fmLvl)
 
 end
 
