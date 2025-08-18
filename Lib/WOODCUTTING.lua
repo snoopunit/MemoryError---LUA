@@ -165,6 +165,7 @@ end
 
 ---@return any -- returns the key of wood box found in inv or nil if none
 function Woodcutting.findWoodBox()
+    return nil
 end
 
 ---@return number -- returns the # of logs of the specified type within the Wood Box
