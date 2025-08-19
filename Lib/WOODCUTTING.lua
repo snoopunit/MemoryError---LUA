@@ -156,6 +156,19 @@ function Woodcutting.metrics()
     API.DrawTable(METRICS)
 end
 
+---@return number action -- 1-Craft, 2-Light, 3-Use, 4-Drop
+function Woodcutting.useLogs(action)
+
+    if action ~= 1 and action ~= 2 and action ~= 3 and action ~= 4 then
+        API.logDebug("Firemaking useLogs action is not valid: ", action)
+        API.Write_LoopyLoop(false)
+        return false
+    end
+
+    return Inventory:DoAction(Woodcutting.GLOBALS.logType.id, action, API.OFF_ACT_GeneralInterface_route)
+
+end
+
 ---@return boolean -- returns true if we successfully start chopping a tree
 function Woodcutting.chop()
     API.logDebug("Woodcutting.chop(): " .. Woodcutting.GLOBALS.treeType.name)

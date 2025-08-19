@@ -7,7 +7,6 @@ local MISC = require("lib/MISC")
 function loadLastPreset()
     API.logDebug("Resupplying...")
     local banktimer = API.SystemTime()
-    --API.DoAction_NPC(0x33,API.OFF_ACT_InteractNPC_route4,{ banker },50)
     Interact:NPC("Emerald Benedict", "Load Last Preset from", 20)
     API.RandomSleep2(600, 0, 250)
     while API.Invfreecount_() > 0 do

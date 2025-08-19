@@ -94,6 +94,8 @@ function Firemaking.useBrazier()
 
 end
 
+---REMOVE THIS FUNCTION AND MOVE TO WOODCUTTING.LUA
+---LEFT FOR NOW TO PREVENT ERRORS
 ---@return number action -- 1-Craft, 2-Light, 3-Use, 4-Drop
 function Firemaking.useLogs(action)
 
