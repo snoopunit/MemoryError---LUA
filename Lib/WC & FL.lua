@@ -4,9 +4,6 @@ local API = require("api")
 local UTILS = require("UTILS")
 local MISC = require("lib/MISC")
 local WC = require("lib/WOODCUTTING")
-local FIRE = require("lib/FIREMAKING")
-
-print("Required modules loaded")
 
 local Max_AFK = 5
 
