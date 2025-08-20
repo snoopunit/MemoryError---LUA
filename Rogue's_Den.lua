@@ -253,7 +253,7 @@ end
 
 ---@return boolean
 function clickStart()
-    API.logInfo("Starting production...")
+    API.logDebug("Starting production...")
     if not isCraftingInterfaceOpen() then
         API.logWarn("Failed to detect Crafting Interface...")
         API.Write_LoopyLoop(false)
