@@ -22,7 +22,7 @@
         :   Click START.
 
 ]]
-        
+
 print("Rogue's Den cooking")
 
 local API = require("api")
@@ -365,6 +365,11 @@ function startCookingRoutine()
     end
 
     while GLOBALS.currentState ~= "Idle" do
+        if GLOBALS.fishToCook == nil then
+            API.logWarn("Something went wrong! Selected fish type still NIL!")
+            API.Write_LoopyLoop(false)
+            return
+        end
         if Inventory:Contains(GLOBALS.fishToCook.name) then
             updateCurrentState("Cooking...")
             cookAtFire()
