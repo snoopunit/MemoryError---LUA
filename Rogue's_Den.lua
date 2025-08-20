@@ -1,13 +1,42 @@
+--[[
+    Author:      Klamor
+    Version:     1.0
+    Release      Date: 08/20/2024
+    Script:      Rogue's Den Cooking
+
+    Release Notes:
+    - Version 1.0   :   Inital release
+
+    DESCRIPTION:
+        :   Cooks food at Rogue's Den under the tavern in Taverly
+        :   ATTENTION:
+            :   This script only uses the 'Load Last Preset' action.
+
+    TODO:
+        :   Add support for more cookable food types
+
+    SCRIPT SETUP:
+        :   Configure any preset to a full inventory of cookable items and load it once.
+        :   Run the script and choose your fishType in the drop down menu.
+        :   Click START
+
+]]
+
 print("Rogue's Den cooking")
 
 local API = require("api")
+
+GLOBALS = {
+    fishToCook = nil,
+    fishCooked = 0,
+    currentState = "Idle"
+}
 
 RAW_FISH = {
     RAW_SHRIMPS           = { name = "Raw Shrimps",             id = 317 },
     RAW_CRAYFISH          = { name = "Raw Crayfish",            id = 13435 },
     RAW_SARDINE           = { name = "Raw Sardine",             id = 327 },
     RAW_ANCHOVIES         = { name = "Raw Anchovies",           id = 321 },
-    RAW_KARAMBWANJI       = { name = "Raw Karambwanji",         id = 3150 },
     RAW_HERRING           = { name = "Raw Herring",             id = 345 },
     RAW_MACKEREL          = { name = "Raw Mackerel",            id = 353 },
     RAW_TROUT             = { name = "Raw Trout",               id = 335 },
@@ -67,6 +96,7 @@ RAW_TO_COOKED = {
     [21520]   = 21522    -- Raw Tiger Shark -> Tiger Shark
 }
 
+---@return table of strings
 function getAllFishNames()
     local names = {"None"}
     for _, fish in pairs(RAW_FISH) do
@@ -74,12 +104,6 @@ function getAllFishNames()
     end
     return names
 end
-
-GLOBALS = {
-    fishToCook = nil,
-    fishCooked = 0,
-    currentState = "Idle"
-}
 
 ---@param amount number
 ---@return string
@@ -96,6 +120,8 @@ function comma_value(amount)
     return formatted
 end
 
+---@param number
+---@return string
 function fmt(value)
     if value > 999 then
         return comma_value(value)
@@ -129,7 +155,6 @@ function EstimatedProfitPerHour(itemID, itemNum)
     return math.floor(EstimatedProfit(itemID, itemNum) / elapsedTime)    
 end
 
-----METRICS----
 function metrics()
     local METRICS = {
         {"Current State: ", GLOBALS.currentState},
@@ -148,7 +173,6 @@ function updateCurrentState(state)
     API.logDebug("Current State: "..GLOBALS.currentState)
     metrics()
 end
-----METRICS----
 
 function drawGUI()
 
@@ -207,13 +231,12 @@ function clearGUI()
     quitButton.remove = true
 end
 
----CREDIT---DEAD.UTILS
---- Is the Crafting interface open
 ---@return boolean
 function isCraftingInterfaceOpen()
   return API.VB_FindPSett(2874, 1, 0).state == 1310738
 end
 
+---@return boolean
 function waitForCraftingInterface()
     local failTimer = API.SystemTime()
     while not isCraftingInterfaceOpen() do
@@ -227,6 +250,7 @@ function waitForCraftingInterface()
     return true
 end
 
+---@return boolean
 function clickStart()
     API.logInfo("Starting production...")
     if not isCraftingInterfaceOpen() then
@@ -237,6 +261,7 @@ function clickStart()
     return API.DoAction_Interface(0xffffffff,0xffffffff,0,1370,30,-1,API.OFF_ACT_GeneralInterface_Choose_option)  
 end
 
+---@return boolean
 function doCrafting()
     waitForCraftingInterface()
     if clickStart() then
@@ -256,6 +281,7 @@ function doCrafting()
     end
 end
 
+---Attempts to 'Load Last Preset' on Benedict Banker. Shuts down if we don't get a full inventory after 30s
 function loadLastPreset()
     API.logDebug("Resupplying...")
     local banktimer = API.SystemTime()
@@ -271,10 +297,16 @@ function loadLastPreset()
     end
 end
 
+---Interacts with the cooking fire and doCrafting() if we succeed. Shuts down if we don't.
 function cookAtFire()
     API.logDebug("Cooking food...")
-    Interact:Object("Fire", "Cook at", 10)
-    doCrafting()
+    if Interact:Object("Fire", "Cook at", 10) then
+        doCrafting()
+    else
+        API.logDebug("Out of supplies!")
+        API.Write_LoopyLoop(false)
+        return
+    end
 end
 
 function updateMetrics()
@@ -287,6 +319,7 @@ function updateMetrics()
     metrics()
 end
 
+---Holds the script in "Idle" until we choose a fishType and hit START button
 function startCookingRoutine()
 
     while GLOBALS.currentState == "Idle" do
