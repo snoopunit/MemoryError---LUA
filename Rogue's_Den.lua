@@ -155,7 +155,7 @@ function drawGUI()
     local button_height = 30
     local button_spacing = 20
     local total_button_width = button_width * 2 + button_spacing
-    local buttons_start_x = gui_center_x - (total_button_width / 2)
+    local buttons_start_x = gui_center_x - (total_button_width / 2) - 40
 
     startButton = API.CreateIG_answer()
     startButton.box_name = "START"
