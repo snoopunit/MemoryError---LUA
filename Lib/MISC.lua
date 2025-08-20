@@ -275,7 +275,7 @@ function Miscellaneous.doCrafting()
             
         end
 
-        while API.isProcessing() do
+        while API.isProcessing() and API.Read_LoopyLoop() do
             API.RandomSleep2(600,0,500)
         end
 
