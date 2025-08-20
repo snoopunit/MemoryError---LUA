@@ -261,7 +261,7 @@ function startCookingRoutine()
             fishTypeCombo.return_click = false
             local selectedFishType = fishTypeCombo.string_value
             for key, value in pairs(RAW_FISH) do
-                if value.Name == selectedFishType then
+                if value.name == selectedFishType then
                     GLOBALS.fishToCook = value
                     break
                 end
