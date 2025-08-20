@@ -370,6 +370,7 @@ function startCookingRoutine()
             API.Write_LoopyLoop(false)
             return
         end
+        if not API.Read_LoopyLoop() then return end
         if Inventory:Contains(GLOBALS.fishToCook.id) then
             updateCurrentState("Cooking...")
             cookAtFire()
