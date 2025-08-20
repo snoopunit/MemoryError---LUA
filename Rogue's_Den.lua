@@ -373,9 +373,9 @@ function startCookingRoutine()
         if Inventory:Contains(GLOBALS.fishToCook.id) then
             updateCurrentState("Cooking...")
             cookAtFire()
-        else
             updateCurrentState("Updating Metrics...")
             updateMetrics()
+        else
             updateCurrentState("Banking...")
             loadLastPreset()
         end
