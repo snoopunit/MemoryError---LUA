@@ -35,6 +35,38 @@ RAW_FISH = {
     RAW_TIGER_SHARK       = { name = "Raw Tiger Shark",         id = 21520 }  
 }
 
+RAW_TO_COOKED = {
+    [317]     = 315,     -- Raw Shrimps -> Shrimps
+    [13435]   = 13433,   -- Raw Crayfish -> Crayfish
+    [327]     = 325,     -- Raw Sardine -> Sardine
+    [321]     = 319,     -- Raw Anchovies -> Anchovies
+    [345]     = 347,     -- Raw Herring -> Herring
+    [353]     = 355,     -- Raw Mackerel -> Mackerel
+    [335]     = 333,     -- Raw Trout -> Trout
+    [341]     = 339,     -- Raw Cod -> Cod
+    [349]     = 351,     -- Raw Pike -> Pike
+    [331]     = 329,     -- Raw Salmon -> Salmon
+    [3379]    = 3381,    -- Slimy Eel -> Cooked Eel
+    [359]     = 361,     -- Raw Tuna -> Tuna
+    [3142]    = 3144,    -- Raw Karambwan -> Cooked Karambwan
+    [10138]   = 10136,   -- Raw Rainbow Fish -> Rainbow Fish
+    [5001]    = 5003,    -- Raw Cave Eel -> Cooked Cave Eel
+    [377]     = 379,     -- Raw Lobster -> Lobster
+    [363]     = 365,     -- Raw Bass -> Bass
+    [371]     = 373,     -- Raw Swordfish -> Swordfish
+    [40287]   = 40293,   -- Raw Desert Sole -> Desert Sole
+    [40289]   = 40295,   -- Raw Catfish -> Catfish
+    [7944]    = 7946,    -- Raw Monkfish -> Monkfish
+    [40291]   = 40297,   -- Raw Beltfish -> Beltfish
+    [383]     = 385,     -- Raw Shark -> Shark
+    [395]     = 397,     -- Raw Sea Turtle -> Sea Turtle
+    [34727]   = 34729,   -- Raw Great White Shark -> Great White Shark
+    [15264]   = 15266,   -- Raw Cavefish -> Cavefish
+    [389]     = 391,     -- Raw Manta Ray -> Manta Ray
+    [15270]   = 15272,   -- Raw Rocktail -> Rocktail
+    [21520]   = 21522    -- Raw Tiger Shark -> Tiger Shark
+}
+
 function getAllFishNames()
     local names = {"None"}
     for _, fish in pairs(RAW_FISH) do
@@ -109,14 +141,6 @@ function metrics()
         {"Est. profit/hr: ", fmt(EstimatedProfitPerHour(GLOBALS.fishToCook.id, GLOBALS.fishCooked))}
     }
     API.DrawTable(METRICS)
-end
-
-function updateFishNum(fishCooked)
-
-    GLOBALS.fishCooked = (GLOBALS.fishCooked + fishCooked)
-
-    metrics()
-
 end
 
 function updateCurrentState(state)
@@ -253,6 +277,16 @@ function cookAtFire()
     doCrafting()
 end
 
+function updateMetrics()
+
+    local cookedID = RAW_TO_COOKED[GLOBALS.fishToCook.id]
+    local cookedFishCount = Inventory:GetItemAmount(cookedID)
+
+    GLOBALS.fishCooked = GLOBALS.fishCooked + cookedFishCount
+
+    metrics()
+end
+
 function startCookingRoutine()
 
     while GLOBALS.currentState == "Idle" do
@@ -301,6 +335,8 @@ function startCookingRoutine()
             updateCurrentState("Cooking...")
             cookAtFire()
         else
+            updateCurrentState("Updating Metrics...")
+            updateMetrics()
             updateCurrentState("Banking...")
             loadLastPreset()
         end
