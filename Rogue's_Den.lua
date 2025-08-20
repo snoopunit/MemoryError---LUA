@@ -138,7 +138,7 @@ function drawGUI()
 
     local dropdown_width = 300
     local dropdown_height = 20
-    local dropdown_x = gui_center_x - (dropdown_width / 2) - 20
+    local dropdown_x = gui_center_x - (dropdown_width / 2)
     local dropdown_y = 40 
 
     local fishTypes = getAllFishNames()
