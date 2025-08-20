@@ -8,17 +8,18 @@
     - Version 1.0   :   Inital release
 
     DESCRIPTION:
-        :   Cooks food at Rogue's Den under the tavern in Taverly
+        :   Cooks food at Rogue's Den under the tavern in Taverly.
         :   ATTENTION:
             :   This script only uses the 'Load Last Preset' action.
+            :   This script only cooks when it finds a FULL inventory after banking.
 
     TODO:
-        :   Add support for more cookable food types
+        :   Add support for more cookable food types.
 
     SCRIPT SETUP:
         :   Configure any preset to a full inventory of cookable items and load it once.
         :   Run the script and choose your fishType in the drop down menu.
-        :   Click START
+        :   Click START.
 
 ]]
 
