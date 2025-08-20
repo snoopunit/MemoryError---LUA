@@ -298,8 +298,10 @@ function startCookingRoutine()
 
     while GLOBALS.currentState ~= "Idle" do
         if Inventory:Contains(GLOBALS.fishToCook.name) then
+            updateCurrentState("Cooking...")
             cookAtFire()
         else
+            updateCurrentState("Banking...")
             loadLastPreset()
         end
     end
