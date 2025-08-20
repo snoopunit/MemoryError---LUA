@@ -266,7 +266,13 @@ function startCookingRoutine()
                     break
                 end
             end
-            API.logDebug("Selected Fish Type: "..GLOBALS.fishToCook.Name)
+            if GLOBALS.fishToCook ~= nil then
+                API.logDebug("Selected Fish Type: "..GLOBALS.fishToCook.Name)
+            else
+                API.logWarn("Something went wrong! Selected fish type still NIL!")
+                API.Write_LoopyLoop(false)
+                return
+            end
         end
 
         if startButton.return_click then
