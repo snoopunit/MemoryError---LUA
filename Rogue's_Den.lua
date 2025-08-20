@@ -253,12 +253,7 @@ end
 
 ---@return boolean
 function clickStart()
-    API.logDebug("Starting production...")
-    if not isCraftingInterfaceOpen() then
-        API.logWarn("Failed to detect Crafting Interface...")
-        API.Write_LoopyLoop(false)
-        return false
-    end
+    waitForCraftingInterface()
     return API.DoAction_Interface(0xffffffff,0xffffffff,0,1370,30,-1,API.OFF_ACT_GeneralInterface_Choose_option)  
 end
 
@@ -282,9 +277,7 @@ function doCrafting()
     end
 end
 
----Attempts to 'Load Last Preset' on Benedict Banker. Shuts down if we don't get a full inventory after 30s
 function loadLastPreset()
-    API.logDebug("Resupplying...")
     local banktimer = API.SystemTime()
     Interact:NPC("Emerald Benedict", "Load Last Preset from", 20)
     API.RandomSleep2(600, 0, 250)
@@ -298,9 +291,7 @@ function loadLastPreset()
     end
 end
 
----Interacts with the cooking fire and doCrafting() if we succeed. Shuts down if we don't.
 function cookAtFire()
-    API.logDebug("Cooking food...")
     if Interact:Object("Fire", "Cook at", 10) then
         doCrafting()
     else
@@ -320,7 +311,6 @@ function updateMetrics()
     metrics()
 end
 
----Holds the script in "Idle" until we choose a fishType and hit START button
 function startCookingRoutine()
 
     while GLOBALS.currentState == "Idle" do
