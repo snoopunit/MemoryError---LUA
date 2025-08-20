@@ -26,8 +26,8 @@ API.Write_LoopyLoop(true)
 API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(Max_AFK)
-WC.GLOBALS.treeType = TREES.OAK
-WC.GLOBALS.logType = LOGS.OAK
+WC.GLOBALS.treeType = TREES.WILLOW
+WC.GLOBALS.logType = LOGS.WILLOW
 
 while(API.Read_LoopyLoop())
 do-----------------------------------------------------------------------------------
