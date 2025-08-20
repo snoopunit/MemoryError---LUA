@@ -131,7 +131,7 @@ function drawGUI()
     imguiBackground = API.CreateIG_answer()
     imguiBackground.box_name = "imguiBackground"
     imguiBackground.box_start = FFPOINT.new(50, 30, 0)
-    imguiBackground.box_size = FFPOINT.new(400, 225, 0)
+    imguiBackground.box_size = FFPOINT.new(400, 150, 0)
     imguiBackground.colour = ImColor.new(99, 99, 99, 225)
 
     local gui_center_x = imguiBackground.box_start.x + (imguiBackground.box_size.x / 2)
@@ -256,7 +256,7 @@ end
 function startCookingRoutine()
 
     while GLOBALS.currentState == "Idle" do
-        
+
         if fishTypeCombo.return_click then
             fishTypeCombo.return_click = false
             local selectedFishType = fishTypeCombo.string_value
