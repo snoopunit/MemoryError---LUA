@@ -77,7 +77,8 @@ function Woodcutting_and_Fletching()
         if MISC.isChooseToolOpen() then
             MISC.chooseToolOption("Fletch")
         end
-        MISC.doCrafting(fletchSelection)
+        MISC.chooseCraftingItem(fletchSelection)
+        MISC.doCrafting()
         if isBanking then
             BANK.loadLastPreset()
         end
