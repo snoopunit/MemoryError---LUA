@@ -85,7 +85,7 @@ function Woodcutting_and_Fletching()
         API.RandomSleep2(1200,0,600)
         if MISC.isChooseToolOpen() then
             MISC.chooseToolOption("Fletch")
-            API.RandomSleep2(1200,0,600)
+            API.RandomSleep2(1800,0,600)
         end
         MISC.chooseCraftingItem(fletchSelection)
         API.RandomSleep2(600,0,600)
