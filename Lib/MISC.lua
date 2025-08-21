@@ -187,7 +187,7 @@ end
 function Miscellaneous.chooseCraftingItem(selectionBoxNum)
     API.logDebug("Selecting crafting item #: "..tostring(selectionBoxNum))
     if not UTILS.isCraftingInterfaceOpen() then
-        API.logWarn("Failed to detect Crafting Interface...")
+        API.logWarn("Failed to detect Crafting Interface in chooseCraftingItem()")
         API.Write_LoopyLoop(false)
         return false
     end
@@ -198,7 +198,7 @@ end
 function Miscellaneous.clickStart()
     API.logInfo("Starting production...")
     if not UTILS.isCraftingInterfaceOpen() then
-        API.logWarn("Failed to detect Crafting Interface...")
+        API.logWarn("Failed to detect Crafting Interface in clickStart()")
         API.Write_LoopyLoop(false)
         return false
     end
