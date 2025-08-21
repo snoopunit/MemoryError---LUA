@@ -36,12 +36,12 @@ API.Write_LoopyLoop(true)
 API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(Max_AFK)
-WC.setTreeAndLogType()
+--WC.setTreeAndLogType()
+WC.GLOBALS.treeType = TREES.WILLOW
+WC.GLOBALS.logType = LOGS.WILLOW
 FIRE.GLOBALS.logType = WC.GLOBALS.logType
 
 while(API.Read_LoopyLoop())
 do-----------------------------------------------------------------------------------
-    WC.metrics()
-    API.RandomSleep2(50,0,50)
-    --Woodcutting_and_Firemaking()
+    Woodcutting_and_Firemaking()
 end----------------------------------------------------------------------------------
