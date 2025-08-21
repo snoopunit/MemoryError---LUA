@@ -131,6 +131,7 @@ function mainRoutine()
                 API.Write_LoopyLoop(false)
                 return
             end
+            API.logDebug("Banking: "..tostring(isBanking))
         end
         if startButton.return_click then
             startButton.return_click = false
