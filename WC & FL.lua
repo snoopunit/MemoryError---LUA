@@ -40,7 +40,6 @@ function drawGUI()
     fletchTypeText.box_start = FFPOINT.new(425, 30, 0)
     fletchTypeText.colour = ImColor.new(255,255,255)
     
-
     treeTypes = {"Tree", "Oak", "Willow", "Maple", "Yew", "Magic", "Elder"}
 
     treeTypeCombo = API.CreateIG_answer()
@@ -81,6 +80,7 @@ end
 function clearGUI()
     imguiBackground.remove = true
     fletchTypeCombo.remove = true
+    treeTypeCombo.remove = true
     startButton.remove = true
     quitButton.remove = true
 end
