@@ -40,7 +40,7 @@ function drawGUI()
 
     treeTypeCombo = API.CreateIG_answer()
     treeTypeCombo.box_name = "Tree Type"
-    treeTypeCombo.box_start = FFPOINT.new(dropdown_x, dropdown_y, 0)
+    treeTypeCombo.box_start = FFPOINT.new(dropdown_x, dropdown_y + 20, 0)
     treeTypeCombo.stringsArr = treeTypes
     treeTypeCombo.string_value = treeTypes[4]
     treeTypeCombo.tooltip_text = "Choose the type of tree to cut."
@@ -54,13 +54,13 @@ function drawGUI()
 
     startButton = API.CreateIG_answer()
     startButton.box_name = "START"
-    startButton.box_start = FFPOINT.new(buttons_start_x, button_y, 0)
+    startButton.box_start = FFPOINT.new(buttons_start_x, button_y + 20, 0)
     startButton.box_size = FFPOINT.new(button_width, button_height, 0)
     startButton.tooltip_text = "Start the script."
 
     quitButton = API.CreateIG_answer()
     quitButton.box_name = "QUIT"
-    quitButton.box_start = FFPOINT.new(buttons_start_x + button_width + button_spacing, button_y, 0)
+    quitButton.box_start = FFPOINT.new(buttons_start_x + button_width + button_spacing, button_y + 20, 0)
     quitButton.box_size = FFPOINT.new(button_width, button_height, 0)
     quitButton.tooltip_text = "Close the script."
 
