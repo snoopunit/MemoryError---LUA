@@ -185,6 +185,7 @@ end
 ---@param selectionBoxNum number --- Selection Box Number
 ---@return boolean --- Returns true if API.DoAction_Interface() returns true --- should check if this returns false when an unavailable item is selected because it probably doesnt
 function Miscellaneous.chooseCraftingItem(selectionBoxNum)
+    API.logDebug("Selecting crafting item #: "..tostring(selectionBoxNum))
     if not UTILS.isCraftingInterfaceOpen() then
         API.logWarn("Failed to detect Crafting Interface...")
         API.Write_LoopyLoop(false)
