@@ -88,6 +88,7 @@ function Woodcutting_and_Fletching()
             API.RandomSleep2(1200,0,600)
         end
         MISC.chooseCraftingItem(fletchSelection)
+        API.RandomSleep2(600,0,600)
         MISC.doCrafting() 
         if isBanking then
             local bankTimer = API.SystemTime()
