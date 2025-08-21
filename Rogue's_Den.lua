@@ -1,11 +1,12 @@
 --[[
     Author:      Klamor
-    Version:     1.0
+    Version:     1.1
     Release      Date: 08/20/2024
     Script:      Rogue's Den Cooking
 
     Release Notes:
     - Version 1.0   :   Inital release
+    - Version 1.1   :   Added Fail-Safe conditions to prevent infinite loops
 
     DESCRIPTION:
         :   Cooks food at Rogue's Den under the tavern in Taverly.
