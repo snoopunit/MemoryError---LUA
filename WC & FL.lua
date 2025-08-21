@@ -94,6 +94,9 @@ function Woodcutting_and_Fletching()
             Interact:NPC("Banker", "Load Last Preset from", 20)
             while not Inventory:IsEmpty() do
                 API.RandomSleep2(600,0,500)
+                if API.ReadPlayerMovin() then
+                    bankTimer = API.SystemTime()
+                end
                 if API.SystemTime() - bankTimer < 30000 then
                     API.logWarn("Didn't clean out our inventory after 30s!")
                     API.Write_LoopyLoop(false)
