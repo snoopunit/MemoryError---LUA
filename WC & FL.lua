@@ -91,7 +91,11 @@ function Woodcutting_and_Fletching()
         MISC.doCrafting() 
         if isBanking then
             local bankTimer = API.SystemTime()
-            Interact:NPC("Banker", "Load Last Preset from", 20)
+            if not Interact:NPC("Banker", "Load Last Preset from", 50) then
+                API.logWarn("Couldn't interact with the banker!")
+                API.Write_LoopyLoop(false)
+                return false
+            end
             while not Inventory:IsEmpty() do
                 API.RandomSleep2(600,0,500)
                 if API.ReadPlayerMovin() then
