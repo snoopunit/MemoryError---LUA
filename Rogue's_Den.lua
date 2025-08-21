@@ -241,6 +241,7 @@ end
 function waitForCraftingInterface()
     local failTimer = API.SystemTime()
     while not isCraftingInterfaceOpen() do
+        if not API.Read_LoopyLoop() then return false end
         API.RandomSleep2(600,0,250)
         if API.SystemTime() - failTimer > 30000 then
             API.logWarn("Failed to open Crafting Interface!")
@@ -263,6 +264,7 @@ function doCrafting()
     if clickStart() then
         local craftingTimer = API.SystemTime()
         while not API.isProcessing() do
+            if not API.Read_LoopyLoop() then return false end
             API.RandomSleep2(600,0,500)
             if API.SystemTime() - craftingTimer > 10000 then
                 API.logWarn("Crafting process took too long to start!")
@@ -270,7 +272,8 @@ function doCrafting()
                 return false
             end
         end
-        while API.isProcessing() and API.Read_LoopyLoop() do
+        while API.isProcessing() do
+            if not API.Read_LoopyLoop() then return false end
             API.RandomSleep2(600,0,500)
         end
         return true
@@ -282,6 +285,7 @@ function loadLastPreset()
     Interact:NPC("Emerald Benedict", "Load Last Preset from", 20)
     API.RandomSleep2(600, 0, 250)
     while API.Invfreecount_() > 0 do
+        if not API.Read_LoopyLoop() then return false end
         if (API.SystemTime() - banktimer) > 30000 then
             API.logDebug("Out of supplies!")
             API.Write_LoopyLoop(false)
@@ -350,6 +354,7 @@ function startCookingRoutine()
             return
         end
 
+        if not API.Read_LoopyLoop() then return end
         API.RandomSleep2(250,0,250)
 
     end
