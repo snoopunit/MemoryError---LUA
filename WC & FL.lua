@@ -126,10 +126,11 @@ API.Write_LoopyLoop(true)
 API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(Max_AFK)
-WC.GLOBALS.treeType = TREES.WILLOW
-WC.GLOBALS.logType = LOGS.WILLOW
+WC.GLOBALS.treeType = TREES.MAPLE
+WC.GLOBALS.logType = LOGS.MAPLE
+drawGUI()
 
 while(API.Read_LoopyLoop())
 do-----------------------------------------------------------------------------------
-    Woodcutting_and_Fletching()
+    mainRoutine()
 end----------------------------------------------------------------------------------
