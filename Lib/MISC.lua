@@ -183,7 +183,7 @@ function Miscellaneous.chooseToolOption(option)
 end
 
 ---@param selectionBoxNum number --- Selection Box Number
----@return boolean --- Returns true if API.DoAction_Interface() returns true --- should check if this returns false when an unavailable item is selected because it probably doesnt
+---@return boolean --- Returns true if API.DoAction_Interface() returns true
 function Miscellaneous.chooseCraftingItem(selectionBoxNum)
     API.logDebug("Selecting crafting item #: "..tostring(selectionBoxNum))
     if not UTILS.isCraftingInterfaceOpen() then
@@ -192,26 +192,17 @@ function Miscellaneous.chooseCraftingItem(selectionBoxNum)
         return false
     end
     local iType = 1 + ((selectionBoxNum - 1)*4)
-    
     return API.DoAction_Interface(0xffffffff,0xffffffff,1,1371,22,iType,API.OFF_ACT_GeneralInterface_route)
 end
 
 function Miscellaneous.clickStart()
-
     API.logInfo("Starting production...")
-
     if not UTILS.isCraftingInterfaceOpen() then
-
         API.logWarn("Failed to detect Crafting Interface...")
-
         API.Write_LoopyLoop(false)
-
         return false
-
     end
-
     return API.DoAction_Interface(0xffffffff,0xffffffff,0,1370,30,-1,API.OFF_ACT_GeneralInterface_Choose_option)  
-
 end
 
 function Miscellaneous.autoRetaliate(set)
