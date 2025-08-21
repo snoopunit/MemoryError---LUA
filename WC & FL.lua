@@ -7,6 +7,9 @@ local WC = require("lib/WOODCUTTING")
 local BANK = require("lib/BANKING")
 
 local Max_AFK = 5
+local fletchType = "None"
+local scriptState = "Idle"
+local isBanking = false
 
 function drawGUI()
 
@@ -74,11 +77,49 @@ function Woodcutting_and_Fletching()
             MISC.chooseToolOption("Fletch")
         end
         MISC.doCrafting()
-        BANK.loadLastPreset()
+        if isBanking then
+            BANK.loadLastPreset()
+        end
     else
         WC.gather()
     end
 
+end
+
+function mainRoutine()
+    if scriptState == "Idle" then
+        if fletchTypeCombo.return_click then
+            fletchTypeCombo.return_click = false
+            fletchType = fletchTypeCombo.string_value
+            if fletchType ~= "None" then
+                API.logDebug("Selected Fletch Type: "..fletchType)
+                if fletchType ~= "Arrow Shafts" then
+                    isBanking = true
+                end
+            else
+                API.logWarn("Something went wrong! Selected fish type still None!")
+                API.Write_LoopyLoop(false)
+                return
+            end
+        end
+        if startButton.return_click then
+            startButton.return_click = false
+            if fletchType == "None" then
+                API.logWarn("Fletch Type not selected!")
+            else
+                clearGUI()
+            end
+        end
+        if quitButton.return_click then
+            API.logWarn("Stopping script!")
+            API.Write_LoopyLoop(false)
+            return
+        end
+        if not API.Read_LoopyLoop() then return end
+        API.RandomSleep2(250,0,250)
+    else
+        Woodcutting_and_Fletching()   
+    end
 end
 
 API.Write_LoopyLoop(true)
