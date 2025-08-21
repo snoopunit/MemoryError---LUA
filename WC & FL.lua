@@ -88,7 +88,7 @@ function Woodcutting_and_Fletching()
             MISC.waitForCraftingInterface()
         end
         MISC.chooseCraftingItem(fletchSelection)
-        MISC.doCrafting()
+        MISC.doCrafting() 
         if isBanking then
             Interact:NPC("Banker", "Load Last Preset from", 20)
             API.waitUntilMovingEnds(1,2)
