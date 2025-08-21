@@ -90,9 +90,16 @@ function Woodcutting_and_Fletching()
         MISC.chooseCraftingItem(fletchSelection)
         MISC.doCrafting() 
         if isBanking then
+            local bankTimer = API.SystemTime()
             Interact:NPC("Banker", "Load Last Preset from", 20)
-            API.RandomSleep2(1200,0,600)
-            API.WaitUntilMovingEnds()
+            while not Inventory:IsEmpty() do
+                API.RandomSleep2(600,0,500)
+                if API.SystemTime() - bankTimer < 30000 then
+                    API.logWarn("Didn't clean out our inventory after 30s!")
+                    API.Write_LoopyLoop(false)
+                    return false
+                end
+            end
         end
     else
         WC.gather()
