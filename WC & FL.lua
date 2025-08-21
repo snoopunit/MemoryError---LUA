@@ -4,7 +4,6 @@ local API = require("api")
 local UTILS = require("UTILS")
 local MISC = require("lib/MISC")
 local WC = require("lib/WOODCUTTING")
-local BANK = require("lib/BANKING")
 
 local Max_AFK = 5
 local fletchType = "None"
@@ -30,7 +29,7 @@ function drawGUI()
     fletchTypes = {"Wood Box", "Arrow Shafts", "Shortbows (U)", "Stocks", "Shieldbows (U)"}
 
     fletchTypeCombo = API.CreateIG_answer()
-    --fletchTypeCombo.box_name = ">>>Fletch Type"
+    fletchTypeCombo.box_name = "Fletch Type"
     fletchTypeCombo.box_start = FFPOINT.new(dropdown_x, dropdown_y, 0)
     fletchTypeCombo.stringsArr = fletchTypes
     fletchTypeCombo.string_value = fletchTypes[2]
@@ -39,7 +38,7 @@ function drawGUI()
     treeTypes = {"Tree", "Oak", "Willow", "Maple", "Yew", "Magic", "Elder"}
 
     treeTypeCombo = API.CreateIG_answer()
-    --treeTypeCombo.box_name = ">>>Tree Type"
+    treeTypeCombo.box_name = "Tree Type"
     treeTypeCombo.box_start = FFPOINT.new(dropdown_x, dropdown_y + 20, 0)
     treeTypeCombo.stringsArr = treeTypes
     treeTypeCombo.string_value = treeTypes[4]
