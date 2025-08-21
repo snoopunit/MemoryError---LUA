@@ -88,9 +88,7 @@ function Woodcutting_and_Fletching()
             MISC.chooseToolOption("Fletch")
             API.RandomSleep2(1800,0,600)
         end
-        if not UTILS.isCraftingInterfaceOpen() then
-            MISC.waitForCraftingInterface()
-        end
+        MISC.waitForCraftingInterface()
         MISC.chooseCraftingItem(fletchSelection)
         API.RandomSleep2(600,0,600)
         MISC.doCrafting() 
