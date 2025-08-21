@@ -24,7 +24,7 @@ function drawGUI()
 
     local dropdown_width = 300
     local dropdown_height = 20
-    local dropdown_x = gui_center_x - (dropdown_width / 2) + 10
+    local dropdown_x = gui_center_x - (dropdown_width / 2)
     local dropdown_y = 40 
 
     fletchTypes = {"Wood Box", "Arrow Shafts", "Shortbows (U)", "Stocks", "Shieldbows (U)"}
@@ -66,6 +66,7 @@ function drawGUI()
 
     API.DrawSquareFilled(imguiBackground)
     API.DrawComboBox(fletchTypeCombo)
+    API.DrawComboBox(treeTypeCombo)
     API.DrawBox(startButton)
     API.DrawBox(quitButton)
 
