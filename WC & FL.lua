@@ -17,7 +17,7 @@ function drawGUI()
     imguiBackground = API.CreateIG_answer()
     imguiBackground.box_name = "imguiBackground"
     imguiBackground.box_start = FFPOINT.new(50, 30, 0)
-    imguiBackground.box_size = FFPOINT.new(330, 115, 0)
+    imguiBackground.box_size = FFPOINT.new(350, 150, 0)
     imguiBackground.colour = ImColor.new(99, 99, 99, 225)
 
     local gui_center_x = imguiBackground.box_start.x + (imguiBackground.box_size.x / 2)
@@ -35,6 +35,15 @@ function drawGUI()
     fletchTypeCombo.stringsArr = fletchTypes
     fletchTypeCombo.string_value = fletchTypes[2]
     fletchTypeCombo.tooltip_text = "Choose the type of item to fletch."
+
+    treeTypes = {"Tree", "Oak", "Willow", "Maple", "Yew", "Magic", "Elder"}
+
+    treeTypeCombo = API.CreateIG_answer()
+    treeTypeCombo.box_name = "Tree Type"
+    treeTypeCombo.box_start = FFPOINT.new(dropdown_x, dropdown_y, 0)
+    treeTypeCombo.stringsArr = treeTypes
+    treeTypeCombo.string_value = treeTypes[4]
+    treeTypeCombo.tooltip_text = "Choose the type of tree to cut."
 
     local button_y = dropdown_y + dropdown_height + 15  
     local button_width = 80
@@ -80,7 +89,8 @@ function Woodcutting_and_Fletching()
         MISC.chooseCraftingItem(fletchSelection)
         MISC.doCrafting()
         if isBanking then
-            BANK.loadLastPreset()
+            Interact:NPC("Banker", "Load Last Preset from", 20)
+            API.waitUntilMovingEnds(1,2)
         end
     else
         WC.gather()
