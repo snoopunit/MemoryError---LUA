@@ -91,7 +91,7 @@ function Woodcutting_and_Fletching()
         MISC.doCrafting() 
         if isBanking then
             Interact:NPC("Banker", "Load Last Preset from", 20)
-            API.waitUntilMovingEnds(1,2)
+            API.WaitUntilMovingEnds(1,2)
         end
     else
         WC.gather()
