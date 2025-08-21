@@ -115,6 +115,7 @@ function mainRoutine()
                 API.logWarn("Fletch Type not selected!")
             else
                 clearGUI()
+                scriptState = "Running"
             end
         end
         if quitButton.return_click then
