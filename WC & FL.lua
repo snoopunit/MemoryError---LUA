@@ -9,6 +9,7 @@ local BANK = require("lib/BANKING")
 local Max_AFK = 5
 local fletchType = "None"
 local scriptState = "Idle"
+local fletchSelection = 2
 local isBanking = false
 
 function drawGUI()
@@ -26,13 +27,13 @@ function drawGUI()
     local dropdown_x = gui_center_x - (dropdown_width / 2) + 10
     local dropdown_y = 40 
 
-    local fletchTypes = {"Arrow Shafts", "Shortbows (U)", "Stocks", "Shieldbows (U)"}
+    fletchTypes = {"Wood Box", "Arrow Shafts", "Shortbows (U)", "Stocks", "Shieldbows (U)"}
 
     fletchTypeCombo = API.CreateIG_answer()
     fletchTypeCombo.box_name = "Fletch Type"
     fletchTypeCombo.box_start = FFPOINT.new(dropdown_x, dropdown_y, 0)
     fletchTypeCombo.stringsArr = fletchTypes
-    fletchTypeCombo.string_value = fletchTypes[1]
+    fletchTypeCombo.string_value = fletchTypes[2]
     fletchTypeCombo.tooltip_text = "Choose the type of item to fletch."
 
     local button_y = dropdown_y + dropdown_height + 15  
@@ -76,7 +77,7 @@ function Woodcutting_and_Fletching()
         if MISC.isChooseToolOpen() then
             MISC.chooseToolOption("Fletch")
         end
-        MISC.doCrafting()
+        MISC.doCrafting(fletchSelection)
         if isBanking then
             BANK.loadLastPreset()
         end
@@ -91,6 +92,12 @@ function mainRoutine()
         if fletchTypeCombo.return_click then
             fletchTypeCombo.return_click = false
             fletchType = fletchTypeCombo.string_value
+            for i, v in ipairs(fletchTypes) do
+                if v == fletchType then
+                    fletchSelection = i
+                    break
+                end
+            end
             if fletchType ~= "None" then
                 API.logDebug("Selected Fletch Type: "..fletchType)
                 if fletchType ~= "Arrow Shafts" then
