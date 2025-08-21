@@ -97,7 +97,7 @@ function Woodcutting_and_Fletching()
                 if API.ReadPlayerMovin() then
                     bankTimer = API.SystemTime()
                 end
-                if API.SystemTime() - bankTimer < 30000 then
+                if API.SystemTime() - bankTimer > 30000 then
                     API.logWarn("Didn't clean out our inventory after 30s!")
                     API.Write_LoopyLoop(false)
                     return false
