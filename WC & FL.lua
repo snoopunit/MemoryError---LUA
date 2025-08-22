@@ -71,6 +71,7 @@ function drawGUI()
 
     API.DrawSquareFilled(imguiBackground)
     API.DrawComboBox(fletchTypeCombo)
+    API.DrawTextAt(fletchTypeText)
     API.DrawComboBox(treeTypeCombo)
     API.DrawBox(startButton)
     API.DrawBox(quitButton)
