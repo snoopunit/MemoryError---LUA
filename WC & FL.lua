@@ -40,11 +40,16 @@ function drawGUI()
     fletchTypeText.box_start = FFPOINT.new(220, 50, 0)
     fletchTypeText.colour = ImColor.new(255,255,255)
     fletchTypeText.string_value = "Fletch Type"
+
+    treeTypeText = API.CreateIG_answer()
+    treeTypeText.box_start = FFPOINT.new(0, 0, 0)
+    treeTypeText.colour = ImColor.new(255,255,255)
+    treeTypeText.string_value = "Tree Type"
     
     treeTypes = {"Tree", "Oak", "Willow", "Maple", "Yew", "Magic", "Elder"}
 
     treeTypeCombo = API.CreateIG_answer()
-    treeTypeCombo.box_name = " Tree Type"
+    treeTypeCombo.box_name = "###TREETYPE"
     treeTypeCombo.box_start = FFPOINT.new(dropdown_x, dropdown_y + 20, 0)
     treeTypeCombo.box_size = FFPOINT.new(200, 0, 0)
     treeTypeCombo.stringsArr = treeTypes
@@ -72,11 +77,11 @@ function drawGUI()
 
     API.DrawSquareFilled(imguiBackground)
     API.DrawComboBox(fletchTypeCombo)
-    API.DrawTextAt(fletchTypeText)
     API.DrawComboBox(treeTypeCombo)
     API.DrawBox(startButton)
     API.DrawBox(quitButton)
-
+    API.DrawTextAt(fletchTypeText)
+    API.DrawTextAt(treeTypeText)
 end
 
 function clearGUI()
