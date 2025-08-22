@@ -117,7 +117,8 @@ function doBanking()
         return false
     end
 
-    while not Inventory:IsEmpty() or API.Read_LoopyLoop() do
+    while not Inventory:IsEmpty() do
+        if not API.Read_LoopyLoop() then return false end
         API.RandomSleep2(600,0,500)
         if API.ReadPlayerMovin() then
             API.logDebug("Detected movement! Resetting bankTimer...")
