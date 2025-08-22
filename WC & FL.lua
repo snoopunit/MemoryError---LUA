@@ -183,10 +183,12 @@ function mainRoutine()
         if itemTypeCombo.return_click then
             itemTypeCombo.return_click = false
             itemType = itemTypeCombo.string_value
-            for i, v in ipairs(itemTypes) do
-                if v == itemType then
-                    itemSelection = i
-                    break
+            if itemType ~= "None" and itemType ~= "Incense" then
+                for i, v in ipairs(itemTypes) do
+                    if v == itemType then
+                        itemSelection = i - 1
+                        break
+                    end
                 end
             end
             if itemType == "Arrow Shafts" or itemType == "Incense" then
