@@ -103,7 +103,7 @@ function Woodcutting_and_Fletching()
             local bankTimer = API.SystemTime()
             if not Interact:NPC("Banker", "Load Last Preset from", 50) then
                 API.logWarn("Couldn't interact with the banker!")
-            elseif not Interact:Object("Bank Chest", "Load Last Preset from", 50) then
+            elseif not Interact:Object("Bank Chest", "Load Last Preset from", 100) then
                 API.logWarn("Couldn't interact with a bank chest either!")
                 API.Write_LoopyLoop(false)
                 return false
