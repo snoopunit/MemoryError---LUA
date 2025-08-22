@@ -7,6 +7,7 @@ local WC = require("lib/WOODCUTTING")
 
 local Max_AFK = 5
 local fletchType = "None"
+local treeType = "None"
 local scriptState = "Idle"
 local fletchSelection = 2
 local isBanking = false
@@ -36,7 +37,12 @@ function drawGUI()
     fletchTypeCombo.string_value = fletchTypes[2]
     fletchTypeCombo.tooltip_text = "Choose the type of item to fletch."
     
-    treeTypes = {"Tree", "Oak", "Willow", "Maple", "Yew", "Magic", "Elder"}
+    treeTypes = {}
+    for key, tree in pairs(TREES) do
+        if tree.name then
+            table.insert(treeTypes, tree.name)
+        end
+    end
 
     treeTypeCombo = API.CreateIG_answer()
     treeTypeCombo.box_name = "###TREETYPE"
@@ -66,8 +72,6 @@ function drawGUI()
     quitButton.tooltip_text = "Close the script."
 
     API.DrawSquareFilled(imguiBackground)
-    --API.DrawTextAt(fletchTypeText)
-    API.DrawTextAt(treeTypeText)
     API.DrawComboBox(fletchTypeCombo)
     API.DrawComboBox(treeTypeCombo)
     API.DrawBox(startButton)
@@ -92,7 +96,6 @@ function Woodcutting_and_Fletching()
             MISC.chooseToolOption("Fletch")
             API.RandomSleep2(1800,0,600)
         end
-        --MISC.waitForCraftingInterface()
         MISC.chooseCraftingItem(fletchSelection)
         API.RandomSleep2(600,0,600)
         MISC.doCrafting() 
@@ -138,11 +141,23 @@ function mainRoutine()
                     isBanking = true
                 end
             else
-                API.logWarn("Something went wrong! Selected fish type still None!")
+                API.logWarn("Something went wrong! Selected fletch type still None!")
                 API.Write_LoopyLoop(false)
                 return
             end
             API.logDebug("Banking: "..tostring(isBanking))
+        end
+        if treeTypeCombo.return_click then
+            treeTypeCombo.return_click = false
+            treeType = treeTypeCombo.string_value
+            for key, tree in pairs(TREES) do
+                if tree.name == treeType then
+                    WC.GLOBALS.treeType = tree
+                    API.logDebug("Selected tree type: " .. tree.name)
+                    API.logDebug("Tree type set: ".. WC.GLOBALS.treeType.name)
+                    break
+                end
+            end
         end
         if startButton.return_click then
             startButton.return_click = false

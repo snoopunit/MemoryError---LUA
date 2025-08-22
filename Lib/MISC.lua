@@ -251,8 +251,6 @@ end
 
 function Miscellaneous.doCrafting()
 
-    Miscellaneous.waitForCraftingInterface()
-
     if Miscellaneous.clickStart() then
         local craftingTimer = API.SystemTime()
 
