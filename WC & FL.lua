@@ -135,15 +135,10 @@ function mainRoutine()
                     break
                 end
             end
-            if fletchType ~= "None" then
-                API.logDebug("Selected Fletch Type: "..fletchType)
-                if fletchType ~= "Arrow Shafts" then
-                    isBanking = true
-                end
+            if fletchType == "Arrow Shafts" then
+                isBanking = false
             else
-                API.logWarn("Something went wrong! Selected fletch type still None!")
-                API.Write_LoopyLoop(false)
-                return
+                isBanking = true
             end
             API.logDebug("Banking: "..tostring(isBanking))
         end
