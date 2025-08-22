@@ -49,7 +49,7 @@ function drawGUI()
     treeTypes = {"Tree", "Oak", "Willow", "Maple", "Yew", "Magic", "Elder"}
 
     treeTypeCombo = API.CreateIG_answer()
-    treeTypeCombo.box_name = "###TREETYPE"
+    treeTypeCombo.box_name = "Tree Type"
     treeTypeCombo.box_start = FFPOINT.new(dropdown_x, dropdown_y + 20, 0)
     treeTypeCombo.box_size = FFPOINT.new(200, 0, 0)
     treeTypeCombo.stringsArr = treeTypes
