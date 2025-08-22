@@ -31,7 +31,7 @@ function drawGUI()
     fletchTypeCombo = API.CreateIG_answer()
     fletchTypeCombo.box_name = "Fletch Type"
     fletchTypeCombo.box_start = FFPOINT.new(dropdown_x, dropdown_y, 0)
-    fletchTypeCombo.box_size = FFPOINT.new(220, 0, 0)
+    fletchTypeCombo.box_size = FFPOINT.new(180, 0, 0)
     fletchTypeCombo.stringsArr = fletchTypes
     fletchTypeCombo.string_value = fletchTypes[2]
     fletchTypeCombo.tooltip_text = "Choose the type of item to fletch."
