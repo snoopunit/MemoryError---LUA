@@ -29,22 +29,12 @@ function drawGUI()
     fletchTypes = {"Wood Box", "Arrow Shafts", "Shortbows (U)", "Stocks", "Shieldbows (U)"}
 
     fletchTypeCombo = API.CreateIG_answer()
-    fletchTypeCombo.box_name = "Fletch Type"
+    fletchTypeCombo.box_name = "###FLETCH"
     fletchTypeCombo.box_start = FFPOINT.new(dropdown_x, dropdown_y, 0)
     fletchTypeCombo.box_size = FFPOINT.new(200, 0, 0)
     fletchTypeCombo.stringsArr = fletchTypes
     fletchTypeCombo.string_value = fletchTypes[2]
     fletchTypeCombo.tooltip_text = "Choose the type of item to fletch."
-
-    fletchTypeText = API.CreateIG_answer()
-    fletchTypeText.box_start = FFPOINT.new(220, 50, 0)
-    fletchTypeText.colour = ImColor.new(255,255,255)
-    fletchTypeText.string_value = "Fletch Type"
-
-    treeTypeText = API.CreateIG_answer()
-    treeTypeText.box_start = FFPOINT.new(220, 70, 0)
-    treeTypeText.colour = ImColor.new(255,255,255)
-    treeTypeText.string_value = "Tree Type"
     
     treeTypes = {"Tree", "Oak", "Willow", "Maple", "Yew", "Magic", "Elder"}
 
