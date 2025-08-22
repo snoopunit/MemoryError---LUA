@@ -75,13 +75,14 @@ function drawGUI()
     quitButton.box_size = FFPOINT.new(button_width, button_height, 0)
     quitButton.tooltip_text = "Close the script."
 
+    API.DrawTextAt(fletchTypeText)
+    API.DrawTextAt(treeTypeText)
     API.DrawSquareFilled(imguiBackground)
     API.DrawComboBox(fletchTypeCombo)
     API.DrawComboBox(treeTypeCombo)
     API.DrawBox(startButton)
     API.DrawBox(quitButton)
-    API.DrawTextAt(fletchTypeText)
-    API.DrawTextAt(treeTypeText)
+    
 end
 
 function clearGUI()
