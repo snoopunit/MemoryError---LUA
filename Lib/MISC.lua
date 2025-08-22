@@ -2,12 +2,6 @@ local API = require("api")
 local UTILS = require("UTILS")
 local Miscellaneous = {}
 
-Miscellaneous.Crafting_Interface_VBs = {
-    Choose_Tool = 1277970
-    Tool_Switch_Menu = 1277992
-    Tool_Switched = 40
-}
-
 ---@param amount number
 ---@return string
 function Miscellaneous.comma_value(amount)
@@ -63,15 +57,15 @@ function Miscellaneous.getLevel(skill)
 end
 
 function Miscellaneous.isChooseToolOpen()
-    return API.VB_FindPSettinOrder(2874, 0).state == Miscellaneous.Crafting_Interface_VBs.Choose_Tool 
+    return API.VB_FindPSettinOrder(2874, 0).state == 1277970 
 end
 
 function Miscellaneous.isSwitchToolMenuOpen()
-    return API.VB_FindPSettinOrder(2874, 0).state == Miscellaneous.Crafting_Interface_VBs.Tool_Switch_Menu
+    return API.VB_FindPSettinOrder(2874, 0).state == 1277992
 end
 
 function Miscellaneous.isSwitchedToolMenuOpen()
-    return API.VB_FindPSettinOrder(2874, 0).state == Miscellaneous.Crafting_Interface_VBs.Tool_Switched
+    return API.VB_FindPSettinOrder(2874, 0).state == 40
 end
 
 function Miscellaneous.waitForCraftingInterface()
