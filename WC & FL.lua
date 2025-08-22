@@ -87,6 +87,49 @@ function clearGUI()
     quitButton.remove = true
 end
 
+function doBanking()
+    local bankTimer = API.SystemTime()
+    local hasBanked = false
+    local bankNPCs = {"Banker"}
+    local bankOBJs = {"Bank chest", "Counter"}
+
+    for i, NPC in ipairs(bankNPCs) do
+        if Interact:NPC(NPC, "Load Last Preset from", 50) then
+            hasBanked = true
+            break
+        end
+    end
+
+    if not hasBanked then
+        for i, OBJ in ipairs(bankOBJs) do
+            if Interact:Object(OBJ, "Load Last Preset from", 50) then
+                hasBanked = true
+                break
+            end
+        end
+    end
+    
+    if not hasBanked then
+        API.logWarn("Couldn't interact with any banks!")
+        API.Write_LoopyLoop(false)
+        return false
+    end
+
+    while not Inventory:IsEmpty() or API.Read_LoopyLoop() do
+        API.RandomSleep2(600,0,500)
+        if API.ReadPlayerMovin() then
+            API.logDebug("Detected movement! Resetting bankTimer...")
+            bankTimer = API.SystemTime()
+        end
+        if API.SystemTime() - bankTimer > 30000 then
+            API.logWarn("Didn't clean out our inventory after 30s!")
+            API.Write_LoopyLoop(false)
+            return false
+        end
+    end
+
+end
+
 function Woodcutting_and_Fletching()
 
     if API.InvFull_() then
@@ -100,26 +143,7 @@ function Woodcutting_and_Fletching()
         API.RandomSleep2(600,0,600)
         MISC.doCrafting() 
         if isBanking then
-            local bankTimer = API.SystemTime()
-            --[[if not Interact:NPC("Banker", "Load Last Preset from", 50) then
-                API.logWarn("Couldn't interact with the banker!")
-            end]]
-            if not Interact:Object("Bank chest", "Load Last Preset from", 100) then
-                API.logWarn("Couldn't interact with a bank chest!")
-                API.Write_LoopyLoop(false)
-                return false
-            end
-            while not Inventory:IsEmpty() do
-                API.RandomSleep2(600,0,500)
-                if API.ReadPlayerMovin() then
-                    bankTimer = API.SystemTime()
-                end
-                if API.SystemTime() - bankTimer > 30000 then
-                    API.logWarn("Didn't clean out our inventory after 30s!")
-                    API.Write_LoopyLoop(false)
-                    return false
-                end
-            end
+            
         end
     else
         WC.gather()
