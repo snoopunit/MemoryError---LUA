@@ -189,6 +189,7 @@ end
 
 ---@return boolean -- returns true if we successfully start chopping a tree
 function Woodcutting.chop()
+    if Woodcutting.GLOBALS.treeType == nil then return false end
     API.logDebug("Woodcutting.chop(): " .. Woodcutting.GLOBALS.treeType.name)
     return Interact:Object(Woodcutting.GLOBALS.treeType.name, "Chop down", 30)
 end
