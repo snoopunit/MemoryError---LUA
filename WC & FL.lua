@@ -140,7 +140,7 @@ function mainRoutine()
             else
                 isBanking = true
             end
-            API.logDebug("Banking: "..tostring(isBanking))
+            API.logDebug("Selected fletch type: " .. fletchType)
         end
         if treeTypeCombo.return_click then
             treeTypeCombo.return_click = false
@@ -149,7 +149,6 @@ function mainRoutine()
                 if tree.name == treeType then
                     WC.GLOBALS.treeType = tree
                     API.logDebug("Selected tree type: " .. tree.name)
-                    API.logDebug("Tree type set: ".. WC.GLOBALS.treeType.name)
                     break
                 end
             end
