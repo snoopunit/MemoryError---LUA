@@ -169,7 +169,7 @@ end
 ---@return number action -- 1-Craft, 2-Light, 3-Use, 4-Drop
 function Woodcutting.useLogs(action)
 
-    if WC.GLOBALS.logType.id == nil then
+    if WC.GLOBALS.logType == nil then
         return false
     end
 
