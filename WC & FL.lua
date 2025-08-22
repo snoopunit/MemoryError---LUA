@@ -6,11 +6,13 @@ local MISC = require("lib/MISC")
 local WC = require("lib/WOODCUTTING")
 
 local Max_AFK = 5
-local fletchType = "None"
+local itemType = "None"
 local treeType = "None"
 local scriptState = "Idle"
-local fletchSelection = 2
+local itemSelection = 2
 local isBanking = false
+local makeIncense = false
+
 
 function drawGUI()
 
@@ -27,15 +29,15 @@ function drawGUI()
     local dropdown_x = gui_center_x - (dropdown_width / 2)
     local dropdown_y = 40 
 
-    fletchTypes = {"Wood Box", "Arrow Shafts", "Shortbows (U)", "Stocks", "Shieldbows (U)"}
+    itemTypes = {"None", "Wood Box", "Arrow Shafts", "Shortbows (U)", "Stocks", "Shieldbows (U)", "Incense"}
 
-    fletchTypeCombo = API.CreateIG_answer()
-    fletchTypeCombo.box_name = "###FLETCH"
-    fletchTypeCombo.box_start = FFPOINT.new(dropdown_x, dropdown_y, 0)
-    fletchTypeCombo.box_size = FFPOINT.new(200, 0, 0)
-    fletchTypeCombo.stringsArr = fletchTypes
-    fletchTypeCombo.string_value = fletchTypes[2]
-    fletchTypeCombo.tooltip_text = "Choose the type of item to fletch."
+    itemTypeCombo = API.CreateIG_answer()
+    itemTypeCombo.box_name = "###ITEM"
+    itemTypeCombo.box_start = FFPOINT.new(dropdown_x, dropdown_y, 0)
+    itemTypeCombo.box_size = FFPOINT.new(200, 0, 0)
+    itemTypeCombo.stringsArr = itemTypes
+    itemTypeCombo.string_value = itemTypes[2]
+    itemTypeCombo.tooltip_text = "Choose the type of item to make."
     
     treeTypes = {}
     for key, tree in pairs(TREES) do
@@ -72,7 +74,7 @@ function drawGUI()
     quitButton.tooltip_text = "Close the script."
 
     API.DrawSquareFilled(imguiBackground)
-    API.DrawComboBox(fletchTypeCombo)
+    API.DrawComboBox(itemTypeCombo)
     API.DrawComboBox(treeTypeCombo)
     API.DrawBox(startButton)
     API.DrawBox(quitButton)
@@ -81,7 +83,7 @@ end
 
 function clearGUI()
     imguiBackground.remove = true
-    fletchTypeCombo.remove = true
+    itemTypeCombo.remove = true
     treeTypeCombo.remove = true
     startButton.remove = true
     quitButton.remove = true
@@ -130,45 +132,70 @@ function doBanking()
 
 end
 
-function Woodcutting_and_Fletching()
+function doFiremaking()
 
-    if API.InvFull_() then
-        WC.useLogs(1)
+    if not FIRE.findFires() then
+
+        WC.useLogs(2)
         API.RandomSleep2(1200,0,600)
-        if MISC.isChooseToolOpen() then
-            MISC.chooseToolOption("Fletch")
-            API.RandomSleep2(1800,0,600)
+
+        while API.CheckAnim(75) and API.Read_LoopyLoop() do
+            API.RandomSleep2(1200,0,600)    
         end
-        MISC.chooseCraftingItem(fletchSelection)
-        API.RandomSleep2(600,0,600)
-        MISC.doCrafting() 
-        if isBanking then
-            
-        end
-    else
-        WC.gather()
+
+    end
+
+    WC.useLogs(1)
+    API.RandomSleep2(1200,0,600)
+
+    if MISC.isChooseToolOpen() then
+        MISC.chooseToolOption("Bonfire")
+        API.RandomSleep2(1200,0,600)
+    end
+
+    while API.CheckAnim(75) and API.Read_LoopyLoop() do
+        API.RandomSleep2(1200,0,600)    
     end
 
 end
 
+function doProcessing(typeString)
+
+    WC.useLogs(1)
+    API.RandomSleep2(1200,0,600)
+
+    if MISC.isChooseToolOpen() then
+        MISC.chooseToolOption(typeString)
+        API.RandomSleep2(1800,0,600)
+    end
+    if typeString ~= "Incense" then
+        MISC.chooseCraftingItem(itemSelection)
+    end
+    API.RandomSleep2(1200,0,600)
+    MISC.doCrafting()
+    
+end
+
 function mainRoutine()
     if scriptState == "Idle" then
-        if fletchTypeCombo.return_click then
-            fletchTypeCombo.return_click = false
-            fletchType = fletchTypeCombo.string_value
-            for i, v in ipairs(fletchTypes) do
-                if v == fletchType then
-                    fletchSelection = i
+
+        if itemTypeCombo.return_click then
+            itemTypeCombo.return_click = false
+            itemType = itemTypeCombo.string_value
+            for i, v in ipairs(itemTypes) do
+                if v == itemType then
+                    itemSelection = i
                     break
                 end
             end
-            if fletchType == "Arrow Shafts" then
+            if itemType == "Arrow Shafts" or itemType == "Incense" then
                 isBanking = false
             else
                 isBanking = true
             end
-            API.logDebug("Selected fletch type: " .. fletchType)
+            API.logDebug("Selected item type: " .. itemType)
         end
+
         if treeTypeCombo.return_click then
             treeTypeCombo.return_click = false
             treeType = treeTypeCombo.string_value
@@ -187,24 +214,44 @@ function mainRoutine()
                 end
             end
         end
+
         if startButton.return_click then
             startButton.return_click = false
-            if fletchType == "None" then
+            if itemType == "None" then
                 API.logWarn("Fletch Type not selected!")
             else
                 clearGUI()
                 scriptState = "Running"
             end
         end
+
         if quitButton.return_click then
             API.logWarn("Stopping script!")
             API.Write_LoopyLoop(false)
             return
         end
+
         if not API.Read_LoopyLoop() then return end
+
         API.RandomSleep2(250,0,250)
+
     else
-        Woodcutting_and_Fletching()   
+        if API.InvFull_() then
+            if itemType == "Incense" then
+                doProcessing("Incense")
+            elseif itemType == "None" then
+                doFiremaking()
+            else
+                doProcessing("Fletch")
+            end
+        
+            if isBanking then
+                doBanking()    
+            end    
+
+        else
+            WC.gather()
+        end
     end
 end
 
