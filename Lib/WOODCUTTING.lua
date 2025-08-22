@@ -179,12 +179,8 @@ function Woodcutting.useLogs(action)
         return false
     end
 
-    if Inventory:DoAction(Woodcutting.GLOBALS.logType.id, action, API.OFF_ACT_GeneralInterface_route) then
-        API.logDebug("Couldn't use log: " .. Woodcutting.GLOBALS.logType.name)
-        return true
-    else
-        return false
-    end
+    return Inventory:DoAction(Woodcutting.GLOBALS.logType.id, action, API.OFF_ACT_GeneralInterface_route) then
+     
 end
 
 ---@return boolean -- returns true if we successfully start chopping a tree
