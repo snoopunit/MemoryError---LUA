@@ -37,7 +37,7 @@ function drawGUI()
     fletchTypeCombo.tooltip_text = "Choose the type of item to fletch."
 
     fletchTypeText = API.CreateIG_answer()
-    fletchTypeText.box_start = FFPOINT.new(125, 30, 0)
+    fletchTypeText.box_start = FFPOINT.new(150, 50, 0)
     fletchTypeText.colour = ImColor.new(255,255,255)
     fletchTypeText.string_value = "Fletch Type"
     
