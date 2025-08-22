@@ -238,6 +238,10 @@ end
 ---@return boolean -- returns true when inv is full. fills the wood box along the way if we have one
 function Woodcutting.gather()
 
+    if Woodcutting.GLOBALS.treeType == nil then
+        return false
+    end
+
     Woodcutting.GLOBALS.boxType = Woodcutting.findWoodBox()
     local checkWoodBox = Woodcutting.GLOBALS.boxType ~= nil
     local failSafe = 0
