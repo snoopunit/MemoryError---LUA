@@ -20,6 +20,7 @@ function drawGUI()
     imguiBackground.colour = ImColor.new(99, 99, 99, 225)
 
     local gui_center_x = imguiBackground.box_start.x + (imguiBackground.box_size.x / 2)
+
     local dropdown_width = 300
     local dropdown_height = 20
     local dropdown_x = gui_center_x - (dropdown_width / 2)
@@ -41,7 +42,7 @@ function drawGUI()
     fletchTypeText.string_value = "Fletch Type"
 
     treeTypeText = API.CreateIG_answer()
-    treeTypeText.box_start = FFPOINT.new(220, 70, 0)
+    treeTypeText.box_start = FFPOINT.new(0, 0, 0)
     treeTypeText.colour = ImColor.new(255,255,255)
     treeTypeText.string_value = "Tree Type"
     
@@ -75,19 +76,12 @@ function drawGUI()
     quitButton.tooltip_text = "Close the script."
 
     API.DrawSquareFilled(imguiBackground)
-    API.logDebug("Drawing GUI Element: imguiBackground")
     API.DrawComboBox(fletchTypeCombo)
-    API.logDebug("Drawing GUI Element: fletchTypeCombo")
     API.DrawTextAt(fletchTypeText)
-    API.logDebug("Drawing GUI Element: fletchTypeText")
     API.DrawComboBox(treeTypeCombo)
-    API.logDebug("Drawing GUI Element: treeTypeCombo")
     API.DrawTextAt(treeTypeText)
-    API.logDebug("Drawing GUI Element: treeTypeText")
     API.DrawBox(startButton)
-    API.logDebug("Drawing GUI Element: startButton")
     API.DrawBox(quitButton)
-    API.logDebug("Drawing GUI Element: quitButton")
 
 end
 
