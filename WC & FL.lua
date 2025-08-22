@@ -75,12 +75,19 @@ function drawGUI()
     quitButton.tooltip_text = "Close the script."
 
     API.DrawSquareFilled(imguiBackground)
+    API.logDebug("Drawing GUI Element: imguiBackground")
     API.DrawComboBox(fletchTypeCombo)
+    API.logDebug("Drawing GUI Element: fletchTypeCombo")
     API.DrawTextAt(fletchTypeText)
+    API.logDebug("Drawing GUI Element: fletchTypeText")
     API.DrawComboBox(treeTypeCombo)
+    API.logDebug("Drawing GUI Element: treeTypeCombo")
     API.DrawTextAt(treeTypeText)
+    API.logDebug("Drawing GUI Element: treeTypeText")
     API.DrawBox(startButton)
+    API.logDebug("Drawing GUI Element: startButton")
     API.DrawBox(quitButton)
+    API.logDebug("Drawing GUI Element: quitButton")
 
 end
 
