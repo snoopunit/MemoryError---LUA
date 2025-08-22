@@ -20,7 +20,6 @@ function drawGUI()
     imguiBackground.colour = ImColor.new(99, 99, 99, 225)
 
     local gui_center_x = imguiBackground.box_start.x + (imguiBackground.box_size.x / 2)
-
     local dropdown_width = 300
     local dropdown_height = 20
     local dropdown_x = gui_center_x - (dropdown_width / 2)
