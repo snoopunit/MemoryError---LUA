@@ -2,7 +2,7 @@ local API = require("api")
 local UTILS = require("UTILS")
 local Miscellaneous = {}
 
-Crafting_Interface_VBs = {
+Miscellaneous.Crafting_Interface_VBs = {
     Choose_Tool = 1277970
     Tool_Switch_Menu = 1277992
     Tool_Switched = 40
@@ -63,15 +63,15 @@ function Miscellaneous.getLevel(skill)
 end
 
 function Miscellaneous.isChooseToolOpen()
-    return API.VB_FindPSettinOrder(2874, 0).state == Crafting_Interface_VBs.Choose_Tool 
+    return API.VB_FindPSettinOrder(2874, 0).state == Miscellaneous.Crafting_Interface_VBs.Choose_Tool 
 end
 
 function Miscellaneous.isSwitchToolMenuOpen()
-    return API.VB_FindPSettinOrder(2874, 0).state == Crafting_Interface_VBs.Tool_Switch_Menu
+    return API.VB_FindPSettinOrder(2874, 0).state == Miscellaneous.Crafting_Interface_VBs.Tool_Switch_Menu
 end
 
 function Miscellaneous.isSwitchedToolMenuOpen()
-    return API.VB_FindPSettinOrder(2874, 0).state == Crafting_Interface_VBs.Tool_Switched
+    return API.VB_FindPSettinOrder(2874, 0).state == Miscellaneous.Crafting_Interface_VBs.Tool_Switched
 end
 
 function Miscellaneous.waitForCraftingInterface()
