@@ -1,9 +1,10 @@
-print("Woodcutting & Fletching")
+print("WC & FL/FM")
 
 local API = require("api")
 local UTILS = require("UTILS")
 local MISC = require("lib/MISC")
 local WC = require("lib/WOODCUTTING")
+local FIRE = require("lib/FIREMAKING")
 
 local Max_AFK = 5
 local itemType = "None"
@@ -169,9 +170,11 @@ function doProcessing(typeString)
         MISC.chooseToolOption(typeString)
         API.RandomSleep2(1800,0,600)
     end
+
     if typeString ~= "Incense" then
         MISC.chooseCraftingItem(itemSelection)
     end
+    
     API.RandomSleep2(1200,0,600)
     MISC.doCrafting()
     
@@ -239,6 +242,7 @@ function mainRoutine()
         API.RandomSleep2(250,0,250)
 
     else
+
         if API.InvFull_() then
 
             while Inventory:GetItemAmount(WC.GLOBALS.logType.id) > 2 do
@@ -259,6 +263,7 @@ function mainRoutine()
         else
             WC.gather()
         end
+
     end
 end
 

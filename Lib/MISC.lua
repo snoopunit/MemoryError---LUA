@@ -2,6 +2,12 @@ local API = require("api")
 local UTILS = require("UTILS")
 local Miscellaneous = {}
 
+Crafting_Interface_VBs = {
+    Choose_Tool = 1277970
+    Tool_Switch_Menu = 1277992
+    Tool_Switched = 40
+}
+
 ---@param amount number
 ---@return string
 function Miscellaneous.comma_value(amount)
@@ -57,13 +63,15 @@ function Miscellaneous.getLevel(skill)
 end
 
 function Miscellaneous.isChooseToolOpen()
+    return API.VB_FindPSettinOrder(2874, 0).state == Crafting_Interface_VBs.Choose_Tool 
+end
 
-    if API.VB_FindPSettinOrder(2874, 0).state == 1277970 then
-        return true
-    else
-        return false
-    end
+function Miscellaneous.isSwitchToolMenuOpen()
+    return API.VB_FindPSettinOrder(2874, 0).state == Crafting_Interface_VBs.Tool_Switch_Menu
+end
 
+function Miscellaneous.isSwitchedToolMenuOpen()
+    return API.VB_FindPSettinOrder(2874, 0).state == Crafting_Interface_VBs.Tool_Switched
 end
 
 function Miscellaneous.waitForCraftingInterface()
@@ -136,6 +144,11 @@ function Miscellaneous.waitForChooseToolToClose()
 
     return true
 
+end
+
+---@return boolean --- returns true if we click on the "Change Tool" button
+function Miscellaneous.changeToolOption()
+    return API.DoAction_Interface(0x2e,0xffffffff,1,1371,14,-1,API.OFF_ACT_GeneralInterface_route)
 end
 
 function Miscellaneous.chooseToolOption(option)
@@ -257,6 +270,8 @@ function Miscellaneous.doCrafting()
         while not API.isProcessing() do
 
             API.RandomSleep2(600,0,500)
+
+            if not API.Read_LoopyLoop() then return false end
 
             if API.SystemTime() - craftingTimer > 10000 then
                 API.logWarn("Crafting process took too long to start!")
