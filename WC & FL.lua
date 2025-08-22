@@ -237,12 +237,16 @@ function mainRoutine()
 
     else
         if API.InvFull_() then
-            if itemType == "Incense" then
-                doProcessing("Incense")
-            elseif itemType == "None" then
-                doFiremaking()
-            else
-                doProcessing("Fletch")
+
+            while Inventory:GetItemAmount(WC.GLOBALS.logType.id) > 2 do
+                if not API.Read_LoopyLoop then return end
+                if itemType == "Incense" then
+                    doProcessing("Incense")
+                elseif itemType == "None" then
+                    doFiremaking()
+                else
+                    doProcessing("Fletch")
+                end
             end
         
             if isBanking then
