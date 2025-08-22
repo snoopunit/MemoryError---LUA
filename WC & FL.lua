@@ -122,10 +122,9 @@ function doBanking()
         if not API.Read_LoopyLoop() then return false end
         API.RandomSleep2(600,0,500)
         if API.ReadPlayerMovin() then
-            API.logDebug("Detected movement! Resetting bankTimer...")
             bankTimer = API.SystemTime()
         end
-        if API.SystemTime() - bankTimer > 30000 then
+        if API.SystemTime() - bankTimer > 15000 then
             API.logWarn("Didn't clean out our inventory after 30s!")
             API.Write_LoopyLoop(false)
             return false
@@ -174,7 +173,7 @@ function doProcessing(typeString)
     if typeString ~= "Incense" then
         MISC.chooseCraftingItem(itemSelection)
     end
-    
+
     API.RandomSleep2(1200,0,600)
     MISC.doCrafting()
     
