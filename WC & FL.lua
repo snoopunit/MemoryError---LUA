@@ -29,7 +29,7 @@ function drawGUI()
     fletchTypes = {"Wood Box", "Arrow Shafts", "Shortbows (U)", "Stocks", "Shieldbows (U)"}
 
     fletchTypeCombo = API.CreateIG_answer()
-    fletchTypeCombo.box_name = "###FLETCHTYPE"
+    fletchTypeCombo.box_name = "Fletch Type"
     fletchTypeCombo.box_start = FFPOINT.new(dropdown_x, dropdown_y, 0)
     fletchTypeCombo.box_size = FFPOINT.new(200, 0, 0)
     fletchTypeCombo.stringsArr = fletchTypes
@@ -76,7 +76,7 @@ function drawGUI()
     quitButton.tooltip_text = "Close the script."
 
     API.DrawSquareFilled(imguiBackground)
-    API.DrawTextAt(fletchTypeText)
+    --API.DrawTextAt(fletchTypeText)
     API.DrawTextAt(treeTypeText)
     API.DrawComboBox(fletchTypeCombo)
     API.DrawComboBox(treeTypeCombo)
