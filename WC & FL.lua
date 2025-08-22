@@ -39,6 +39,7 @@ function drawGUI()
     fletchTypeText = API.CreateIG_answer()
     fletchTypeText.box_start = FFPOINT.new(425, 30, 0)
     fletchTypeText.colour = ImColor.new(255,255,255)
+    fletchTypeText.string_value = "Fletch Type"
     
     treeTypes = {"Tree", "Oak", "Willow", "Maple", "Yew", "Magic", "Elder"}
 
