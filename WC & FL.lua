@@ -151,6 +151,13 @@ function mainRoutine()
                 if tree.name == treeType then
                     WC.GLOBALS.treeType = tree
                     API.logDebug("Selected tree type: " .. tree.name)
+                    local logKey = TREE_TO_LOG_MAP[key]
+                    if logKey and LOGS[logKey] then
+                        WC.GLOBALS.logType = LOGS[logKey]
+                        API.logDebug("Assigned Log Type: " .. WC.GLOBALS.logType.name)
+                    else
+                        API.logWarn("No matching log type found for tree: " .. key)
+                    end
                     break
                 end
             end
@@ -180,8 +187,6 @@ API.Write_LoopyLoop(true)
 API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(Max_AFK)
-WC.GLOBALS.treeType = TREES.MAPLE
-WC.GLOBALS.logType = LOGS.MAPLE
 drawGUI()
 
 while(API.Read_LoopyLoop())

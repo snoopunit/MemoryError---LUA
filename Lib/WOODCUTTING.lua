@@ -49,6 +49,16 @@ LOGS = {
 
 }
 
+TREE_TO_LOG_MAP = {
+    TREE        = "LOGS",     -- normal "Tree" → LOGS.LOGS
+    OAK_TREE    = "OAK",
+    WILLOW_TREE = "WILLOW",
+    MAPLE_TREE  = "MAPLE",
+    YEW_TREE    = "YEW",
+    MAGIC_TREE  = "MAGIC",
+    ELDER_TREE  = "ELDER",
+}
+
 WOOD_BOXES = {
 
     WOOD =      {name = "Wood box",             id = 54895},
