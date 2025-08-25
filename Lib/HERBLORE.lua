@@ -711,7 +711,7 @@ function Herblore.skillCape()
     end
 
     API.logDebug("Using Skill Cape")
-    local cape = Equipment:getCape()
+    local cape = Equipment:GetCape()
 
     if cape then
         Equipment:DoAction(cape,2)
