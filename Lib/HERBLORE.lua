@@ -710,14 +710,9 @@ function Herblore.skillCape()
         return false
     end
 
-    API.logDebug("Using Skill Cape")
-    local cape = Equipment:GetCape()
-
-    if cape then
-        Equipment:DoAction(cape,2)
-    else
-        API.logDebug("Unable to Equipment:DoAction on the herblore skillcape!")
-        return false
+    local sCape = UTILS.getSkillOnBar("Activate Hooded herblore cape (t)")
+    if sCape ~= nil then
+        return API.DoAction_Ability_Direct(sCape, 1, API.OFF_ACT_GeneralInterface_route)
     end
 
 end
