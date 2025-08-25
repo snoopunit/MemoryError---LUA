@@ -707,12 +707,14 @@ function Herblore.skillCape()
 
     local cape = Equipment:GetCape()
     if cape and cape.id ~= 0 then
-        return Equipment:DoAction(cape.id, 2)
+        if Equipment:DoAction(cape.id, 2) then
+            return true
+        end
     else
         print("No cape equipped.")
         return false
     end
-    
+
 end
 
 end
