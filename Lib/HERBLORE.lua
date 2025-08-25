@@ -714,7 +714,7 @@ function Herblore.skillCape()
 
     API.logDebug("Grabbing cape ability from action bars...")
 
-    local sCape = UTILS.getSkillOnBar("Activate Hooded herblore cape (t)")
+    local sCape = UTILS.getSkillOnBar("Activate")
     if sCape ~= nil then
         return API.DoAction_Ability_Direct(sCape, 1, API.OFF_ACT_GeneralInterface_route)
     end
