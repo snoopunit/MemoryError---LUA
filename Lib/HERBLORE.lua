@@ -760,18 +760,16 @@ function Herblore.makePotions()
                         return false
                     end
 
-                else
+                end
 
-                    Herblore.updateCurrentState("Cleaning herbs...")
+                Herblore.updateCurrentState("Cleaning herbs...")
 
-                    if Herblore.cleanHerbs(herbToClean.ID) then
-                        MISC.doCrafting()
-                    else 
-                        API.logWarn("Failed to clean herbs!")
-                        API.Write_LoopyLoop(false)
-                        return false
-                    end
-
+                if Herblore.cleanHerbs(herbToClean.ID) then
+                    MISC.doCrafting()
+                else 
+                    API.logWarn("Failed to clean herbs!")
+                    API.Write_LoopyLoop(false)
+                    return false
                 end
 
             end
