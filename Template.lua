@@ -37,13 +37,11 @@ API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(Max_AFK)
 
---HERB.drawGUI()
+HERB.drawGUI()
 
 while(API.Read_LoopyLoop())
 
 do-----------------------------------------------------------------------------------
-    --startHerbloreRoutine()
-    HERB.skillCape()
-    Write_LoopyLoop(false)
+    startHerbloreRoutine()
 end----------------------------------------------------------------------------------
 
