@@ -705,10 +705,14 @@ end
 
 function Herblore.skillCape()
 
+    API.logDebug("Checking for Cape...")
+
     if not Equipment:Contains("Hooded herblore cape (t)") then
         API.logDebug("Couldn't find the herblore skillcape!")
         return false
     end
+
+    API.logDebug("Grabbing cape ability from action bars...")
 
     local sCape = UTILS.getSkillOnBar("Activate Hooded herblore cape (t)")
     if sCape ~= nil then
