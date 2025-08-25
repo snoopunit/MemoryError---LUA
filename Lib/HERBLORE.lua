@@ -756,10 +756,10 @@ function Herblore.makePotions()
                         return false
                     end
                 else
-                    API.RandomSleep2(1200,0,600)
+                    API.RandomSleep2(600,0,600)
                     Herblore.updateCurrentState("Cleaning herbs...")
                     if Herblore.cleanHerbs(herbToClean.ID) then
-                        API.RandomSleep2(1200,0,600)
+                        API.RandomSleep2(600,0,600)
                         MISC.doCrafting()
                     else 
                         API.logWarn("Failed to clean herbs!")
@@ -771,7 +771,7 @@ function Herblore.makePotions()
 
             if Herblore.makeVials() then
                 Herblore.updateCurrentState("Making unfinished potions...")
-                API.RandomSleep2(1200,0,600)
+                API.RandomSleep2(600,0,600)
                 MISC.doCrafting()
             else
                 API.logWarn("Shutting down!") 
@@ -800,7 +800,7 @@ function Herblore.makePotions()
         if GLOBALS.useWell then
             Herblore.updateCurrentState("Using Portable Well...")
             if Herblore.mixPotionsAtPortableWell() then
-                API.RandomSleep2(1200,0,600)
+                API.RandomSleep2(600,0,600)
                 MISC.doCrafting()
             else
                 API.logWarn("Unable to mix at portable well!") 
@@ -810,7 +810,7 @@ function Herblore.makePotions()
         else
             Herblore.updateCurrentState("Crafting Potions...")
             if Herblore.mixPotionsInventory() then
-                API.RandomSleep2(1200,0,600)
+                API.RandomSleep2(600,0,600)
                 MISC.doCrafting()
             else
                 API.logWarn("Failed to mix potions in inventory!")
