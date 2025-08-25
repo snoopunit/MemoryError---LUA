@@ -740,8 +740,6 @@ function Herblore.makePotions()
 
         if BANK.doPreset(1) then
 
-            API.RandomSleep2(1200,0,600)
-
             if not Inventory:IsFull() then
                 API.logWarn("Didn't grab a full inventory!")
                 API.Write_LoopyLoop(false)
@@ -793,7 +791,6 @@ function Herblore.makePotions()
 
     if BANK.doPreset(2) then
 
-        API.RandomSleep2(1200,0,600)
         if not Inventory:IsFull() then
             API.logWarn("Didn't grab a full inventory!")
             API.Write_LoopyLoop(false)
