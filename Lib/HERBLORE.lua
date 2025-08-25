@@ -707,7 +707,7 @@ function Herblore.skillCape()
 
     local cape = Equipment:GetCape()
     if cape and cape.id ~= 0 then
-        if Equipment:DoAction(ESlot.CAPE, 2) then
+        if Equipment:DoAction(ESlot.CAPE, 3) then
             return true
         end
     else
