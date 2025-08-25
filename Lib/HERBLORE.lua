@@ -705,7 +705,7 @@ end
 
 function Herblore.skillCape()
 
-    local cape = Equipment:GetCape()
+    --[[local cape = Equipment:GetCape()
     if cape and cape.id ~= 0 then
         if Equipment:DoAction(ESlot.CAPE, 3) then
             return true
@@ -713,11 +713,11 @@ function Herblore.skillCape()
     else
         print("No cape equipped.")
         return false
-    end
-
-    --[[if API.DoAction_Interface(0xffffffff,0x85db,2,1430,233,-1,API.OFF_ACT_GeneralInterface_route) then
-        return true
     end]]
+
+    if API.DoAction_Interface(0xffffffff,0x85db,2,1430,233,-1,API.OFF_ACT_GeneralInterface_route) then
+        return true
+    end
 
 end
 
