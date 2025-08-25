@@ -705,7 +705,7 @@ end
 
 function Herblore.skillCape()
 
-    if not Equipment:Contains("herblore cape") then
+    if not Equipment:Contains("Hooded herblore cape (t)") then
         API.logDebug("Couldn't find the herblore skillcape!")
         return false
     end
