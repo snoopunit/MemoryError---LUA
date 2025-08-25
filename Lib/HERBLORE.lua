@@ -740,6 +740,8 @@ function Herblore.makePotions()
 
         if BANK.doPreset(1) then
 
+            API.RandomSleep2(1200,0,600)
+
             if not Inventory:IsFull() then
                 API.logWarn("Didn't grab a full inventory!")
                 API.Write_LoopyLoop(false)
@@ -747,35 +749,30 @@ function Herblore.makePotions()
             end
 
             local herbToClean = Herblore.findGrimyHerbs()
-
             if herbToClean then
-
                 if GLOBALS.useSkillcape then
-
                     Herblore.updateCurrentState("Using herblore skillcape...")
-
                     if not Herblore.skillCape() then
                         API.logWarn("Failed to use herblore skillcape!")
                         API.Write_LoopyLoop(false)
                         return false
                     end
-
                 end
-
+                API.RandomSleep2(1200,0,600)
                 Herblore.updateCurrentState("Cleaning herbs...")
-
                 if Herblore.cleanHerbs(herbToClean.ID) then
+                    API.RandomSleep2(1200,0,600)
                     MISC.doCrafting()
                 else 
                     API.logWarn("Failed to clean herbs!")
                     API.Write_LoopyLoop(false)
                     return false
                 end
-
             end
 
             if Herblore.makeVials() then
                 Herblore.updateCurrentState("Making unfinished potions...")
+                API.RandomSleep2(1200,0,600)
                 MISC.doCrafting()
             else
                 API.logWarn("Shutting down!") 
@@ -795,6 +792,7 @@ function Herblore.makePotions()
 
     if BANK.doPreset(2) then
 
+        API.RandomSleep2(1200,0,600)
         if not Inventory:IsFull() then
             API.logWarn("Didn't grab a full inventory!")
             API.Write_LoopyLoop(false)
@@ -804,6 +802,7 @@ function Herblore.makePotions()
         if GLOBALS.useWell then
             Herblore.updateCurrentState("Using Portable Well...")
             if Herblore.mixPotionsAtPortableWell() then
+                API.RandomSleep2(1200,0,600)
                 MISC.doCrafting()
             else
                 API.logWarn("Unable to mix at portable well!") 
@@ -813,6 +812,7 @@ function Herblore.makePotions()
         else
             Herblore.updateCurrentState("Crafting Potions...")
             if Herblore.mixPotionsInventory() then
+                API.RandomSleep2(1200,0,600)
                 MISC.doCrafting()
             else
                 API.logWarn("Failed to mix potions in inventory!")
