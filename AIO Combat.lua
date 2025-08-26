@@ -272,6 +272,7 @@ function terminate()
     runLoop = false
     API.Write_LoopyLoop(false)
 end
+
 function hasBuff(buff)
     if API.Buffbar_GetIDstatus(buff, false).id == 0 then
         return false
@@ -279,6 +280,7 @@ function hasBuff(buff)
         return true
     end
 end
+
 function hasDeBuff(debuff)
     if API.DeBuffbar_GetIDstatus(debuff, false).id == 0 then
         return false
@@ -286,6 +288,7 @@ function hasDeBuff(debuff)
         return true
     end
 end
+
 function hasItem(item)
     local invitems = API.InvItemcount_String(item)
     if invitems > 0 then
@@ -293,6 +296,7 @@ function hasItem(item)
     end
     return false    
 end
+
 function getEnemies(names, size)
     local NPCs = {}
     if names then
@@ -306,6 +310,7 @@ function getEnemies(names, size)
         return NPCs
     end
 end
+
 function attack()
     
         API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, closestNPC)
@@ -318,6 +323,7 @@ function attack()
         return false
     end
 end
+
 function uniqueEnemies()
     local uniqueEnemies = {}  
     local seenIDs = {}   
@@ -335,6 +341,7 @@ function uniqueEnemies()
     
     return uniqueEnemies
 end
+
 function moveToEnemy()
     if not moveToTarget then return end
 
@@ -387,11 +394,13 @@ function moveToEnemy()
     end
 
 end
+
 function checkGroundItems()
     local items = API.ReadAllObjectsArray({3}, lootlist, {})
 
     return #items
 end
+
 function openLoot()
 
     if not lootDrops or (STATS.kills == 0) or (checkGroundItems() < 1) then
@@ -431,6 +440,7 @@ function openLoot()
     end
 
 end
+
 function drawGUI()
 
     if fightBtn.return_click then
@@ -500,6 +510,7 @@ function drawGUI()
     API.DrawTextAt(imguiTargetLabel)
     API.DrawTextAt(imguiTarget)
 end
+
 function findClosestEnemy()
 
     local coords = API.PlayerCoord()
@@ -531,9 +542,11 @@ function findClosestEnemy()
     API.DrawTextAt(imguiTarget)
     return true
 end
+
 function Check_Timer(int)
     return (API.SystemTime() - int)
 end
+
 function getTotalRuntime(timer)
     local currentTime = API.SystemTime()
     local elapsed = currentTime - timer
@@ -542,6 +555,7 @@ function getTotalRuntime(timer)
     local seconds = math.floor((elapsed % 60000) / 1000)
     return string.format("%dh,%dm,%ds", hours, minutes, seconds)
 end
+
 function antiban()
     local elapsedTime = Check_Timer(TIMERS.AFK_Timer)
     local afkThreshold = math.random(Min_AFK, Max_AFK)
@@ -558,9 +572,11 @@ function antiban()
         TIMERS.AFK_Timer = API.SystemTime()
     end
 end
+
 function KillsPerHour()   
     return math.floor((STATS.kills*60)/((API.SystemTime() - TIMERS.Script_Timer)/60000))
 end
+
 function activateAbility(name)
 
     ---MUST BE ON ACTIONBARS
@@ -568,6 +584,7 @@ function activateAbility(name)
     API.DoAction_Ability(name, 1, API.OFF_ACT_GeneralInterface_route)
     API.RandomSleep2(600, 50, 300)
 end
+
 function emergencyTele()
     if UTILS.canUseSkill("War's Retreat Teleport") then
         API.logDebug("Teleport: War's Retreat")
@@ -585,6 +602,7 @@ function emergencyTele()
     end  
     terminate()
 end
+
 function healthCheck()
     if API.GetHPrecent() < Min_Eat_Percent then
         if UTILS.canUseSkill("Eat Food") then
@@ -611,6 +629,7 @@ function healthCheck()
         terminate()
     end
 end
+
 function buffCheck()
        
     if API.InvItemcount_String("Ancient elven ritual shard") > 0 then
@@ -656,6 +675,7 @@ function buffCheck()
     end
     
 end
+
 function setupPrayers()
 
     if enemyToFight == nil then
@@ -663,7 +683,7 @@ function setupPrayers()
     else
         if UTILS.canUseSkill(PROTECT_MAGIC.SPELL_NAME) then
             for _, name in ipairs(PROTECT_MAGIC.names) do
-                if name == currentTarget then
+                if name == enemyToFight then
                     API.logDebug("PRAYER_TO_USE: PROTECT_MAGIC")
                     PRAYER_TO_USE = PROTECT_MAGIC
                     return true
@@ -674,7 +694,7 @@ function setupPrayers()
         end
         if UTILS.canUseSkill(PROTECT_MELEE.SPELL_NAME) then
             for _, name in ipairs(PROTECT_MELEE.names) do
-                if name == currentTarget then
+                if name == enemyToFight then
                     API.logDebug("PRAYER_TO_USE: PROTECT_MELEE")
                     PRAYER_TO_USE = PROTECT_MELEE
                     return true
@@ -685,7 +705,7 @@ function setupPrayers()
         end
         if UTILS.canUseSkill(PROTECT_RANGED.SPELL_NAME) then
             for _, name in ipairs(PROTECT_RANGED.names) do
-                if name == currentTarget then
+                if name == enemyToFight then
                     API.logDebug("PRAYER_TO_USE: PROTECT_RANGED")
                     PRAYER_TO_USE = PROTECT_RANGED
                     return true
@@ -696,7 +716,7 @@ function setupPrayers()
         end
         if UTILS.canUseSkill(PROTECT_NECRO.SPELL_NAME) then
             for _, name in ipairs(PROTECT_NECRO.names) do
-                if name == currentTarget then
+                if name == enemyToFight then
                     PRAYER_TO_USE = PROTECT_NECRO
                     return true
                 end
@@ -713,6 +733,7 @@ function setupPrayers()
     end
     return false
 end
+
 function prayerCheck()
 
     if PRAYER_TO_USE == nil then
@@ -734,6 +755,7 @@ function prayerCheck()
         API.RandomSleep2(800, 50, 300)    
     end
 end
+
 function noteStuff()
     if not noteItems then
         return
@@ -760,6 +782,7 @@ function noteStuff()
         end
     end
 end
+
 function specialAttack()
     if not useSpecial then
         return
@@ -770,6 +793,7 @@ function specialAttack()
         API.RandomSleep2(600, 0, 600)    
     end
 end
+
 function chargePackCheck()
     local chatTexts = API.GatherEvents_chat_check()
     for _, v in ipairs(chatTexts) do
@@ -782,6 +806,7 @@ function chargePackCheck()
     end
     return true
 end
+
 function essenceOfFinality()
         if not useSpecial then
             return
@@ -792,6 +817,7 @@ function essenceOfFinality()
             API.RandomSleep2(600, 0, 600)    
         end
 end
+
 function rejuvenate()
     if not hasItem("shield") then
         return
