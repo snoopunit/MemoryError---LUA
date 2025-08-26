@@ -684,7 +684,6 @@ function setupPrayers()
         if UTILS.canUseSkill(PROTECT_MAGIC.SPELL_NAME) then
             for _, name in ipairs(PROTECT_MAGIC.names) do
                 if name == enemyToFight then
-                    API.logDebug("PRAYER_TO_USE: PROTECT_MAGIC")
                     PRAYER_TO_USE = PROTECT_MAGIC
                     return true
                 end
@@ -695,7 +694,6 @@ function setupPrayers()
         if UTILS.canUseSkill(PROTECT_MELEE.SPELL_NAME) then
             for _, name in ipairs(PROTECT_MELEE.names) do
                 if name == enemyToFight then
-                    API.logDebug("PRAYER_TO_USE: PROTECT_MELEE")
                     PRAYER_TO_USE = PROTECT_MELEE
                     return true
                 end
@@ -706,7 +704,6 @@ function setupPrayers()
         if UTILS.canUseSkill(PROTECT_RANGED.SPELL_NAME) then
             for _, name in ipairs(PROTECT_RANGED.names) do
                 if name == enemyToFight then
-                    API.logDebug("PRAYER_TO_USE: PROTECT_RANGED")
                     PRAYER_TO_USE = PROTECT_RANGED
                     return true
                 end
