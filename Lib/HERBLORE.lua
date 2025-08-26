@@ -690,7 +690,8 @@ end
 
 function Herblore.mixPotionsAtPortableWell()
     API.logDebug("API.DoAction 'Mix Potions' on 'Portable Well'")
-    return API.DoAction_Object1(0x29,API.OFF_ACT_GeneralObject_route0,{ OBJECTS.Portable_Well },50)
+    --return API.DoAction_Object1(0x29,API.OFF_ACT_GeneralObject_route0,{ OBJECTS.Portable_Well },50)
+    return Interact:Object("Portable well", "Mix Potions", 10)
 end
 
 function Herblore.mixPotionsInventory()
