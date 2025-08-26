@@ -547,15 +547,14 @@ function antiban()
     local afkThreshold = math.random(Min_AFK, Max_AFK)
     if elapsedTime > afkThreshold then
         STATS.antibans = STATS.antibans + 1
-        local action = math.random(1, 7)
-        if action == 1 then API.PIdle1()
-        elseif action == 2 then API.PIdle2()
-        elseif action == 3 then API.PIdle22()
+        local action = math.random(4, 7)
+        --if action == 1 then API.PIdle1()
+        --elseif action == 2 then API.PIdle2()
+        --elseif action == 3 then API.PIdle22()
         elseif action == 4 then API.KeyboardPress('w', 50, 250)
         elseif action == 5 then API.KeyboardPress('a', 50, 250)
         elseif action == 6 then API.KeyboardPress('s', 50, 250)
         elseif action == 7 then API.KeyboardPress('d', 50, 250)
-        end
         TIMERS.AFK_Timer = API.SystemTime()
     end
 end
@@ -659,12 +658,13 @@ function buffCheck()
 end
 function setupPrayers()
 
-    if currentTarget == nil then
+    if enemyToFight == nil then
         return false
     else
         if UTILS.canUseSkill(PROTECT_MAGIC.SPELL_NAME) then
             for _, name in ipairs(PROTECT_MAGIC.names) do
                 if name == currentTarget then
+                    API.logDebug("PRAYER_TO_USE: PROTECT_MAGIC")
                     PRAYER_TO_USE = PROTECT_MAGIC
                     return true
                 end
@@ -675,6 +675,7 @@ function setupPrayers()
         if UTILS.canUseSkill(PROTECT_MELEE.SPELL_NAME) then
             for _, name in ipairs(PROTECT_MELEE.names) do
                 if name == currentTarget then
+                    API.logDebug("PRAYER_TO_USE: PROTECT_MELEE")
                     PRAYER_TO_USE = PROTECT_MELEE
                     return true
                 end
@@ -685,6 +686,7 @@ function setupPrayers()
         if UTILS.canUseSkill(PROTECT_RANGED.SPELL_NAME) then
             for _, name in ipairs(PROTECT_RANGED.names) do
                 if name == currentTarget then
+                    API.logDebug("PRAYER_TO_USE: PROTECT_RANGED")
                     PRAYER_TO_USE = PROTECT_RANGED
                     return true
                 end
@@ -714,6 +716,7 @@ end
 function prayerCheck()
 
     if PRAYER_TO_USE == nil then
+        API.logDebug(" PRAYER_TO_USE == nil !")
         return
     end
 
@@ -818,13 +821,6 @@ function rejuvenate()
     API.RandomSleep2(600, 0, 600)
     
 end
-function foodDump()
-    if enemyToFight == "Frost dragon" then
-        if API.InvItemcount_String("Shark") > 6 then
-            activateAbility("Eat Food")   
-        end
-    end
-end
 
 --main loop
 API.Write_LoopyLoop(true)
@@ -877,10 +873,9 @@ do------------------------------------------------------------------------------
             attack()
             API.RandomSleep2(600, 0, 600)
         end
-
         
 
-        while API.IsTargeting() do
+        while API.IsTargeting() and API.Read_LoopyLoop() do
 
             currentTargetInfo = API.ReadTargetInfo(false)
             
@@ -888,20 +883,19 @@ do------------------------------------------------------------------------------
                 attack()
                 API.RandomSleep2(600, 0, 600)
             end
-
-            openLoot()
-            foodDump()
-            if not hasMoved then noteStuff() end
+        
             buffCheck()
             prayerCheck()
             healthCheck()
             rejuvenate()
             specialAttack()  
             essenceOfFinality()
-            if not hasMoved then moveToEnemy() end
-            hasMoved = true
+            if not hasMoved then 
+                moveToEnemy() 
+                hasMoved = true
+            end
             antiban()
-            API.RandomSleep2(600, 0, 600)  
+            API.RandomSleep2(2400, 0, 0)  
 
         end     
   
@@ -910,7 +904,7 @@ do------------------------------------------------------------------------------
         API.DrawTextAt(imguiTarget)
         STATS.kills = STATS.kills + 1  
         if waitForDeath then 
-            API.RandomSleep2(3600, 0, 1200)
+            API.RandomSleep2(3000, 0, 0)
             noteStuff()
             openLoot()
         end
