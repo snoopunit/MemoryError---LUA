@@ -795,25 +795,17 @@ function Herblore.makePotions()
             return
         end
 
-        if GLOBALS.useWell then
-            Herblore.updateCurrentState("Using Portable Well...")
-            if Herblore.mixPotionsAtPortableWell() then
-                MISC.doCrafting()
-            else
-                API.logWarn("Unable to mix at portable well!") 
+        if not Herblore.mixPotionsAtPortableWell() then
+            if not Herblore.mixPotionsInventory() then
+                API.logWarn("Failed to mix potions!")
                 API.Write_LoopyLoop(false)
-                return
-            end
-        else
-            Herblore.updateCurrentState("Crafting Potions...")
-            if Herblore.mixPotionsInventory() then
-                MISC.doCrafting()
-            else
-                API.logWarn("Failed to mix potions in inventory!")
-                API.Write_LoopyLoop(false)
-                return
-            end
+                return             
+            end     
+            API.RandomSleep2(2400,0,2400)    
         end
+
+        MISC.doCrafting()
+       
     else    
         API.logWarn("Failed to load secondary preset!")
         API.Write_LoopyLoop(false)
