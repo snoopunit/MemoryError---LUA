@@ -12,12 +12,13 @@ function Fishing_and_Banking(spotType)
 
         local bankTimer = API.SystemTime()
 
-        while API.Read_LoopyLoop and (API.SystemTime() - bankTimer) < 30000 do
+        while API.Read_LoopyLoop() and (API.SystemTime() - bankTimer) < 30000 do
             
             Interact:NPC("Stiles", "Exchange", 40)
 
-            if API.ReadPlayerMovin() then 
+            while API.ReadPlayerMovin() and API.Read_LoopyLoop() do 
                 bankTimer = API.SystemTime()
+                API.RandomSleep2(2400, 0 ,600)
             end
 
             --Check we don't have any more (un-noted Raw Lobster) ID: 377
