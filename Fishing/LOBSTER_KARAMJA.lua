@@ -54,5 +54,5 @@ API.SetMaxIdleTime(4)
 while(API.Read_LoopyLoop())
 
 do-----------------------------------------------------------------------------------
-    Fishing_and_Banking(SPOTS.TROUT_SALMON)
+    Fishing_and_Banking(SPOTS.LOBSTER)
 end----------------------------------------------------------------------------------
