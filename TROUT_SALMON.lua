@@ -7,7 +7,7 @@ function Fishing_and_Banking(spotType)
 
     if API.InvFull_() then
 
-        Interact:Object("Bank chest", "Load last preset from", 30)
+        Interact:Object("Bank chest", "Load Last Preset from", 30)
 
         local bankTimer = API.SystemTime()
 
