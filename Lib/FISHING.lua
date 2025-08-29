@@ -104,7 +104,7 @@ SPOTS = {
         name = "Fishing spot",
         action = "Net",
         submenu = {"Harpoon"},
-        Location = {}
+        Location = {{2599,3419,0},{2601,3422,0},{2603,3417,0},{2605,3424,0},{2605,3425,0},{2605,3416,0}}
     },
     ROCKTAIL = {
         name = "Rocktail shoal",
