@@ -157,12 +157,13 @@ local PRAYER_TO_USE = nil
 
 ----Note List----
 local notelist = {}
-table.insert(notelist, ITEMS.BONES.frost_dbones)
+--table.insert(notelist, ITEMS.BONES.frost_dbones)
 
 ----Loot List----
 local lootlist = {}
 table.insert(lootlist, ITEMS.MISC.gold)
-table.insert(lootlist, ITEMS.BONES.frost_dbones)
+table.insert(lootlist, ITEMS.MISC.feather)
+--table.insert(lootlist, ITEMS.BONES.frost_dbones)
 --table.insert(lootlist, ITEMS.ARMOR.subj_boot)
 --table.insert(lootlist, ITEMS.ARMOR.subj_garb)
 --table.insert(lootlist, ITEMS.ARMOR.subj_glov)
