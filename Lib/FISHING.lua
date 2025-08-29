@@ -152,7 +152,6 @@ function DistanceFromPlayer(TILE)
     return math.sqrt(dx * dx + dy * dy)
 end
 
-
 function Fishing.getSpotLocation(spotType)
     if not spotType or not spotType.Location or #spotType.Location == 0 then
         API.logError("Invalid spotType or empty Location provided to Fishing.getSpotLocation")
@@ -169,7 +168,7 @@ function Fishing.getSpotLocation(spotType)
     return WPOINT:new(randomLocation[1], randomLocation[2], randomLocation[3])
 end
 
-function Fishing.goTo(spotType)
+--[[function Fishing.goTo(spotType)
     local locations = spotType.Location
 
     if #locations == 0 then
@@ -202,7 +201,7 @@ function Fishing.goTo(spotType)
 
     API.logDebug("Successfully reached fishing spot")
     return true
-end
+end]]
 
 function Fishing.findFishingSpots(spotType)
     local spots = API.ReadAllObjectsArray({1},{-1},{spotType.name})
@@ -331,9 +330,9 @@ function Fishing.gather(spotType)
         -- Log the selected fishing spot coordinates
         API.logDebug("Selected fishing spot: {" .. fishingSpot.x .. "," .. fishingSpot.y .. "," .. fishingSpot.z .. "}")
 
-        if DistanceFromPlayer(fishingSpot) > 30 then
+        --[[if DistanceFromPlayer(fishingSpot) > 30 then
             Fishing.goTo(spotType)
-        end
+        end]]
 
         if not Fishing.fish(spotType) then
             API.logWarn("Unable to fish: " .. spotType.name)
