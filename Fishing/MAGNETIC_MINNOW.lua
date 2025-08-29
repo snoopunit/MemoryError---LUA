@@ -10,7 +10,7 @@ API.SetMaxIdleTime(4)
 while(API.Read_LoopyLoop())
 
 do-----------------------------------------------------------------------------------
-    if API.checkAnim(50) then
+    if API.CheckAnim(50) then
         API.RandomSleep2(600, 0 ,600)
         API.doRandomEvents()
     else
