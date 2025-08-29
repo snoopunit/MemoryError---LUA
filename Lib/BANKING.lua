@@ -307,6 +307,10 @@ function walkPath(destination)
     local MAX_SEGMENT_LENGTH = 30
     local currentPosition = API.PlayerCoord()
     
+    if distanceFromPlayer(destination) <= 30 then
+        return true
+    end
+
     while distanceFromPlayer(destination) > MAX_SEGMENT_LENGTH do
         local distance = distanceFromPlayer(destination)
         local segments = math.ceil(distance / MAX_SEGMENT_LENGTH)
