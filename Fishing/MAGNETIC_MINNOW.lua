@@ -14,6 +14,6 @@ do------------------------------------------------------------------------------
         API.RandomSleep2(600, 0 ,600)
         API.doRandomEvents()
     else
-        Interact:NPC("Minnow Shoal", "Catch", 20)
+        Interact:NPC("Minnow shoal", "Catch", 20)
     end
 end----------------------------------------------------------------------------------
