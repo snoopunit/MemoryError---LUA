@@ -13,7 +13,8 @@ do------------------------------------------------------------------------------
     if API.CheckAnim(50) then
         API.RandomSleep2(2400, 0 ,600)
         API.DoRandomEvents()
-        API.logDebug("Magnetic minnows: "..tostring(Inventory:GetItemAmount("Magnetic minnow")))
+        local minnowInvItem = Inventory:GetItem("Magnetic minnow")
+        API.logDebug("Magnetic minnows: "..tostring(minnowInvItem.amount))
     else
         Interact:NPC("Minnow shoal", "Catch", 20)
     end
