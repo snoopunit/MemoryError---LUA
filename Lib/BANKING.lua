@@ -463,7 +463,7 @@ function Banking.isNearBank(bankType)
     end
 end
 
-function Banking:goTo(bankType) 
+function Banking.goTo(bankType) 
     local locations = bankType.Location
 
     if #locations == 0 then
