@@ -8,7 +8,7 @@ function Fishing_and_Banking(spotType)
 
     if API.InvFull_() then
 
-        BANK:goTo(BANKERS.STILES)
+        BANK.goTo(BANK.BANKERS.STILES)
 
         Interact:NPC("Stiles", "Exchange", 30)
 
