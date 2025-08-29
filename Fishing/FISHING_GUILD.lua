@@ -9,7 +9,7 @@ function Fishing_and_Banking(spotType)
 
     if API.InvFull_() then
 
-        Interact:Object("Bank deposit box", "Deposit-All", 20)
+        Interact:Object("Bank booth", "Load Last Preset from", 50)
 
         local bankTimer = API.SystemTime()
 
