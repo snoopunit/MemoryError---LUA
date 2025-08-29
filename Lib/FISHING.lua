@@ -152,6 +152,92 @@ function DistanceFromPlayer(TILE)
     return math.sqrt(dx * dx + dy * dy)
 end
 
+---@param endPoint WPOINT
+---@param segments number
+---@return WPOINT[]
+function lineToPlayer(endPoint, segments)
+    local startPoint = API.PlayerCoord()
+    local distance = distanceFromPlayer(endPoint)
+    local segmentLength = distance / segments
+
+    local points = {}
+    for i = 0, segments do
+        local t = i / segments
+        local x = math.floor(startPoint.x + (endPoint.x - startPoint.x) * t)
+        local y = math.floor(startPoint.y + (endPoint.y - startPoint.y) * t)
+        local z = math.floor(startPoint.z + (endPoint.z - startPoint.z) * t)
+        table.insert(points, {x = x, y = y, z = z})
+    end
+
+    return points
+end
+
+---@param point WPOINT
+---@return WPOINT
+function randomizePoint(point)
+    local xOffset = math.random(-5, 5)
+    local yOffset = math.random(-5, 5)
+    return {
+        x = (point.x + xOffset),
+        y = (point.y + yOffset),
+        z = (point.z)
+    }
+end
+
+---@param destination WPOINT
+function walkPath(destination)
+    local MAX_SEGMENT_LENGTH = 30
+    local currentPosition = API.PlayerCoord()
+    
+    while distanceFromPlayer(destination) > MAX_SEGMENT_LENGTH do
+        local distance = distanceFromPlayer(destination)
+        local segments = math.ceil(distance / MAX_SEGMENT_LENGTH)
+        local nextPointArray = lineToPlayer(destination, segments)[2]  -- Get the next point as an array
+        
+        -- Convert the array to a WPOINT
+        local nextPoint = WPOINT:new(nextPointArray.x, nextPointArray.y, nextPointArray.z)
+        
+        API.logDebug("NextPoint: x=" .. nextPoint.x .. ", y=" .. nextPoint.y .. ", z=" .. nextPoint.z)
+
+        if API.DoAction_WalkerW(nextPoint) then
+            API.RandomSleep2(1800, 200, 1200)
+            while API.ReadPlayerMovin2() do
+                if distanceFromPlayer(destination) < 40 then return true end
+                API.RandomSleep2(50, 0, 50)   
+            end
+        else
+            API.logError("Failed to walk to point: x=" .. nextPoint.x .. ", y=" .. nextPoint.y .. ", z=" .. nextPoint.z)
+            return false
+        end
+        
+        currentPosition = API.PlayerCoord()
+        if distanceFromPlayer(destination) < 40 then
+            return true
+        end
+    end
+    
+    -- Final movement to destination
+    API.logDebug("Attempting final move to destination")
+    if API.DoAction_WalkerW(destination) then
+        API.RandomSleep2(1800, 200, 1200)
+        while API.ReadPlayerMovin2() do
+            if API.PinAreaW(destination, 40) then return true end
+            API.RandomSleep2(50, 0, 50)   
+        end
+    else
+        API.logError("Failed to walk to final destination: x=" .. destination.x .. ", y=" .. destination.y .. ", z=" .. destination.z)
+        return false
+    end
+    
+    if distanceFromPlayer(destination) < 40 then
+        API.logDebug("Successfully reached destination")
+        return true
+    else
+        API.logWarn("Reached end of path but not near destination")
+        return false
+    end
+end
+
 function Fishing.getSpotLocation(spotType)
     if not spotType or not spotType.Location or #spotType.Location == 0 then
         API.logError("Invalid spotType or empty Location provided to Fishing.getSpotLocation")
@@ -168,7 +254,7 @@ function Fishing.getSpotLocation(spotType)
     return WPOINT:new(randomLocation[1], randomLocation[2], randomLocation[3])
 end
 
---[[function Fishing.goTo(spotType)
+function Fishing.goTo(spotType)
     local locations = spotType.Location
 
     if #locations == 0 then
@@ -201,7 +287,7 @@ end
 
     API.logDebug("Successfully reached fishing spot")
     return true
-end]]
+end
 
 function Fishing.findFishingSpots(spotType)
     local spots = API.ReadAllObjectsArray({1},{-1},{spotType.name})
