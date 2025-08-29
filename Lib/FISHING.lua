@@ -132,6 +132,27 @@ SPOTS = {
     }
 }
 
+--- Returns the distance between a TILE {x,y,z} and the player position
+---@param TILE {x:number, y:number, z:number}
+---@return number
+function DistanceFromPlayer(TILE)
+    local player = API.PlayerCoord()
+    if not player or not TILE then
+        return math.huge -- return "infinite" if invalid
+    end
+    
+    -- Check same plane (z level), if relevant
+    if TILE.z ~= player.z then
+        return math.huge
+    end
+
+    -- Euclidean distance (2D, ignoring z since it's a plane-based game)
+    local dx = TILE.x - player.x
+    local dy = TILE.y - player.y
+    return math.sqrt(dx * dx + dy * dy)
+end
+
+
 function Fishing.getSpotLocation(spotType)
     if not spotType or not spotType.Location or #spotType.Location == 0 then
         API.logError("Invalid spotType or empty Location provided to Fishing.getSpotLocation")
@@ -162,7 +183,7 @@ function Fishing.goTo(spotType)
     if walkPath(randomizePoint(tile)) then
         API.RandomSleep2(600, 200, 200)
         while API.ReadPlayerMovin2() do
-            if distanceFromPlayer(tile) < 10 then break end
+            if DistanceFromPlayer(tile) < 10 then break end
             API.RandomSleep2(100, 50, 50)
         end
     else
@@ -170,7 +191,7 @@ function Fishing.goTo(spotType)
         return false
     end
 
-    local distance = distanceFromPlayer(tile)
+    local distance = DistanceFromPlayer(tile)
     API.logDebug("Distance from fishing spot after walking: " .. distance)
 
     if distance > 40 then    
@@ -310,7 +331,7 @@ function Fishing.gather(spotType)
         -- Log the selected fishing spot coordinates
         API.logDebug("Selected fishing spot: {" .. fishingSpot.x .. "," .. fishingSpot.y .. "," .. fishingSpot.z .. "}")
 
-        if distanceFromPlayer(fishingSpot) > 30 then
+        if DistanceFromPlayer(fishingSpot) > 30 then
             Fishing.goTo(spotType)
         end
 
