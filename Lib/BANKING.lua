@@ -260,7 +260,6 @@ BANKERS = {
     }
 }
 
---[[
 ---@param point WPOINT
 ---@return number
 function distanceFromPlayer(point)
@@ -270,6 +269,7 @@ function distanceFromPlayer(point)
     local dz = point.z - playerPos.z
     return math.floor(math.sqrt(dx * dx + dy * dy + dz * dz))
 end
+
 ---@param endPoint WPOINT
 ---@param segments number
 ---@return WPOINT[]
@@ -289,6 +289,7 @@ function lineToPlayer(endPoint, segments)
 
     return points
 end
+
 ---@param point WPOINT
 ---@return WPOINT
 function randomizePoint(point)
@@ -300,6 +301,7 @@ function randomizePoint(point)
         z = (point.z)
     }
 end
+
 ---@param destination WPOINT
 function walkPath(destination)
     local MAX_SEGMENT_LENGTH = 30
@@ -353,7 +355,6 @@ function walkPath(destination)
         return false
     end
 end
-]]
 
 function isBankOpen()
     if API.VB_FindPSettinOrder(2874, 0).state == 24 then
@@ -365,7 +366,7 @@ end
 
 function waitForBankToOpen()
     local failTimer = API.SystemTime()
-    while not isBankOpen() do
+    while not isBankOpen() and API.Read_LoopyLoop() do
         API.RandomSleep2(250,0,250)
         if API.SystemTime() - failTimer > 30000 then
             API.logWarn("Failed to open Bank!")
@@ -378,7 +379,7 @@ end
 
 function waitForBankToClose()
     local failTimer = API.SystemTime()
-    while isBankOpen() do
+    while isBankOpen() and API.Read_LoopyLoop() do
         API.RandomSleep2(250,0,250)
         if API.SystemTime() - failTimer > 30000 then
             API.logWarn("Failed to close Bank!")
@@ -456,7 +457,7 @@ function Banking.isNearBank(bankType)
     end
 
     for _, bank in pairs(banks) do
-        if math.floor(bank.Distance) <= 20 then
+        if math.floor(bank.Distance) <= 50 then
             return true
         end
     end
