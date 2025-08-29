@@ -19,7 +19,7 @@ function Fishing_and_Banking(spotType)
                 bankTimer = API.SystemTime()
             end
 
-            if Inventory:IsEmpty() then
+            if not Inventory:Contains("Raw shark") then
                 break
             end
 
