@@ -1,4 +1,4 @@
-print("FISHING LUMBRIDHE TUNA/SALMON")
+print("FISHING LUMBRIDHE TROUT/SALMON")
 
 local API = require("api")
 local FISH = require("lib/FISHING")
