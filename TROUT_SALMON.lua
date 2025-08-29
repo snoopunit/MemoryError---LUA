@@ -1,9 +1,7 @@
-print("FISHING LUMBRIDHE TROUT/SALMON")
+print("FISHING LUMBRIDGE TROUT/SALMON")
 
 local API = require("api")
 local FISH = require("lib/FISHING")
-
-local Max_AFK = 5
 
 function Fishing_and_Banking(spotType)
 
@@ -19,7 +17,8 @@ function Fishing_and_Banking(spotType)
                 bankTimer = API.SystemTime()
             end
 
-            if Inventory:IsEmpty() then
+            --Must have feathers in inventory, maybe check for that? who the fuck cares
+            if Inventory:FreeSpaces() == 27 then
                 break
             end
 
@@ -44,7 +43,7 @@ end
 API.Write_LoopyLoop(true)
 API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
-API.SetMaxIdleTime(Max_AFK)
+API.SetMaxIdleTime(4)
 
 while(API.Read_LoopyLoop())
 
