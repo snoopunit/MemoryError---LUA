@@ -12,7 +12,23 @@ function Fishing_and_Banking(spotType)
 
     if API.InvFull_() then
 
-        if not Interact:Object("Bank deposit box", "Deposit-All", 20) then
+        Interact:Object("Bank deposit box", "Deposit-All", 20)
+
+        local bankTimer = API.SystemTime()
+
+        while API.Read_LoopyLoop and (API.SystemTime() - bankTimer) < 30000 do
+            
+            if API.ReadPlayerMovin() then 
+                bankTimer = API.SystemTime()
+            end
+
+            if Inventory:IsEmpty() then
+                break
+            end
+
+        end
+
+        if API.SystemTime() - bankTimer > 30000 then
             API.logWarn("Unable to deposit at the deposit box!")
             API.Write_LoopyLoop(false)
             return
