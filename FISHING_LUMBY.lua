@@ -1,4 +1,4 @@
-print("FISHING GUILD SHARKS")
+print("FISHING LUMBRIDHE TUNA/SALMON")
 
 local API = require("api")
 local FISH = require("lib/FISHING")
@@ -9,7 +9,7 @@ function Fishing_and_Banking(spotType)
 
     if API.InvFull_() then
 
-        Interact:Object("Bank deposit box", "Deposit-All", 20)
+        Interact:Object("Bank chest", "Load last preset from", 30)
 
         local bankTimer = API.SystemTime()
 
@@ -49,5 +49,5 @@ API.SetMaxIdleTime(Max_AFK)
 while(API.Read_LoopyLoop())
 
 do-----------------------------------------------------------------------------------
-    Fishing_and_Banking(SPOTS.SHARK)
+    Fishing_and_Banking(SPOTS.TROUT_SALMON)
 end----------------------------------------------------------------------------------
