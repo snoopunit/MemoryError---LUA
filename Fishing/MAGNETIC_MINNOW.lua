@@ -14,7 +14,7 @@ do------------------------------------------------------------------------------
         API.RandomSleep2(2400, 0 ,600)
         API.DoRandomEvents()
         local minnowInvItem = Inventory:GetItem("Magnetic minnow")
-        API.logDebug("Magnetic minnows: "..tostring(minnowInvItem.amount))
+        API.logDebug("Magnetic minnows: "..tostring(minnowInvItem[1].amount))
     else
         Interact:NPC("Minnow shoal", "Catch", 20)
     end
