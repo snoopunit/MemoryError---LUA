@@ -12,7 +12,7 @@ while(API.Read_LoopyLoop())
 do-----------------------------------------------------------------------------------
     if API.CheckAnim(50) then
         API.RandomSleep2(600, 0 ,600)
-        API.doRandomEvents()
+        API.DoRandomEvents()
     else
         Interact:NPC("Minnow shoal", "Catch", 20)
     end
