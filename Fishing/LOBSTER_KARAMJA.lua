@@ -10,8 +10,6 @@ function Fishing_and_Banking(spotType)
 
         BANK.goTo(BANK.BANKERS.STILES)
 
-        
-
         local bankTimer = API.SystemTime()
 
         while API.Read_LoopyLoop and (API.SystemTime() - bankTimer) < 30000 do
@@ -30,7 +28,7 @@ function Fishing_and_Banking(spotType)
         end
 
         if API.SystemTime() - bankTimer > 30000 then
-            API.logWarn("Unable to deposit at the deposit box!")
+            API.logWarn("bankTimer exceeded 30s!")
             API.Write_LoopyLoop(false)
             return
         end
