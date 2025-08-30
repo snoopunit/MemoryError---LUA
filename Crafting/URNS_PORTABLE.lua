@@ -12,7 +12,7 @@ end
 function waitForDialog()
     local dialogTimer = API.SystemTime()
     while not dialogOpen() and API.Read_LoopyLoop() do
-        if (API.SystemTime() - dialogTimer) > 10 then
+        if (API.SystemTime() - dialogTimer) > 10000 then
             API.logWarn("Dialog Window took too long to open! Shutting down!")
             API.Write_LoopyLoop(false)
             return 
