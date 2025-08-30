@@ -21,8 +21,7 @@ function Fishing_and_Banking(spotType)
                 API.RandomSleep2(2400, 0 ,600)
             end
 
-            --Check we don't have any more (un-noted Raw Lobster) ID: 377
-            if not Inventory:Contains(377) then
+            if not Inventory:Contains("Raw tuna") and not Inventory:Contains("Raw swordfish") then
                 break
             end
 
@@ -55,5 +54,5 @@ API.SetMaxIdleTime(4)
 while(API.Read_LoopyLoop())
 
 do-----------------------------------------------------------------------------------
-    Fishing_and_Banking(SPOTS.LOBSTER)
+    Fishing_and_Banking(SPOTS.TUNA_SWORDFISH)
 end----------------------------------------------------------------------------------
