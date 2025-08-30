@@ -73,6 +73,7 @@ function makeUrns()
         MISC.doCrafting()
     else
         Interact:NPC("Banker", "Load Last Preset", 10)
+        API.RandomSleep2(2400,0,600)
     end
 end
 
