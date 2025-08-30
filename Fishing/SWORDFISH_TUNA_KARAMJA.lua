@@ -21,7 +21,9 @@ function Fishing_and_Banking(spotType)
                 API.RandomSleep2(2400, 0 ,600)
             end
 
-            if not Inventory:Contains("Raw tuna") and not Inventory:Contains("Raw swordfish") then
+            --Raw tuna: 359
+            --Raw swordfish: 371
+            if not Inventory:Contains(359) and not Inventory:Contains(371) then
                 break
             end
 
