@@ -816,17 +816,6 @@ function essenceOfFinality()
         end
 end
 
-function sGs()
-    if not useSpecial then
-            return
-        end
-    
-    if UTILS.canUseSkill("Healing Blade") then
-        activateAbility("Healing Blade")
-        API.RandomSleep2(600, 0, 600)    
-    end
-end
-
 function rejuvenate()
     if not hasItem("shield") then
         return
@@ -925,7 +914,6 @@ do------------------------------------------------------------------------------
             --rejuvenate()
             --specialAttack()  
             essenceOfFinality()
-            --sGs()
             openLoot()
             if not hasMoved then 
                 moveToEnemy() 
@@ -942,10 +930,9 @@ do------------------------------------------------------------------------------
         STATS.kills = STATS.kills + 1  
         if waitForDeath then 
             API.RandomSleep2(3000, 0, 0)
-            noteStuff()
-            openLoot()
         end
-
+        openLoot()
+        noteStuff()
     else
 
         if enemyToFight == nil or enemyToFight == "None" then 
