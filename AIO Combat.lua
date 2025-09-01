@@ -909,11 +909,11 @@ do------------------------------------------------------------------------------
             end
         
             buffCheck()
-            prayerCheck()
+            --prayerCheck()
             healthCheck()
-            rejuvenate()
+            --rejuvenate()
             specialAttack()  
-            essenceOfFinality()
+            --essenceOfFinality()
             if not hasMoved then 
                 moveToEnemy() 
                 hasMoved = true
