@@ -129,7 +129,7 @@ local DEBUFFS = {
     Enh_Excalibur = 14632
 }
 local PROTECT_MAGIC = {
-    names = {"Olivia the Chronicler", "Oyu the Quietest", "Frost dragon"},
+    names = {"Olivia the Chronicler", "Oyu the Quietest", "Frost dragon", "K'ril Tsutsaroth"},
     BUFF_ID = 25959,
     SPELL_NAME = "Protect from Magic"
 }
