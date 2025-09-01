@@ -924,8 +924,8 @@ do------------------------------------------------------------------------------
             healthCheck()
             --rejuvenate()
             --specialAttack()  
-            --essenceOfFinality()
-            sGs()
+            essenceOfFinality()
+            --sGs()
             openLoot()
             if not hasMoved then 
                 moveToEnemy() 
