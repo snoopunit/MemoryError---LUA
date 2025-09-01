@@ -926,6 +926,7 @@ do------------------------------------------------------------------------------
             --specialAttack()  
             --essenceOfFinality()
             sGs()
+            openLoot()
             if not hasMoved then 
                 moveToEnemy() 
                 hasMoved = true
