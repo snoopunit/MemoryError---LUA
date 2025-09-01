@@ -134,7 +134,7 @@ SPOTS = {
         name = "Fishing spot",
         action = "Net",
         submenu = {},
-        Location = {}
+        Location = {{2014, 11830, 0}, {2014, 11827, 0}, {2010, 11829, 0}, {2010, 11828, 0}}
     }
 }
 
