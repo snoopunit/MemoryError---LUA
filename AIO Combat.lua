@@ -816,6 +816,17 @@ function essenceOfFinality()
         end
 end
 
+function sGs()
+    if not useSpecial then
+            return
+        end
+    
+    if UTILS.canUseSkill("Healing Blade") then
+        activateAbility("Healing Blade")
+        API.RandomSleep2(600, 0, 600)    
+    end
+end
+
 function rejuvenate()
     if not hasItem("shield") then
         return
@@ -912,8 +923,9 @@ do------------------------------------------------------------------------------
             --prayerCheck()
             healthCheck()
             --rejuvenate()
-            specialAttack()  
+            --specialAttack()  
             --essenceOfFinality()
+            sGs()
             if not hasMoved then 
                 moveToEnemy() 
                 hasMoved = true
