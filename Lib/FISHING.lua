@@ -129,6 +129,12 @@ SPOTS = {
         action = "Fish",
         submenu = {},
         Location = {}
+    },
+    WALES_MAW = {
+        name = "Fishing spot",
+        action = "Net",
+        submenu = {},
+        Location = {}
     }
 }
 
