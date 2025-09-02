@@ -109,7 +109,7 @@ function MoveToLeader()
 end
 
 function findEnemyNearLeader()
-    local allPlayers = API.ReadAllObjectsArray(true, 2)
+    local allPlayers = API.ReadAllObjectsArray({2}, {-1}, {})
     local leader
     for i = 1, #allPlayers do
         if (allPlayers[i].Name == Leader_Name) then
@@ -117,7 +117,7 @@ function findEnemyNearLeader()
         end    
     end
     if not (leader == nil) then
-        local NPCs = API.ReadAllObjectsArray(true, 1)
+        local NPCs = API.ReadAllObjectsArray({1}, {-1}, {})
         for i = 1, #NPCs do
             local dist = math.sqrt(((NPCs[i].TileX / 512) - (leader.TileX / 512))^2 + ((NPCs[i].TileY / 512) - (leader.TileY / 512))^2)
             if math.floor(dist) <= 2 then
