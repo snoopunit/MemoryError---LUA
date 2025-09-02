@@ -66,7 +66,7 @@ end
 ---@return boolean
 function LeaderInRange(distance, walk)
 
-    local allPlayers = API.ReadAllObjectsArray(true, 2)
+    local allPlayers = API.ReadAllObjectsArray({2},{-1},{})
     local leader
 
     for i = 1, #allPlayers do
