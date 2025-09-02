@@ -1,10 +1,7 @@
 print("Multibox Slave")
 
 local API = require("api")
-
-local FoodChoice = API.ScriptDialogWindow2("Food", {
-    "Shark", "Lobster", "Monkfish",
-    },"Start", "Close").Name;
+local UTILS = require("utils")
 
 local Leader_Name = "playah8ah"
 
@@ -39,13 +36,11 @@ end
 
 ---@return boolean
 function eatFood()
-    if API.InvItemcount_String(FoodChoice) == 0 then
-        return false
+    if UTILS.canUseSkill("Eat Food") then
+        API.logDebug("Low HP! Eating Food!")
+        activateAbility("Eat Food")
+        API.RandomSleep2(1200, 50, 300)
     end
-    API.DoAction_Interface(0xffffffff,0xffffffff,1,1883,1,41,2480)
-    API.RandomSleep2(1200, 50, 600)
-    
-    return true
 end
 
 ---@return boolean
@@ -169,6 +164,7 @@ API.SetMaxIdleTime(4)
 
 while(API.Read_LoopyLoop())
 do-----------------------------------------------------------------------------------
+
     if API.IsInCombat_(Leader_Name) then
         print(Leader_Name, "in combat!")
         buffcheck()
@@ -180,13 +176,14 @@ do------------------------------------------------------------------------------
             print("Attack failed!")
         end
     end
+
     if not LeaderInRange(10) then
         API.DoAction_VS_Player_Follow({Leader_Name}, 50)
         API.RandomSleep2(800, 0, 0)
         while API.ReadPlayerMovin() and API.Read_LoopyLoop() do
             API.RandomSleep2(50, 0, 50)    
         end
-        --API.DoAction_Tile(API.PlayerCoord())    
+        API.DoAction_Tile(API.PlayerCoord())    
     end
     
     healthcheck()
