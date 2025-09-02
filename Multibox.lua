@@ -7,7 +7,7 @@ local Leader_Name = "playah8ah"
 
 local Min_AFK = 30000
 local Max_AFK = 240000
-local Min_Eat_Percent = 60
+local Min_Eat_Percent = 40
 
 ----Buff IDs----
 local Extreme_Magic_Buff = 25829
