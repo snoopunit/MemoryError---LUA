@@ -20,6 +20,7 @@ do------------------------------------------------------------------------------
     
     if Inventory:IsFull() then
         cook()
+        cook()
     else
         FISH.gather(SPOTS.WALES_MAW)
     end 
