@@ -19,7 +19,17 @@ while(API.Read_LoopyLoop())
 do-----------------------------------------------------------------------------------
     
     if Inventory:IsFull() then
-        cook()
+
+        if (Inventory:GetItemAmount("Raw sillago") >= 3) then
+            cook()
+        end
+        if (Inventory:GetItemAmount("Raw seerfish") >= 6) then 
+            cook()
+        end
+        
+        Inventory:Drop("Burnt seerfish")
+        Inventory:Drop("Burnt sillago")
+
     else
         FISH.gather(SPOTS.WALES_MAW)
     end 
