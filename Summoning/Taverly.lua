@@ -12,14 +12,13 @@ local function isAtLocation(location, distance)
     return API.PInArea(location.x, distance, location.y, distance, location.z)
 end
 
-local function makePouches()
+local function goToLocation(location)
+    --try to walk to the location if we're not already there
+    if not isAtLocation(location) then
 
-    --try to walk to the SHOP if we're not already there
-    if not isAtLocation(AREA.SHOP) then
+        if not API.DoAction_Tile(WPOINT.new(location.x + math.random(-4, 4), location.y + math.random(-4, 4), location.z)) then
 
-        if not API.DoAction_Tile(WPOINT.new(AREA.SHOP.x + math.random(-4, 4), AREA.SHOP.y + math.random(-4, 4), AREA.SHOP.z)) then
-
-            API.logWarn("DoAction_Tile(): {"..tostring(AREA.SHOP.x)..", "..tostring(AREA.SHOP.y).."} failed!")
+            API.logWarn("DoAction_Tile(): {"..tostring(location.x)..", "..tostring(location.y).."} failed!")
             API.Write_LoopyLoop(false)
             return 
 
@@ -42,8 +41,13 @@ local function makePouches()
         end
 
     end
+end
 
-    local bankTimer = API.SystemTime()
+local function makePouches()
+
+    goToLocation(AREA.SHOP)
+
+    local obeliskTimer = API.SystemTime()
 
     --shutdown if Interact: doesn't work
     if not Interact:Object("Obelisk", "Infuse-pouch", 30) then
@@ -53,7 +57,7 @@ local function makePouches()
     end
 
     --wait up to 15s for a free inventory spaces. shutdown if we don't
-    while (API.SystemTime() - bankTimer < 15000) and API.Read_LoopyLoop() do
+    while (API.SystemTime() - obeliskTimer < 15000) and API.Read_LoopyLoop() do
     
         if Inventory:FreeSpaces() > 10 then
             return true
@@ -69,34 +73,7 @@ end
 
 local function loadLastPreset()
 
-    --try to walk to the bank if we're not already there
-    if not isAtLocation(AREA.BANK) then
-
-        if not API.DoAction_Tile(WPOINT.new(AREA.BANK.x + math.random(-4, 4), AREA.BANK.y + math.random(-4, 4), AREA.BANK.z)) then
-
-            API.logWarn("DoAction_Tile(): {"..tostring(AREA.BANK.x)..", "..tostring(AREA.BANK.y).."} failed!")
-            API.Write_LoopyLoop(false)
-            return 
-
-        end
-
-        API.RandomSleep2(1200,0,600)
-
-        if not API.ReadPlayerMovin() then
-
-            API.logWarn("Failed to detect movement after walking to the bank!")
-            API.Write_LoopyLoop(false)
-            return
-
-        end
-
-        while API.ReadPlayerMovin() and API.Read_LoopyLoop() do
-
-            API.RandomSleep2(50,0,50)
-
-        end
-
-    end
+    goToLocation(AREA.BANK)
 
     local bankTimer = API.SystemTime()
 
