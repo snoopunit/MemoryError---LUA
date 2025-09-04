@@ -129,6 +129,12 @@ SPOTS = {
         action = "Fish",
         submenu = {},
         Location = {}
+    },
+    WALES_MAW = {
+        name = "Fishing spot",
+        action = "Net",
+        submenu = {},
+        Location = {{2010,11825,0},{2014,11824,0}, {2014, 11830, 0}, {2014, 11827, 0}, {2010, 11829, 0}, {2010, 11828, 0}}
     }
 }
 
@@ -238,57 +244,6 @@ function walkPath(destination)
     end
 end
 
-function Fishing.getSpotLocation(spotType)
-    if not spotType or not spotType.Location or #spotType.Location == 0 then
-        API.logError("Invalid spotType or empty Location provided to Fishing.getSpotLocation")
-        return nil
-    end
-
-    -- Pick a random coordinate from spotType.Location
-    local randomLocation = spotType.Location[math.random(#spotType.Location)]
-
-    -- Log the selected fishing spot coordinates
-    API.logDebug("Selected fishing spot: {" .. randomLocation[1] .. "," .. randomLocation[2] .. "," .. randomLocation[3] .. "}")
-
-    -- Create and return a WPOINT from the randomly selected location
-    return WPOINT:new(randomLocation[1], randomLocation[2], randomLocation[3])
-end
-
-function Fishing.goTo(spotType)
-    local locations = spotType.Location
-
-    if #locations == 0 then
-        API.logWarn("No locations defined for " .. spotType.name)
-        return false
-    end
-
-   local tile = Fishing.getSpotLocation(spotType)
-
-    API.logDebug("Attempting to walk to fishing spot")
-    if walkPath(randomizePoint(tile)) then
-        API.RandomSleep2(600, 200, 200)
-        while API.ReadPlayerMovin2() do
-            if DistanceFromPlayer(tile) < 10 then break end
-            API.RandomSleep2(100, 50, 50)
-        end
-    else
-        API.logError("Failed to walk to fishing spot")
-        return false
-    end
-
-    local distance = DistanceFromPlayer(tile)
-    API.logDebug("Distance from fishing spot after walking: " .. distance)
-
-    if distance > 40 then    
-        API.logError("Not in " .. spotType.name .. " location after successfully moving.")
-        API.logError("Check locations for " .. spotType.name)
-        return false
-    end
-
-    API.logDebug("Successfully reached fishing spot")
-    return true
-end
-
 function Fishing.findFishingSpots(spotType)
     local spots = API.ReadAllObjectsArray({1},{-1},{spotType.name})
 
@@ -344,6 +299,84 @@ function Fishing.findFishingSpots(spotType)
         API.Write_LoopyLoop(false)
         return false
     end
+end
+
+function Fishing.getSpotLocation(spotType)
+    if spotType == nil then
+        API.logError("Invalid spotType.")
+        return nil
+    end
+
+    if spotType.Location == nil then
+        API.logError("Invalid location data.")
+        return nil
+    end
+
+    -- If we have no saved locations, try to find new ones
+    if #spotType.Location == 0 then
+        API.logDebug("No saved locations for " .. spotType.name .. ". Attempting to find new spots...")
+        local spots = Fishing.findFishingSpots(spotType)
+
+        if not spots then
+            API.logError("No fishing spots available for " .. spotType.name)
+            return nil
+        end
+
+        -- Add newly found coordinates into spotType.Location
+        for _, spot in ipairs(spots) do
+            local x, y, z = math.floor(spot.Tile_XYZ.x), math.floor(spot.Tile_XYZ.y), math.floor(spot.Tile_XYZ.z)
+            table.insert(spotType.Location, {x, y, z})
+        end
+    end
+
+    if #spotType.Location == 0 then
+        API.logError("Still no valid locations after scanning for " .. spotType.name)
+        return nil
+    end
+
+    -- Pick a random coordinate from spotType.Location
+    local randomLocation = spotType.Location[math.random(#spotType.Location)]
+
+    -- Log the selected fishing spot coordinates
+    API.logDebug("Selected fishing spot: {" .. randomLocation[1] .. "," .. randomLocation[2] .. "," .. randomLocation[3] .. "}")
+
+    -- Create and return a WPOINT from the randomly selected location
+    return WPOINT:new(randomLocation[1], randomLocation[2], randomLocation[3])
+end
+
+function Fishing.goTo(spotType)
+    local locations = spotType.Location
+
+    if #locations == 0 then
+        API.logWarn("No locations defined for " .. spotType.name)
+        return false
+    end
+
+   local tile = Fishing.getSpotLocation(spotType)
+
+    API.logDebug("Attempting to walk to fishing spot")
+    if walkPath(randomizePoint(tile)) then
+        API.RandomSleep2(600, 200, 200)
+        while API.ReadPlayerMovin2() do
+            if DistanceFromPlayer(tile) < 10 then break end
+            API.RandomSleep2(100, 50, 50)
+        end
+    else
+        API.logError("Failed to walk to fishing spot")
+        return false
+    end
+
+    local distance = DistanceFromPlayer(tile)
+    API.logDebug("Distance from fishing spot after walking: " .. distance)
+
+    if distance > 40 then    
+        API.logError("Not in " .. spotType.name .. " location after successfully moving.")
+        API.logError("Check locations for " .. spotType.name)
+        return false
+    end
+
+    API.logDebug("Successfully reached fishing spot")
+    return true
 end
 
 function Fishing.fish(spotType)
@@ -402,7 +435,7 @@ end
 
 function Fishing.gather(spotType)
     if not spotType then
-        API.logError("Invalid spotType provided to Fishing.gather")
+        API.logError("Invalid spotType @ Fishing.gather(spotType)")
         return false
     end
 
@@ -415,10 +448,6 @@ function Fishing.gather(spotType)
         
         -- Log the selected fishing spot coordinates
         API.logDebug("Selected fishing spot: {" .. fishingSpot.x .. "," .. fishingSpot.y .. "," .. fishingSpot.z .. "}")
-
-        --[[if DistanceFromPlayer(fishingSpot) > 30 then
-            Fishing.goTo(spotType)
-        end]]
 
         if not Fishing.fish(spotType) then
             API.logWarn("Unable to fish: " .. spotType.name)
