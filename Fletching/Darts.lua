@@ -9,7 +9,7 @@ API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(4)
 
 TIPS = {
-    ADAMANT = "Adamant dart tip"
+    ADAMANT = "Adamant dart tip",
     RUNE = "Rune dart tip"
 }
 
