@@ -24,7 +24,9 @@ do------------------------------------------------------------------------------
 
     for _, type in pairs(TIPS) do
         if Inventory:Contains(type) then
-            Interact:Object("Portable fletcher", "Ammo", 10)
+            if not Interact:Object("Portable fletcher", "Ammo", 10) then
+                Inventory:DoAction(type, 1, API.OFF_ACT_GeneralInterface_route)
+            end
             MISC.doCrafting()
         end
     end
