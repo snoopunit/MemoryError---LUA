@@ -58,21 +58,38 @@ function bank()
     
 end
 
+local function hasUnfiredPots()
+    local inv = API.ReadInvArrays33()
+    for index, value in ipairs(inv) do
+        if string.find(value.textitem, "unfired") then
+            return true
+        end
+    end
+    return false
+end
+
 function makeUrns()
 
+    API.logDebug("makeUrns()")
     if Inventory:IsFull() then
-        usePortableCrafter()
-        waitForDialog()
-        formClay()
-        MISC.waitForCraftingInterface()
-        MISC.doCrafting()
-        usePortableCrafter()
-        waitForDialog()
-        fireClay()
-        MISC.waitForCraftingInterface()
-        MISC.doCrafting()
+        while (Inventory:GetItemAmount("Soft clay") >= 2) and API.Read_LoopyLoop() do
+            usePortableCrafter()
+            API.RandomSleep2(1200,0,0)
+            waitForDialog()
+            formClay()
+            MISC.waitForCraftingInterface()
+            MISC.doCrafting()
+        end
+        while hasUnfiredPots() and API.Read_LoopyLoop() do
+            usePortableCrafter()
+            API.RandomSleep2(1200,0,0)
+            waitForDialog()
+            fireClay()
+            MISC.waitForCraftingInterface()
+            MISC.doCrafting()
+        end
     else
-        Interact:NPC("Banker", "Load Last Preset", 10)
+        Interact:NPC("Banker", "Load Last Preset from", 10)
         API.RandomSleep2(2400,0,600)
     end
 end

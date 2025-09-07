@@ -134,7 +134,7 @@ local PROTECT_MAGIC = {
     SPELL_NAME = "Protect from Magic"
 }
 local PROTECT_MELEE = {
-    names = {"Ahoeitu the Chef", "Xiang the Water-shaper", "Sarkhan the Serpentspeaker"},
+    names = {"Ahoeitu the Chef", "Xiang the Water-shaper", "Sarkhan the Serpentspeaker", "Fire giant"},
     BUFF_ID = 25961,
     SPELL_NAME = "Protect from Melee"
 }
@@ -275,19 +275,11 @@ function terminate()
 end
 
 function hasBuff(buff)
-    if API.Buffbar_GetIDstatus(buff, false).id == 0 then
-        return false
-    else
-        return true
-    end
+    return API.Buffbar_GetIDstatus(buff, false).found
 end
 
 function hasDeBuff(debuff)
-    if API.DeBuffbar_GetIDstatus(debuff, false).id == 0 then
-        return false
-    else
-        return true
-    end
+    return API.DeBuffbar_GetIDstatus(debuff, false).found
 end
 
 function hasItem(item)
@@ -617,14 +609,14 @@ function healthCheck()
             API.logDebug("Can't use 'Eat Food'. It's either not on the action bar or no food in inventory.")
         end
     end
-    if not API.IsTargeting() and (API.GetAddreline_() > 55) and (API.GetHPrecent() < 80) then
+    --[[if not API.IsTargeting() and (API.GetAddreline_() > 55) and (API.GetHPrecent() < 80) then
         while API.GetAddreline_() > 0 do
             openLoot()
             antiban()
             API.RandomSleep2(600, 50, 300)
         end
 
-    end
+    end]]
     if API.GetHPrecent() < Min_HP_Percent then
         emergencyTele()
         terminate()
@@ -669,11 +661,11 @@ function buffCheck()
         end
     end
     
-    if (API.InvItemcount_String("Aggression flask") > 0) or (API.InvItemcount_String("Aggression potion") > 0) then
+    --[[if (API.InvItemcount_String("Aggression flask") > 0) or (API.InvItemcount_String("Aggression potion") > 0) then
         API.logDebug("Using Aggression potion")
         activateAbility("Aggression potion")
         API.RandomSleep2(600, 50, 300)    
-    end
+    end]]
     
 end
 
@@ -743,10 +735,12 @@ function prayerCheck()
         API.logDebug("In combat! Enabling protection prayers")
         activateAbility(PRAYER_TO_USE.SPELL_NAME)
         API.RandomSleep2(800, 50, 300)
+        return
     elseif (API.LocalPlayer_IsInCombat_() and  not API.IsTargeting()) and hasBuff(PRAYER_TO_USE.BUFF_ID) then
         API.logDebug("In combat w/o target! Disabling protection prayers")
         activateAbility(PRAYER_TO_USE.SPELL_NAME)
         API.RandomSleep2(800, 50, 300)
+        return
     elseif not API.LocalPlayer_IsInCombat_() and hasBuff(PRAYER_TO_USE.BUFF_ID) then
         API.logDebug("Out of Combat! Disabling protection prayers")
         activateAbility(PRAYER_TO_USE.SPELL_NAME)
@@ -793,7 +787,7 @@ function specialAttack()
 end
 
 function chargePackCheck()
-    local chatTexts = API.GatherEvents_chat_check()
+    --[[local chatTexts = API.GatherEvents_chat_check()
     for _, v in ipairs(chatTexts) do
         if (string.find(v.text, "Your charge pack has run out of power")) then
             API.logDebug("Charge pack is empty!")
@@ -801,8 +795,18 @@ function chargePackCheck()
             terminate()
             return false
         end
-    end
+    end]]
     return true
+end
+
+function aggressionCheck()
+    local aggPotAB = API.GetABs_name("Aggression potion")
+
+    if not hasBuff(37969) then
+        if aggPotAB.action == "Drink" and aggPotAB.enabled then
+            API.DoAction_Ability_Direct(aggPotAB, 1, API.OFF_ACT_GeneralInterface_route)
+        end
+    end
 end
 
 function essenceOfFinality()
@@ -909,11 +913,13 @@ do------------------------------------------------------------------------------
             end
         
             buffCheck()
-            --prayerCheck()
+            prayerCheck()
             healthCheck()
+            aggressionCheck()
             --rejuvenate()
-            --specialAttack()  
+            specialAttack()  
             essenceOfFinality()
+            noteStuff()
             openLoot()
             if not hasMoved then 
                 moveToEnemy() 
@@ -938,7 +944,7 @@ do------------------------------------------------------------------------------
         if enemyToFight == nil or enemyToFight == "None" then 
             API.logDebug("Please select an enemy") 
         end
-        API.RandomSleep2(2400, 0, 600)
+        API.RandomSleep2(600, 0, 600)
 
     end
     

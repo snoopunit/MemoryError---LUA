@@ -10,6 +10,10 @@ function cook()
     MISC.doCrafting() 
 end
 
+function clickYesDialog()
+    API.DoAction_Interface(0xffffffff,0xffffffff,0,1183,5,-1,API.OFF_ACT_GeneralInterface_Choose_option)
+end
+
 API.Write_LoopyLoop(true)
 API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
@@ -27,8 +31,16 @@ do------------------------------------------------------------------------------
             cook()
         end
         
-        Inventory:Drop("Burnt seerfish")
-        Inventory:Drop("Burnt sillago")
+        if Inventory:Drop("Burnt seerfish") then
+            API.RandomSleep2(800,0,600)
+            clickYesDialog()
+            API.RandomSleep2(800,0,600)
+        end
+        if Inventory:Drop("Burnt sillago") then
+            API.RandomSleep2(800,0,600)
+            clickYesDialog()
+            API.RandomSleep2(800,0,600)
+        end
 
     else
         FISH.gather(SPOTS.WALES_MAW)

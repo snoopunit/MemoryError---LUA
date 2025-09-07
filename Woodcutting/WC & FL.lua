@@ -135,8 +135,9 @@ end
 
 function doFiremaking()
 
-    if not FIRE.findFires() then
+    if FIRE.findFires() == 0 then
 
+        API.logInfo("Starting a new fire...")
         WC.useLogs(2)
         API.RandomSleep2(1200,0,600)
 
@@ -146,6 +147,7 @@ function doFiremaking()
 
     end
 
+    API.logInfo("Adding logs...")
     WC.useLogs(1)
     API.RandomSleep2(1200,0,600)
 
@@ -222,12 +224,8 @@ function mainRoutine()
 
         if startButton.return_click then
             startButton.return_click = false
-            if itemType == "None" then
-                API.logWarn("Fletch Type not selected!")
-            else
-                clearGUI()
-                scriptState = "Running"
-            end
+            clearGUI()
+            scriptState = "Running"
         end
 
         if quitButton.return_click then
@@ -244,7 +242,7 @@ function mainRoutine()
 
         if API.InvFull_() then
 
-            while Inventory:GetItemAmount(WC.GLOBALS.logType.id) > 2 do
+            while (Inventory:GetItemAmount(WC.GLOBALS.logType.id) > 2) and API.Read_LoopyLoop() do
                 if not API.Read_LoopyLoop then return end
                 if itemType == "Incense" then
                     doProcessing("Incense")
