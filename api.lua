@@ -1,7 +1,7 @@
 local API = {}
 
 --- API Version will increase with breaking changes
-API.VERSION = 1.059
+API.VERSION = 1.062
 
 --[[
 Known shortcuts
@@ -298,7 +298,7 @@ function API.OSRS_GetCurrentMenuOpen()
 	return OSRS_GetCurrentMenuOpen()
 end
 
---from 0-12
+--from 0-12 uses quick keys
 ---@param menunr number
 ---@return number
 function API.OSRS_OpenMenu(menunr)
@@ -584,17 +584,21 @@ end
 
 
 
+-- current world of localplayer
+---@return number
+function API.GetWorldNR()
+	return GetWorldNR()
+end
 
-
---Check if Cache is successfully loaded
----@return bool
+-- Check if Cache is successfully loaded
+---@return boolean
 function API.IsCacheLoaded()
 	return IsCacheLoaded()
 end
 
 -- Dont let selection reset, using ability on action or item on item
 -- Before selective doAction
----@return bool
+---@return boolean
 function API.DoAction_DontResetSelection()
 	return DoAction_DontResetSelection()
 end
@@ -939,6 +943,14 @@ end
 ---@return inv_Container_struct
 function API.Container_Get_s(cont_id,item_id)
 	return Container_Get_s(cont_id,item_id)
+end
+
+--- Check if items are there by table of ids
+---@param item_ids number[] -- find items
+---@param cont_id number -- container id
+---@return boolean
+function API.Container_Check_Items(cont_id,item_ids)
+	return Container_Check_Items(cont_id,item_ids)
 end
 
 --- get container data, get all items with those ids
@@ -2086,6 +2098,46 @@ end
 ---@return boolean
 function API.KeyboardPress2(codes, sleep, rand)
 	return KeyboardPress2(codes, sleep, rand)
+end
+
+-- Non-blocking key down/up (hold/release)
+function API.KeyboardDown(codes)
+	return KeyboardDown(codes)
+end
+
+function API.KeyboardUp(codes)
+	return KeyboardUp(codes)
+end
+
+-- Non-blocking key hold API with optional timeout
+-- Start holding a key (posts KEYDOWN if not held). timeout_ms = 0 means no timeout
+function API.KeyboardHoldStart(codes, timeout_ms)
+	return KeyboardHoldStart(codes, timeout_ms or 0)
+end
+
+-- Stop holding a key (posts KEYUP if held)
+function API.KeyboardHoldStop(codes)
+	return KeyboardHoldStop(codes)
+end
+
+-- Release all held keys
+function API.KeyboardHoldStopAll()
+	return KeyboardHoldStopAll()
+end
+
+-- Service function to auto-release expired holds (called internally every ~50ms)
+function API.KeyboardHoldService()
+	return KeyboardHoldService()
+end
+
+-- Query if a key is currently held
+function API.KeyboardIsHeld(codes)
+	return KeyboardIsHeld(codes)
+end
+
+-- Inspect current held keys (array of KeyHoldInfo)
+function API.KeyboardHoldInspect()
+	return KeyboardHoldInspect()
 end
 
 ---@return boolean
@@ -4733,11 +4785,19 @@ SOC = SOC
 -- 21 byte 1 is hide debug text
 -- 22 byte is operation code, not used
 -- to send from other systems to ME server write 23 zero bytes and then message bytes
+--[[
+only few commands via messages are directly to the server currently
+"DirectCommand::Server_Close(true)"
+"DirectCommand::Server_Close(false)"
+"DirectCommand::Server_Debug(true)"
+"DirectCommand::Server_Debug(false)"
+--]]
 
 --- Starts a server for the SOC (Socket Object Communication) system.
 ---@param port number The port to start the server on.
+---@param forcereset boolean reset started boolean.
 ---@return boolean if successful
-function SOC:StartServer(port) end
+function SOC:StartServer(port,forcereset) end
 
 --- Sees only local status
 ---@return boolean True if the server was successfully started, false otherwise.
@@ -4755,8 +4815,9 @@ function SOC:MessageClients(type, ident, stext) end
 
 --- Starts a client for the SOC (Socket Object Communication) system.
 ---@param port number The port to start the server on.
+---@param forcereset boolean reset started boolean.
 ---@return boolean if successful
-function SOC:StartClient(port) end
+function SOC:StartClient(port,forcereset) end
 
 --- Sees only local status
 ---@return boolean True if the client was successfully started, false otherwise.
@@ -4781,6 +4842,24 @@ function SOC:ServerAskMessage() end
 --- Client sent messages on server
 ---@return string[]
 function SOC:ServerAskMessages() end
+
+--- Request server and server socket to be closed
+-- @param clear boolean If true then clear previous data
+---@return void
+function SOC:Server_Close(clear) end
+
+--- Request client and server client to be closed
+-- @param clear boolean If true then clear previous data
+---@return void
+function SOC:Client_Close(clear) end
+
+--- Debug server
+-- @param onoff boolean
+---@return void
+function SOC:Server_Debug(onoff) end
+
+
+
 
 
 

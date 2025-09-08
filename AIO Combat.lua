@@ -129,7 +129,7 @@ local DEBUFFS = {
     Enh_Excalibur = 14632
 }
 local PROTECT_MAGIC = {
-    names = {"Olivia the Chronicler", "Oyu the Quietest", "Frost dragon", "K'ril Tsutsaroth"},
+    names = {"Olivia the Chronicler", "Oyu the Quietest", "Frost dragon", "K'ril Tsutsaroth", "Black dragon", "Blue dragon"},
     BUFF_ID = 25959,
     SPELL_NAME = "Protect from Magic"
 }
@@ -162,7 +162,7 @@ local notelist = {}
 ----Loot List----
 local lootlist = {}
 table.insert(lootlist, ITEMS.MISC.gold)
-table.insert(lootlist, ITEMS.MISC.feather)
+table.insert(lootlist, ITEMS.MISC.black_dhide)
 --table.insert(lootlist, ITEMS.BONES.frost_dbones)
 --table.insert(lootlist, ITEMS.ARMOR.subj_boot)
 --table.insert(lootlist, ITEMS.ARMOR.subj_garb)
@@ -267,6 +267,16 @@ local COLORS = {
     HAS_TARGET = ImColor.new(13, 255, 0)
 }
 ----GUI----
+
+local function invContainsString(string)
+    local inv = API.ReadInvArrays33()
+    for index, value in ipairs(inv) do
+        if string.find(value.textitem, string) then
+            return true
+        end
+    end
+    return false
+end
 
 function terminate()
     API.logDebug("Shutting down...")
@@ -400,7 +410,9 @@ function openLoot()
         return
     end
 
-    local data = API.LootWindow_GetData()
+    API.DoAction_Interface(0x24,0xffffffff,1,1622,30,-1,API.OFF_ACT_GeneralInterface_route)
+
+    --[[local data = API.LootWindow_GetData()
     local hasWindowItems = false
     
     if #data then
@@ -425,12 +437,13 @@ function openLoot()
     
     if Loot_Type == (Loot_Types.CUSTOM or Loot_Types.BOTH) and hasWindowItems then
         API.logDebug("Loot custom button")
+        
         API.DoAction_Interface(0x24,0xffffffff,1,1622,30,-1,API.OFF_ACT_GeneralInterface_route)
     elseif Loot_Type == (Loot_Types.LIST or Loot_Types.BOTH) then
         if not API.LootWindowOpen_2() then API.logDebug("Searching for loot...")
         else API.logDebug("Looting lootlist") end
         API.DoAction_Loot_w(lootlist, dist, API.PlayerCoordfloat(), radius)
-    end
+    end]]
 
 end
 
@@ -669,6 +682,18 @@ function buffCheck()
     
 end
 
+local function porterCheck()
+    local porterBuff = 51490
+
+    local porterAB = API.GetABs_name("Sign of the porter", false)
+
+    if not hasBuff(porterBuff) then
+        API.logDebug("Activating: "..tostring(porterAB.name))
+        API.DoAction_Interface(0xffffffff,0x7261,2,1670,97,-1,API.OFF_ACT_GeneralInterface_route)
+    end 
+    
+end
+
 function setupPrayers()
 
     if enemyToFight == nil then
@@ -878,11 +903,13 @@ do------------------------------------------------------------------------------
         setupPrayers()
         chargePackCheck()
         healthCheck()
+        porterCheck()
    
         if not currentTarget then 
             local noTarget = API.SystemTime()
             if not findClosestEnemy() then
                 while currentTarget == nil do
+                    findClosestEnemy()
                     if API.IsTargeting() then
                         break
                     end
