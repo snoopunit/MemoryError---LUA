@@ -56,6 +56,10 @@ function Miscellaneous.getLevel(skill)
 
 end
 
+function Miscellaneous.isCraftingInterfaceOpen()
+  return API.VB_FindPSett(2874, 1, 0).state == 1310738
+end
+
 function Miscellaneous.isChooseToolOpen()
     return API.VB_FindPSettinOrder(2874, 0).state == 1277970 
 end
@@ -72,7 +76,7 @@ function Miscellaneous.waitForCraftingInterface()
 
     local failTimer = API.SystemTime()
 
-    while not UTILS.isCraftingInterfaceOpen() do
+    while not Miscellaneous.isCraftingInterfaceOpen() and API.Read_LoopyLoop() do
 
         API.RandomSleep2(600,0,250)
 
@@ -96,7 +100,7 @@ function Miscellaneous.waitForChooseToolToOpen()
 
     local failTimer = API.SystemTime()
 
-    while not Miscellaneous.isChooseToolOpen() do
+    while not Miscellaneous.isChooseToolOpen() and API.Read_LoopyLoop() do
 
         API.RandomSleep2(250,0,250)
 
@@ -120,7 +124,7 @@ function Miscellaneous.waitForChooseToolToClose()
 
     local failTimer = API.SystemTime()
 
-    while Miscellaneous.isChooseToolOpen() do
+    while Miscellaneous.isChooseToolOpen() and API.Read_LoopyLoop() do
 
         API.RandomSleep2(250,0,250)
 
@@ -193,7 +197,7 @@ end
 ---@return boolean --- Returns true if API.DoAction_Interface() returns true
 function Miscellaneous.chooseCraftingItem(selectionBoxNum)
     API.logDebug("Selecting crafting item #: "..tostring(selectionBoxNum))
-    if not UTILS.isCraftingInterfaceOpen() then
+    if not Miscellaneous.isCraftingInterfaceOpen() then
         API.logWarn("Failed to detect Crafting Interface in chooseCraftingItem()")
         API.Write_LoopyLoop(false)
         return false
@@ -204,7 +208,7 @@ end
 
 function Miscellaneous.clickStart()
     API.logInfo("Starting production...")
-    if not UTILS.isCraftingInterfaceOpen() then
+    if not Miscellaneous.isCraftingInterfaceOpen() then
         API.logWarn("Failed to detect Crafting Interface in clickStart()")
         API.Write_LoopyLoop(false)
         return false
