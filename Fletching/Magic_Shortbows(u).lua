@@ -107,8 +107,8 @@ function mainRoutine()
         doProcessing()
         goToLocation(AREA.BANK)
         doBanking()    
-    else
         goToLocation(AREA.TREES)
+    else
         WC.gather()
     end
 
