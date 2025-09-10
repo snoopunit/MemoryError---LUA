@@ -66,7 +66,7 @@ function doBanking()
         return false
     end
 
-    while not Inventory:IsEmpty() do
+    --[[while not Inventory:IsEmpty() do
         if not API.Read_LoopyLoop() then return false end
         API.RandomSleep2(600,0,500)
         if API.ReadPlayerMovin() then
@@ -77,7 +77,7 @@ function doBanking()
             API.Write_LoopyLoop(false)
             return false
         end
-    end
+    end]]
 
 end
 
@@ -105,9 +105,9 @@ function mainRoutine()
 
     if API.InvFull_() then
         doProcessing()
-        goToLocation(AREA.BANK)
+        --goToLocation(AREA.BANK)
         doBanking()    
-        goToLocation(AREA.TREES)
+        --goToLocation(AREA.TREES)
     else
         WC.gather()
     end
