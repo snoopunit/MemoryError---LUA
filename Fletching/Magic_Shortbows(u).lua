@@ -5,8 +5,8 @@ local MISC = require("lib/MISC")
 local WC = require("lib/WOODCUTTING")
 
 local AREA = {
-    BANK = {x = 2426, y = 3793, z = 1},
-    TREES = {x = 2691 , y = 3426, z = 1}
+    BANK = {x = 2675, y = 3405, z = 3},
+    TREES = {x = 2691 , y = 3426, z = 2}
 }
 
 local function isAtLocation(location, distance)
