@@ -108,6 +108,7 @@ function mainRoutine()
         --goToLocation(AREA.BANK)
         doBanking()    
         --goToLocation(AREA.TREES)
+        API.RandomSleep2(1200,0,600)
     else
         WC.gather()
     end
