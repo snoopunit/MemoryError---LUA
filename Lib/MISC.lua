@@ -203,6 +203,7 @@ function Miscellaneous.chooseCraftingItem(selectionBoxNum)
         return false
     end
     local iType = 1 + ((selectionBoxNum - 1)*4)
+    API.DoAction_DontResetSelection()
     return API.DoAction_Interface(0xffffffff,0xffffffff,1,1371,22,iType,API.OFF_ACT_GeneralInterface_route)
 end
 
