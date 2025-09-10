@@ -30,7 +30,7 @@ function drawGUI()
     local dropdown_x = gui_center_x - (dropdown_width / 2)
     local dropdown_y = 40 
 
-    itemTypes = {"None", "Wood Box", "Arrow Shafts", "Shortbows (U)", "Stocks", "Shieldbows (U)", "Incense"}
+    itemTypes = {"None", "Wood Box", "Arrow Shafts", "Shortbows (U)", "Stocks", "Shieldbows (U)", "Incense", "Light Fires"}
 
     itemTypeCombo = API.CreateIG_answer()
     itemTypeCombo.box_name = "###ITEM"
@@ -181,6 +181,15 @@ function doProcessing(typeString)
     
 end
 
+function fillWoodBox()
+    local boxAB = API.GetABs_name("box", false)
+
+    if boxAB.action == "Fill" and boxAB.enabled then
+        API.DoAction_Ability_Direct(boxAB, 1, API.OFF_ACT_GeneralInterface_route)
+    end
+    
+end
+
 function mainRoutine()
     if scriptState == "Idle" then
 
@@ -195,7 +204,7 @@ function mainRoutine()
                     end
                 end
             end
-            if itemType == "Arrow Shafts" or itemType == "Incense" then
+            if itemType == "Arrow Shafts" or itemType == "Incense" or itemType == "Light Fires" then
                 isBanking = false
             else
                 isBanking = true
@@ -242,14 +251,18 @@ function mainRoutine()
 
         if API.InvFull_() then
 
+            API.logDebug("Inv_Full()")
+            API.logDebug("itemType: "..tostring(itemType))
+
             while (Inventory:GetItemAmount(WC.GLOBALS.logType.id) > 2) and API.Read_LoopyLoop() do
                 if not API.Read_LoopyLoop then return end
                 if itemType == "Incense" then
                     doProcessing("Incense")
-                elseif itemType == "None" then
+                elseif itemType == "Light Fires" then
                     doFiremaking()
-                else
+                elseif itemType ~= "None" then
                     doProcessing("Fletch")
+                else break
                 end
             end
         
@@ -259,6 +272,9 @@ function mainRoutine()
 
         else
             WC.gather()
+            if Inventory:FreeSpaces() < math.random(2,8) then
+                fillWoodBox()
+            end
         end
 
     end
