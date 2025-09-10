@@ -119,6 +119,7 @@ API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(Max_AFK)
 WC.GLOBALS.treeType = TREES.MAGIC
+WC.GLOBALS.logType = LOGS.MAGIC
 
 while(API.Read_LoopyLoop())
 do-----------------------------------------------------------------------------------
