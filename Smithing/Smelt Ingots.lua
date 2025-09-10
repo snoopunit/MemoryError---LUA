@@ -1,4 +1,4 @@
-print("Run Lua script Smelt Bars.")
+print("CRAFT ONCE BEFORE STARTING")
 
 local API = require("api")
 local MISC = require("lib/MISC")
@@ -10,8 +10,6 @@ local function useFurnace()
     end
 end
 
---- Is the Smelting interface open
----@return boolean
 local function isSmeltingInterfaceOpen()
   return API.VB_FindPSett(2874, 1, 0).state == 85
 end
@@ -52,6 +50,49 @@ local function doCrafting()
 
 end
 
+local function doBanking()
+    local bankTimer = API.SystemTime()
+    local hasBanked = false
+    local bankNPCs = {"Banker"}
+    local bankOBJs = {"Bank chest", "Counter"}
+
+    for i, NPC in ipairs(bankNPCs) do
+        if Interact:NPC(NPC, "Load Last Preset from", 50) then
+            hasBanked = true
+            break
+        end
+    end
+
+    if not hasBanked then
+        for i, OBJ in ipairs(bankOBJs) do
+            if Interact:Object(OBJ, "Load Last Preset from", 50) then
+                hasBanked = true
+                break
+            end
+        end
+    end
+    
+    if not hasBanked then
+        API.logWarn("Couldn't interact with any banks!")
+        API.Write_LoopyLoop(false)
+        return false
+    end
+
+    while not Inventory:IsEmpty() do
+        if not API.Read_LoopyLoop() then return false end
+        API.RandomSleep2(600,0,500)
+        if API.ReadPlayerMovin() then
+            bankTimer = API.SystemTime()
+        end
+        if API.SystemTime() - bankTimer > 15000 then
+            API.logWarn("Didn't clean out our inventory after 30s!")
+            API.Write_LoopyLoop(false)
+            return false
+        end
+    end
+
+end
+
 API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(4)
@@ -61,4 +102,5 @@ while(API.Read_LoopyLoop())
 do-----------------------------------------------------------------------------------
     useFurnace()
     doCrafting()
+    doBanking()
 end----------------------------------------------------------------------------------
