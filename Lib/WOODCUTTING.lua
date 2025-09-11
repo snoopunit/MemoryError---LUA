@@ -222,7 +222,7 @@ end
 
 ---@return boolean -- returns true if the Wood Box gets activated via action bars
 function Woodcutting.fillWoodBox()
-    local boxAB = API.GetABs_name("box", false)
+    local boxAB = API.GetABs_name("ood box", false)
 
     API.logDebug("Found: "..boxAB.name)
     API.logDebug("Action: "..boxAB.action)
