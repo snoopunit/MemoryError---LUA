@@ -234,9 +234,15 @@ function Woodcutting.fillWoodBox()
     
 end
 
----@return boolean -- returns true if we activate the use option for our Wood Box
-function Woodcutting.useWoodBox()
-    return false
+---@return boolean -- returns true if we doAction deposit on deposit box after 'use'ing the wood box
+function Woodcutting.depositWoodBox()
+
+    if API.DoAction_Inventory1(54911,0,0,API.OFF_ACT_Bladed_interface_route) then
+
+        return API.DoAction_Object1(0x24,API.OFF_ACT_GeneralObject_route00,{ 2045 },50)
+
+    end
+
 end
 
 ---@return boolean -- returns true if the Wood Box is full
