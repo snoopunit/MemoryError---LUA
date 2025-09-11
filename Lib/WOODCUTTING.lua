@@ -238,9 +238,8 @@ end
 function Woodcutting.depositWoodBox()
 
     if API.DoAction_Inventory1(54911,0,0,API.OFF_ACT_Bladed_interface_route) then
-
+        API.DoAction_DontResetSelection()
         return API.DoAction_Object1(0x24,API.OFF_ACT_GeneralObject_route00,{ 2045 },50)
-
     end
 
 end
