@@ -221,7 +221,7 @@ function Woodcutting.woodBoxCapacity()
 end
 
 ---@return boolean -- returns true if the Wood Box gets activated via action bars
-function fillWoodBox()
+function Woodcutting.fillWoodBox()
     local boxAB = API.GetABs_name("box", false)
 
     if boxAB.action == "Fill" and boxAB.enabled then
