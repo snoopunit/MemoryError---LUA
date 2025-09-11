@@ -220,9 +220,14 @@ function Woodcutting.woodBoxCapacity()
     return 0
 end
 
----@return boolean -- returns true if the Wood Box gets filled with an # of items
-function Woodcutting.fillWoodBox()
-    return false
+---@return boolean -- returns true if the Wood Box gets activated via action bars
+function fillWoodBox()
+    local boxAB = API.GetABs_name("box", false)
+
+    if boxAB.action == "Fill" and boxAB.enabled then
+        API.DoAction_Ability_Direct(boxAB, 1, API.OFF_ACT_GeneralInterface_route)
+    end
+    
 end
 
 ---@return boolean -- returns true if we activate the use option for our Wood Box
@@ -262,10 +267,10 @@ function Woodcutting.gather()
             while API.CheckAnim(75) do
                 if checkWoodBox then
                     if API.Invfreecount_() < math.random(0,8) then
-                        if not Woodcutting.woodBoxFull() then
+                        --if not Woodcutting.woodBoxFull() then
                             Woodcutting.fillWoodBox()
                             API.RandomSleep2(600, 0, 250)
-                        end
+                        --end
                     end
                 end
                 API.DoRandomEvents()

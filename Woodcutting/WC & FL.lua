@@ -118,17 +118,8 @@ function doBanking()
         return false
     end
 
-    while not Inventory:IsEmpty() do
-        if not API.Read_LoopyLoop() then return false end
-        API.RandomSleep2(600,0,500)
-        if API.ReadPlayerMovin() then
-            bankTimer = API.SystemTime()
-        end
-        if API.SystemTime() - bankTimer > 15000 then
-            API.logWarn("Didn't clean out our inventory after 30s!")
-            API.Write_LoopyLoop(false)
-            return false
-        end
+    while API.ReadPlayerMovin() and API.Read_LoopyLoop() do
+        API.RandomSleep2(50,0,50)
     end
 
 end
