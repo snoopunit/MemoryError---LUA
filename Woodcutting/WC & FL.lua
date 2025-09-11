@@ -172,20 +172,19 @@ function doProcessing(typeString)
     
 end
 
-function fillWoodBox()
-    local boxAB = API.GetABs_name("box", false)
-
-    if boxAB.action == "Fill" and boxAB.enabled then
-        API.DoAction_Ability_Direct(boxAB, 1, API.OFF_ACT_GeneralInterface_route)
-    end
-    
-end
-
 function depositBox()
     if WC.depositWoodBox() then
         API.RandomSleep2(1200,0,600)
         while API.ReadPlayerMovin() and API.Read_LoopyLoop() do
             API.RandomSleep2(50,0,50)
+        end
+        API.RandomSleep2(600,0,600)
+        if not Inventory:Contains(WC.GLOBALS.logType.id) then
+            return true
+        else
+            API.logWarn("Failed to deposit logs!")
+            API.Write_LoopyLoop(false)
+            return false
         end
     end
 end

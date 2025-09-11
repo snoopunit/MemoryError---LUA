@@ -76,6 +76,7 @@ WOOD_BOXES = {
 Woodcutting.GLOBALS = {
     currentState = "Idle",
     boxType = WOOD_BOXES.WOOD, -- Default wood box type
+    boxFull = false,
     treeType = nil, 
     logType = nil, 
     treesChopped = 0,
@@ -223,15 +224,14 @@ end
 ---@return boolean -- returns true if the Wood Box gets activated via action bars
 function Woodcutting.fillWoodBox()
     local boxAB = API.GetABs_name("ood box", false)
-
-    API.logDebug("Found: "..boxAB.name)
-    API.logDebug("Action: "..boxAB.action)
-    API.logDebug("Enabled: "..tostring(boxAB.enabled))
+    local startCount = Inventory:GetItemAmount(Woodcutting.GLOBALS.logType.id)
 
     if boxAB.action == "Fill" and boxAB.enabled then
         API.DoAction_Ability_Direct(boxAB, 1, API.OFF_ACT_GeneralInterface_route)
     end
-    
+
+    local endCount = Inventory:GetItemAmount(Woodcutting.GLOBALS.logType.id)
+    return endCount < startCount 
 end
 
 ---@return boolean -- returns true if we doAction deposit on deposit box after 'use'ing the wood box
@@ -246,7 +246,11 @@ end
 
 ---@return boolean -- returns true if the Wood Box is full
 function Woodcutting.woodBoxFull()
-    return false
+    if not Woodcutting.fillWoodBox() then
+        return true
+    else
+        return false
+    end
 end
 
 ---@return boolean -- returns true when inv is full. fills the wood box along the way if we have one
@@ -276,10 +280,11 @@ function Woodcutting.gather()
             while API.CheckAnim(75) and API.Read_LoopyLoop() do
                 --if checkWoodBox then
                     if API.Invfreecount_() < math.random(0,8) then
-                        --if not Woodcutting.woodBoxFull() then
-                            Woodcutting.fillWoodBox()
-                            API.RandomSleep2(600, 0, 250)
-                        --end
+                        if not Woodcutting.GLOBALS.boxFull then
+                            if Woodcutting.woodBoxFull() then
+                                Woodcutting.GLOBALS.boxFull = true
+                            end
+                        end
                     end
                 --end
                 API.DoRandomEvents()
