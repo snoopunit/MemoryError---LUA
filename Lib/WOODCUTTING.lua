@@ -224,7 +224,7 @@ end
 function Woodcutting.fillWoodBox()
     local boxAB = API.GetABs_name("box", false)
 
-    API.logDebug("Found: "..boxAB.Name)
+    API.logDebug("Found: "..boxAB.name)
     API.logDebug("Action: "..boxAB.action)
     API.logDebug("Enabled: "..tostring(boxAB.enabled))
 
