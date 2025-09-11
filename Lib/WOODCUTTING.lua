@@ -224,6 +224,10 @@ end
 function Woodcutting.fillWoodBox()
     local boxAB = API.GetABs_name("box", false)
 
+    API.logDebug("Found: "..boxAB.Name)
+    API.logDebug("Action: "..boxAB.action)
+    API.logDebug("Enabled: "..tostring(boxAB.enabled))
+
     if boxAB.action == "Fill" and boxAB.enabled then
         API.DoAction_Ability_Direct(boxAB, 1, API.OFF_ACT_GeneralInterface_route)
     end
