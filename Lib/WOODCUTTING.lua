@@ -274,7 +274,7 @@ function Woodcutting.gather()
             while API.ReadPlayerMovin() and API.Read_LoopyLoop() do
                 API.RandomSleep2(600, 0, 250)
             end
-            while API.CheckAnim(75) do
+            while API.CheckAnim(75) and API.Read_LoopyLoop() do
                 --if checkWoodBox then
                     if API.Invfreecount_() < math.random(0,8) then
                         --if not Woodcutting.woodBoxFull() then
