@@ -182,13 +182,9 @@ function fillWoodBox()
 end
 
 function depositBox()
-    if Woodcutting.depositWoodBox() then
+    if WC.depositWoodBox() then
         while API.ReadPlayerMovin() and API.Read_LoopyLoop() do
             API.RandomSleep2(50,0,50)
-        end
-        API.RandomSleep2(1200,0,600)
-        if Inventory:GetItemAmount(WC.GLOBALS.logType.id) == 0 then
-            return true
         end
     end
 end
