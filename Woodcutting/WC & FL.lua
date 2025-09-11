@@ -181,6 +181,18 @@ function fillWoodBox()
     
 end
 
+function depositBox()
+    if Woodcutting.depositWoodBox() then
+        while API.ReadPlayerMovin() and API.Read_LoopyLoop() do
+            API.RandomSleep2(50,0,50)
+        end
+        API.RandomSleep2(1200,0,600)
+        if Inventory:GetItemAmount(WC.GLOBALS.logType.id) == 0 then
+            return true
+        end
+    end
+end
+
 function mainRoutine()
     if scriptState == "Idle" then
 
@@ -253,19 +265,18 @@ function mainRoutine()
                     doFiremaking()
                 elseif itemType ~= "None" then
                     doProcessing("Fletch")
-                else break
+                else 
+                    break
                 end
             end
         
             if isBanking then
-                doBanking()    
+                doBanking()  
+                depositBox()
             end    
 
         else
             WC.gather()
-            if Inventory:FreeSpaces() < math.random(2,8) then
-                fillWoodBox()
-            end
         end
 
     end
