@@ -183,6 +183,7 @@ end
 
 function depositBox()
     if WC.depositWoodBox() then
+        API.RandomSleep2(1200,0,600)
         while API.ReadPlayerMovin() and API.Read_LoopyLoop() do
             API.RandomSleep2(50,0,50)
         end
