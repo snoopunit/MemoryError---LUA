@@ -12,7 +12,8 @@ function DumpAllBuffs()
         API.logDebug("No buffs found.")
         return
     end
-
+    
+    API.logInfo("-------------------------------------")
     for _, buff in ipairs(buffs) do
         if buff and buff.found then
             API.logDebug(string.format("Buff: %s | ID: %d | conv_text: %s",
@@ -21,6 +22,7 @@ function DumpAllBuffs()
                 tostring(buff.conv_text)))
         end
     end
+    API.logInfo("-------------------------------------")
 end
 
 API.Write_LoopyLoop(true)
@@ -28,8 +30,7 @@ API.SetDrawLogs(true)
 
 while API.Read_LoopyLoop() do
 
-    
     DumpAllBuffs()
-    API.RandomSleep2(6000, 0, 6000)
+    API.RandomSleep2(2400, 0, 0)
 
 end
