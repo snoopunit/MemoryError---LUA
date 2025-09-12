@@ -970,7 +970,7 @@ do------------------------------------------------------------------------------
                 hasMoved = true
             end
             antiban()
-            API.RandomSleep2(1200, 0, 0)  
+            API.RandomSleep2(2400, 0, 0)  
 
         end     
   
@@ -988,8 +988,11 @@ do------------------------------------------------------------------------------
         if enemyToFight == nil or enemyToFight == "None" then 
             API.logDebug("Please select an enemy") 
         end
-        API.RandomSleep2(1200, 0, 600)
+        API.RandomSleep2(600, 0, 600)
 
     end
+    
+    antiban()
+    API.RandomSleep2(600, 0, 250)
 
 end----------------------------------------------------------------------------------
