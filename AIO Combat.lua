@@ -876,13 +876,15 @@ local function rejuvenate()
 end
 
 local function fd_reflection_check()
-    local projectile = API.ReadAllObjectsArray({5},{2875},{})
-    if projectile then
+    local function projectile()
+        return API.ReadAllObjectsArray({5},{2875},{})
+    end
+    if projectile() then
         local cease = API.GetABs_name("Cease")
         if cease and cease.enabled then
             API.DoAction_Ability_Direct(cease, 1, API.OFF_ACT_GeneralInterface_route)
         end
-        while projectile and API.Read_LoopyLoop() do
+        while projectile() and API.Read_LoopyLoop() do
             buffCheck()
             healthCheck()
             API.RandomSleep2(600,0,600)
