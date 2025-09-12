@@ -197,16 +197,7 @@ local function iterPriorityNamesSorted(priorityList)
 end
 
 function CombatEngine:acquireTargetIfNeeded()
-    if API.IsTargeting() or self.awaitingCombat then
-        API.logDebug("isTargeting(): "..tostring(API.IsTargeting()).." awaiting combat: "..tostring(self.awaitingCombat)) 
-        return 
-    end
-
     local startTime = nowMs()
-
-    local t = nowMs()
-    if t - (self.lastScanTime or 0) < (self.scanInterval or 2000) then return end
-    self.lastScanTime = t
 
     for name, _ in pairs(self.priorityList) do
         local ok = Interact:NPC(name, "Attack", 30)
