@@ -197,6 +197,7 @@ local function iterPriorityNamesSorted(priorityList)
 end
 
 function CombatEngine:acquireTargetIfNeeded()
+    API.logDebug("Aquiring Target...")
     if API.IsTargeting() or self.awaitingCombat then
         API.logDebug("isTargeting(): "..tostring(API.IsTargeting()).." awaiting combat: "..tostring(self.awaitingCombat)) 
         return 
