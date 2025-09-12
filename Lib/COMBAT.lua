@@ -177,7 +177,7 @@ function CombatEngine:updateTargetsFromWorld()
         end
     end
 
-    if best then
+    if best and not API.IsTargeting() then
         API.logDebug("Target locked: " .. best.Name .. " (dist " .. best.Distance .. ")")
         self.primaryTargetId = best.Unique_Id
         -- Try to attack it
