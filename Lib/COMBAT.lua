@@ -46,7 +46,7 @@ function CombatEngine.new()
     self.abilities = {
         ["Necromancy Auto"] = { name="Necromancy Auto", cd=0, lastUsed=-1e9, adrenaline=0,
             expectedValue=function() return 1.0 end },
-        ["Touch of Death"] = { name="Touch of Death", cd=0, lastUsed=-1e9, adrenaline=+9,
+        ["Touch of Death"] = { name="Touch of Death", cd=0, lastUsed=-1e9, adrenaline=9,
             expectedValue=function() return 1.0 end },
         ["Conjure Skeleton Warrior"] = { name="Conjure Skeleton Warrior", cd=30, lastUsed=-1e9, adrenaline=0,
             expectedValue=function() return 0 end },
@@ -71,7 +71,7 @@ function CombatEngine.new()
             end },
         ["Bloat"] = { name="Bloat", cd=0, lastUsed=-1e9, adrenaline=-20,
             expectedValue=function() return 6.5 end },
-        ["Soul Sap"] = { name="Soul Sap", cd=5.4, lastUsed=-1e9, adrenaline=+9,
+        ["Soul Sap"] = { name="Soul Sap", cd=5.4, lastUsed=-1e9, adrenaline=9,
             expectedValue=function() return 1.0 end },
         ["Soul Strike"] = { name="Soul Strike", cd=0, lastUsed=-1e9, adrenaline=0,
             expectedValue=function() return 1.5 end },
@@ -225,7 +225,7 @@ function CombatEngine:scheduleCast(abilityName, targetId, now)
     if not ability then return end
     ability.lastUsed = now
     self.lastGcdEnd = now + 1.8
-    API.DoAction_Ability_Direct(ability, 1, 0) -- placeholder
+    API.DoAction_Ability_Direct(ability, 1, API.OFF_ACT_GeneralInterface_route)
 end
 
 -- helpers
