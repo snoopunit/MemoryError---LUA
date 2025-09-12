@@ -44,7 +44,7 @@ API.SetMaxIdleTime(4)
 -- main loop
 while API.Read_LoopyLoop() do
     -- engine:update() is called automatically on TickEvent.Register
-    
+    scanForNPCs()
     API.RandomSleep2(200, 50, 200)
 end
 
