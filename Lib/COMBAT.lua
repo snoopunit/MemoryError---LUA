@@ -27,7 +27,7 @@ function CombatEngine.new()
     self.priorityList = {}
 
     self.lastScanTime = 0
-    self.scanInterval = 2000 -- ms, adjust as needed (2s)
+    self.scanInterval = 10000 -- ms, adjust as needed (10s)
 
     -- buff tracking
     self.buffs = {}
