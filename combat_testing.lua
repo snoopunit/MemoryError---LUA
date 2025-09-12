@@ -9,13 +9,13 @@ engine.priorityList = {
     ["Chicken"] = 1
 }
 
--- start engine
---engine:start()
-
 API.Write_LoopyLoop(true)
 API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(4)
+
+-- start engine
+engine:start()
 
 -- main loop
 while API.Read_LoopyLoop() do
