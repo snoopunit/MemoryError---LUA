@@ -131,48 +131,60 @@ function CombatEngine:updateBuffs()
     end
 end
 
--- target handling
 function CombatEngine:updateTargetsFromWorld()
-    local npcs = API.ReadAllObjectsArray({1}, {-1}, {})
-    local candidates = {}
-    for _, npc in ipairs(npcs or {}) do
-        if npc and not npc.IsDead and npc.Health > 0 then
-            table.insert(candidates, npc)
-        end
+    -- Build the name filter table from priority list keys
+    local nameTable = {}
+    for name, _ in pairs(self.priorityList) do
+        table.insert(nameTable, name)
     end
-    table.sort(candidates, function(a,b) return a.Distance < b.Distance end)
 
-    -- maintain lock
+    -- Only scan NPCs matching our priority list
+    local npcs = API.ReadAllObjectsArray({1}, {-1}, nameTable)
+    if not npcs then return end
+
+    local now = API.SystemTime()
+    self.activeTargets = {}
+
+    for _, npc in ipairs(npcs) do
+        local id = npc.Unique_Id
+        local t = self.targets[id] or { id = id, name = npc.Name }
+        t.hp = npc.Life
+        t.dist = npc.Distance
+        t.name = npc.Name
+        t.lastUpdate = now
+        t.isDead = (t.hp and t.hp <= 0) or false
+        self.targets[id] = t
+        self.activeTargets[id] = t
+    end
+
+    -- Validate current lock
     if self.primaryTargetId then
-        local current = self.targets[self.primaryTargetId]
-        if not current or current.isDead or current.hp <= 0 then
+        local cur = self.targets[self.primaryTargetId]
+        if not cur or cur.isDead then
             self.primaryTargetId = nil
         end
     end
 
-    if not self.primaryTargetId and #candidates > 0 then
-        self.primaryTargetId = candidates[1].Unique_Id
-    end
-
-    -- priority override
-    local overrideId = self:priorityTargetOverride(candidates)
-    if overrideId then
-        self.primaryTargetId = overrideId
-    end
-
-    -- update table
-    self.targets = {}
-    for _, npc in ipairs(candidates) do
-        self.targets[npc.Unique_Id] = {
-            id = npc.Id,
-            name = npc.Name,
-            dist = npc.Distance,
-            hp = npc.Health,
-            isDead = npc.IsDead,
-            debuffs = {}
-        }
+    -- If no lock, pick best based on priority weight + distance
+    if not self.primaryTargetId then
+        local best, bestScore = nil, math.huge
+        for _, t in pairs(self.activeTargets) do
+            if not t.isDead then
+                local prio = self.priorityList[t.name] or 999
+                local dist = t.dist or 999
+                local score = (prio * 1000) + dist -- priority dominates, distance tiebreak
+                if score < bestScore then
+                    bestScore = score
+                    best = t
+                end
+            end
+        end
+        if best then
+            self.primaryTargetId = best.id
+        end
     end
 end
+
 
 -- priority system
 function CombatEngine:getPriorityForName(name)
