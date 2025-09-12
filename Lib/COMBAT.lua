@@ -238,7 +238,7 @@ function CombatEngine:update()
     local t0 = API.SystemTime()
     if not self.running then return end
     self:updateBuffs()
-    self:updateTargetsFromWorld()
+    --self:updateTargetsFromWorld()
     local now = self:now()
     if now >= (self.lastGcdEnd or 0) then
         local choice = self:planNext()
