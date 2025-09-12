@@ -197,7 +197,6 @@ local function iterPriorityNamesSorted(priorityList)
 end
 
 function CombatEngine:acquireTargetIfNeeded()
-    API.logDebug("Aquiring Target...")
     if API.IsTargeting() or self.awaitingCombat then
         API.logDebug("isTargeting(): "..tostring(API.IsTargeting()).." awaiting combat: "..tostring(self.awaitingCombat)) 
         return 
@@ -209,8 +208,9 @@ function CombatEngine:acquireTargetIfNeeded()
     if t - (self.lastScanTime or 0) < (self.scanInterval or 2000) then return end
     self.lastScanTime = t
 
-    for _, name in ipairs(self.priorityList) do
-        if Interact:NPC(name, "Attack", 30) then
+    for name, _ in pairs(self.priorityList) do
+        local ok = Interact:NPC(name, "Attack", 30)
+        if ok then
             local elapsed = nowMs() - startTime
             API.logDebug("Engaging: " .. name .. " | acquireTargetIfNeeded took " .. elapsed .. "ms")
             self.primaryTargetName = name
@@ -302,6 +302,7 @@ function CombatEngine:start()
 
     -- Main combat update (abilities, buffs, scheduler)
     TickEvent.Register(function() self:update() end)
+
 
     API.logDebug("Combat engine started")
 end
