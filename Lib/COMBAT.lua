@@ -199,7 +199,7 @@ end
 function CombatEngine:acquireTargetIfNeeded()
     if API.IsTargeting() or self.awaitingCombat then return end
 
-    local t = nowMs()
+    local t, t1 = nowMs()
     if t - (self.lastScanTime or 0) < (self.scanInterval or 2000) then return end
     self.lastScanTime = t
 
@@ -218,6 +218,7 @@ function CombatEngine:acquireTargetIfNeeded()
             break -- stop after first valid target
         end
     end
+    API.logDebug("Aquiring target took " .. (nowMs()-t1) .. "ms")
 end
 
 
