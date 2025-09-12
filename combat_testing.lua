@@ -10,7 +10,7 @@ engine.priorityList = {
 }
 
 -- start engine
-engine:start()
+--engine:start()
 
 -- main loop
 while API.Read_LoopyLoop() do
