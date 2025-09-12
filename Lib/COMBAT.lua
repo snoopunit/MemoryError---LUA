@@ -197,49 +197,28 @@ local function iterPriorityNamesSorted(priorityList)
 end
 
 function CombatEngine:acquireTargetIfNeeded()
+    -- Already in combat or awaiting click to resolve? Do nothing.
     if API.IsTargeting() or self.awaitingCombat then return end
 
     local t = nowMs()
-    if t - (self.lastScanTime or 0) < (self.scanInterval or 2000) then return end
+    if t - self.lastScanTime < self.scanInterval then return end
     self.lastScanTime = t
 
-    -- Iterate names in ascending priority order
-    local names = {}
-    for name, pri in pairs(self.priorityList) do
-        table.insert(names, {name=name, pri=pri})
-    end
-    table.sort(names, function(a,b)
-        return a.pri < b.pri
-    end)
-
-    for _, entry in ipairs(names) do
-        local npcs = API.ReadAllObjectsArray({1}, {-1}, {entry.name})
-        if npcs and #npcs > 0 then
-            -- find nearest alive NPC of this name
-            local nearest, nearestDist
-            for _, npc in ipairs(npcs) do
-                if npc.Life and npc.Life > 0 then
-                    local d = npc.Distance or 999
-                    if not nearestDist or d < nearestDist then
-                        nearest, nearestDist = npc, d
-                    end
-                end
+    -- Try by priority order; schedule ONE attack attempt
+    for name in iterPriorityNamesSorted(self.priorityList) do
+        self.awaitingCombat = true
+        self:schedule(50, function()
+            local ok = Interact:NPC(name, "Attack", 30)
+            if ok then
+                self.primaryTargetName = name
+                API.logDebug("Engaging: "..name)
             end
-
-            if nearest then
-                self.awaitingCombat = true
-                self:schedule(50, function()
-                    API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, nearest)
-                    API.logDebug("Engaging: " .. entry.name)
-                    self.awaitingCombat = false
-                end)
-                break -- ✅ stop after first valid target
-            end
-        end
+            -- Whether it succeeded or not, allow next attempt on next interval.
+            self.awaitingCombat = false
+        end)
+        break
     end
 end
-
-
 
 -- ======== Ability Casting ========
 
