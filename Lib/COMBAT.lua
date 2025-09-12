@@ -197,18 +197,43 @@ local function iterPriorityNamesSorted(priorityList)
 end
 
 function CombatEngine:acquireTargetIfNeeded()
-    local startTime = nowMs()
+    if API.IsTargeting() then return end
 
-    for name, _ in pairs(self.priorityList) do
-        local ok = Interact:NPC(name, "Attack", 30)
+    local startTime = nowMs()
+    local closestNPC
+    local closestDist = 9999
+
+    -- Assume priorityList is already ordered (highest → lowest priority)
+    for _, name in ipairs(self.priorityList) do
+        local npcs = API.ReadAllObjectsArray({1}, {-1}, {name})
+        if npcs and #npcs > 0 then
+            for _, npc in ipairs(npcs) do
+                if npc.Life and npc.Life > 0 then
+                    local d = npc.Distance or 999
+                    if d < closestDist then
+                        closestNPC = npc
+                        closestDist = d
+                    end
+                end
+            end
+        end
+        if closestNPC then
+            break -- ✅ stop at the first priority name that has a living NPC
+        end
+    end
+
+    if closestNPC then
+        local ok = API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, closestNPC)
+        local elapsed = nowMs() - startTime
         if ok then
-            local elapsed = nowMs() - startTime
-            API.logDebug("Engaging: " .. name .. " | acquireTargetIfNeeded took " .. elapsed .. "ms")
-            self.primaryTargetName = name
-            break
+            API.logDebug("Engaging: " .. closestNPC.Name .. " | acquireTargetIfNeeded took " .. elapsed .. "ms")
+            self.primaryTargetName = closestNPC.Name
+        else
+            API.logDebug("Attack failed on: " .. closestNPC.Name .. " | time " .. elapsed .. "ms")
         end
     end
 end
+
 
 
 -- ======== Ability Casting ========
