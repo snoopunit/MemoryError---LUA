@@ -199,26 +199,21 @@ end
 function CombatEngine:acquireTargetIfNeeded()
     if API.IsTargeting() or self.awaitingCombat then return end
 
-    local t, t1 = nowMs()
+    local startTime = nowMs()
+
+    local t = nowMs()
     if t - (self.lastScanTime or 0) < (self.scanInterval or 2000) then return end
     self.lastScanTime = t
 
-    -- Sort priorities (lower number first)
-    local names = {}
-    for name, pri in pairs(self.priorityList) do
-        table.insert(names, {name=name, pri=pri})
-    end
-    table.sort(names, function(a,b) return a.pri < b.pri end)
-
-    for _, entry in ipairs(names) do
-        local ok = Interact:NPC(entry.name, "Attack", 30)
+    for _, name in ipairs(self.priorityList) do
+        local ok = Interact:NPC(name, "Attack", 30)
         if ok then
-            API.logDebug("Engaging: " .. entry.name)
-            self.primaryTargetName = entry.name
-            break -- stop after first valid target
+            local elapsed = nowMs() - startTime
+            API.logDebug("Engaging: " .. name .. " | acquireTargetIfNeeded took " .. elapsed .. "ms")
+            self.primaryTargetName = name
+            break
         end
     end
-    API.logDebug("Aquiring target took " .. (nowMs()-t1) .. "ms")
 end
 
 
