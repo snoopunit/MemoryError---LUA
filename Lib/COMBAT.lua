@@ -266,36 +266,6 @@ function CombatEngine:planAndQueue()
     end
 end
 
-function CombatEngine:targetLoop()
-    if not self.running then return end
-
-    local t0 = nowMs()
-
-    -- Already in combat? Do nothing.
-    if API.IsTargeting() then return end
-
-    local t = API.SystemTime()
-    if t - (self.lastScanTime or 0) < (self.scanInterval or 2000) then
-        return
-    end
-    self.lastScanTime = t
-
-    -- Try to acquire by priority order
-    for name, _ in pairs(self.priorityList) do
-        local t1 = nowMs()
-        local ok = Interact:NPC(name, "Attack", 30)
-        API.logDebug("Interact:NPC(" .. name .. ") took " .. (nowMs()-t1) .. "ms")
-
-        if ok then
-            API.logDebug("Targeting: " .. name)
-            break
-        end
-    end
-
-    API.logDebug("TargetLoop total " .. (nowMs()-t0) .. "ms")
-end
-
-
 -- ======== Update Loop ========
 
 function CombatEngine:update()
@@ -330,9 +300,6 @@ function CombatEngine:start()
 
     -- Main combat update (abilities, buffs, scheduler)
     TickEvent.Register(function() self:update() end)
-
-    -- Separate targeting loop (slower cadence, only does Interact)
-    TickEvent.Register(function() self:targetLoop() end)
 
     API.logDebug("Combat engine started")
 end
