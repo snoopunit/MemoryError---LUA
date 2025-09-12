@@ -301,6 +301,9 @@ function CombatEngine:start()
     -- Main combat update (abilities, buffs, scheduler)
     TickEvent.Register(function() self:update() end)
 
+    -- Separate targeting loop (slower cadence, only does Interact)
+    TickEvent.Register(function() self:acquireTargetIfNeeded() end)
+
     API.logDebug("Combat engine started")
 end
 
