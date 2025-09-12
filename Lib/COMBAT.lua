@@ -222,13 +222,13 @@ function CombatEngine:update()
     if not self.running then return end
     self:updateBuffs()
     self:updateTargetsFromWorld()
-    local now = self:now()
+    --[[local now = self:now()
     if now >= (self.lastGcdEnd or 0) then
         local choice = self:planNext()
         if choice then
             self:scheduleCast(choice.abilityName, choice.targetId, now)
         end
-    end
+    end]]
     local t1 = API.SystemTime()
     API.logDebug(("Engine:update took %d ms"):format(t1 - t0))
 end
