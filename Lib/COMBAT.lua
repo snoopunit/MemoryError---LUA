@@ -27,7 +27,7 @@ function CombatEngine.new()
     self.priorityList = {}
 
     self.lastScanTime = 0
-    self.scanInterval = 10000 -- ms, adjust as needed (10s)
+    self.scanInterval = 1200 -- ms, adjust as needed (10s)
 
     -- buff tracking
     self.buffs = {}
@@ -137,63 +137,51 @@ end
 function CombatEngine:updateTargetsFromWorld()
     local now = API.SystemTime()
 
-    -- Only scan every scanInterval ms
-    if now - (self.lastScanTime or 0) < self.scanInterval then
+    -- throttle scanning
+    if now - (self.lastScanTime or 0) < (self.scanInterval or 2000) then
         return
     end
     self.lastScanTime = now
 
-    -- Build the name filter table from priority list
+    -- validate current lock
+    if self.primaryTargetId then
+        local cur = API.ReadAllObjectsArray({1}, {self.primaryTargetId}, {})
+        if cur and cur[1] and cur[1].Life > 0 then
+            return -- current target is still valid, keep it
+        else
+            self.primaryTargetId = nil -- drop lock if dead/invalid
+        end
+    end
+
+    -- build name filter from priority list
     local nameTable = {}
     for name, _ in pairs(self.priorityList) do
-        table.insert(nameTable, name)
+        table.insert(nameTable, tostring(name))
     end
 
-    -- Scan only priority targets
+    -- query only priority targets
     local npcs = API.ReadAllObjectsArray({1}, {-1}, nameTable)
-    if not npcs then return end
+    if not npcs or #npcs == 0 then return end
 
-    self.activeTargets = {}
-
+    -- pick best by priority weight + distance
+    local best, bestScore
     for _, npc in ipairs(npcs) do
-        local id = npc.Unique_Id
-        local t = self.targets[id] or { id = id, name = npc.Name }
-        t.hp = npc.Life
-        t.dist = npc.Distance
-        t.name = npc.Name
-        t.lastUpdate = now
-        t.isDead = (t.hp and t.hp <= 0) or false
-        self.targets[id] = t
-        self.activeTargets[id] = t
-    end
-
-    -- Validate current lock
-    if self.primaryTargetId then
-        local cur = self.targets[self.primaryTargetId]
-        if not cur or cur.isDead then
-            self.primaryTargetId = nil
-        end
-    end
-
-    -- Pick best target if no lock
-    if not self.primaryTargetId then
-        local best, bestScore = nil, math.huge
-        for _, t in pairs(self.activeTargets) do
-            if not t.isDead then
-                local prio = self.priorityList[t.name] or 999
-                local dist = t.dist or 999
-                local score = (prio * 1000) + dist
-                if score < bestScore then
-                    bestScore = score
-                    best = t
-                end
+        if npc.Life > 0 then
+            local prio = self.priorityList[npc.Name] or 999
+            local dist = npc.Distance or 999
+            local score = (prio * 1000) + dist
+            if not bestScore or score < bestScore then
+                bestScore = score
+                best = npc
             end
         end
-        if best then
-            self.primaryTargetId = best.id
-        end
+    end
+
+    if best then
+        self.primaryTargetId = best.Unique_Id
     end
 end
+
 
 -- priority system
 function CombatEngine:getPriorityForName(name)
