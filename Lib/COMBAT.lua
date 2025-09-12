@@ -265,26 +265,59 @@ function CombatEngine:planAndQueue()
     end
 end
 
+function CombatEngine:targetLoop()
+    if not self.running then return end
+
+    -- Already in combat? Do nothing.
+    if API.IsTargeting() then return end
+
+    local t = API.SystemTime()
+    if t - (self.lastScanTime or 0) < (self.scanInterval or 2000) then
+        return
+    end
+    self.lastScanTime = t
+
+    -- Try to acquire by priority order
+    for name, _ in pairs(self.priorityList) do
+        if Interact:NPC(name, "Attack", 30) then
+            API.logDebug("Targeting: " .. name)
+            break
+        end
+    end
+end
+
+
 -- ======== Update Loop ========
 
 function CombatEngine:update()
     if not self.running then return end
-    -- Keep buffs warm (for EV)
+
+    -- Buff polling
     self:pollBuffsIfNeeded()
-    -- Try to acquire a target (non-blocking; schedules one click)
-    self:acquireTargetIfNeeded()
-    -- Plan & queue ability casts if in combat
-    self:planAndQueue()
-    -- Run scheduled jobs (attacks & casts)
+
+    -- Ability planning
+    if API.IsTargeting() then
+        self:planAndQueue()
+    end
+
+    -- Run scheduled jobs (casts, delayed stuff)
     self:processScheduler()
 end
+
 
 function CombatEngine:start()
     if self.running then return end
     self.running = true
+
+    -- Main combat update (abilities, buffs, scheduler)
     TickEvent.Register(function() self:update() end)
-    -- (optional) API.logDebug("Combat engine started")
+
+    -- Separate targeting loop (slower cadence, only does Interact)
+    TickEvent.Register(function() self:targetLoop() end)
+
+    API.logDebug("Combat engine started")
 end
+
 
 function CombatEngine:stop()
     self.running = false
