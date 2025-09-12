@@ -136,63 +136,26 @@ function CombatEngine:updateBuffs()
 end
 
 function CombatEngine:updateTargetsFromWorld()
-    local now = API.SystemTime()
+    -- if already in combat, keep current target
+    if self.primaryTargetId and API.IsTargeting() then
+        return
+    end
 
-    -- throttle scanning
+    -- throttle attempts
+    local now = API.SystemTime()
     if now - (self.lastScanTime or 0) < (self.scanInterval or 2000) then
         return
     end
     self.lastScanTime = now
 
-    -- validate current lock
-    if self.primaryTargetId then
-        local cur = API.ReadAllObjectsArray({1}, {self.primaryTargetId}, {})
-        if cur and cur[1] and cur[1].Life > 0 then
-            return -- current target is still valid, keep it
-        else
-            self.primaryTargetId = nil -- drop lock if dead/invalid
-        end
-    end
-
-    -- build name filter from priority list
-    local nameTable = {}
+    -- try to attack by priority
     for name, _ in pairs(self.priorityList) do
-        table.insert(nameTable, tostring(name))
-    end
-
-    -- query only priority targets
-    local npcs = API.ReadAllObjectsArray({1}, {-1}, nameTable)
-    if not npcs or #npcs == 0 then return end
-
-    -- pick best by priority weight + distance
-    local limit = math.min(#npcs, self.maxScanTargets or 5)
-    local best, bestScore
-    for i = 1, limit do
-        local npc = npcs[i]    
-        if npc.Life > 0 then
-            local prio = self.priorityList[npc.Name] or 999
-            local dist = npc.Distance or 999
-            local score = (prio * 1000) + dist
-            if not bestScore or score < bestScore then
-                bestScore = score
-                best = npc
-            end
-        end
-    end
-
-    if best and not API.IsTargeting() then
-        API.logDebug("Target locked: " .. best.Name .. " (dist " .. best.Distance .. ")")
-        self.primaryTargetId = best.Unique_Id
-        -- Try to attack it
-        local ok = Interact:NPC(best.Name, "Attack", 30)
-        if not ok then
-            API.logDebug("Failed to interact with " .. best.Name)
-        else
-            API.logDebug("Engaging target: " .. best.Name)
+        if Interact:NPC(name, "Attack", 30) then
+            API.logDebug("Engaging target: " .. name)
+            return
         end
     end
 end
-
 
 -- priority system
 function CombatEngine:getPriorityForName(name)
