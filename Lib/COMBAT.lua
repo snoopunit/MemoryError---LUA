@@ -198,7 +198,7 @@ end
 
 function CombatEngine:acquireTargetIfNeeded()
     -- Already in combat or awaiting click to resolve? Do nothing.
-    if API.LocalPlayer_IsInCombat_() or self.awaitingCombat then return end
+    if API.IsTargeting() or self.awaitingCombat then return end
 
     local t = nowMs()
     if t - self.lastScanTime < self.scanInterval then return end
@@ -211,7 +211,7 @@ function CombatEngine:acquireTargetIfNeeded()
             local ok = Interact:NPC(name, "Attack", 30)
             if ok then
                 self.primaryTargetName = name
-                -- (optional) API.logDebug("Engaging: "..name)
+                API.logDebug("Engaging: "..name)
             end
             -- Whether it succeeded or not, allow next attempt on next interval.
             self.awaitingCombat = false
