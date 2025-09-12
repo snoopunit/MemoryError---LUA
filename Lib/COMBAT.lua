@@ -180,6 +180,13 @@ function CombatEngine:updateTargetsFromWorld()
     if best then
         API.logDebug("Target locked: " .. best.Name .. " (dist " .. best.Distance .. ")")
         self.primaryTargetId = best.Unique_Id
+        -- Try to attack it
+        local ok = Interact:NPC(best.Name, "Attack", 30)
+        if not ok then
+            API.logDebug("Failed to interact with " .. best.Name)
+        else
+            API.logDebug("Engaging target: " .. best.Name)
+        end
     end
 end
 
