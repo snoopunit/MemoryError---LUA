@@ -38,8 +38,8 @@ function CombatEngine.new()
         phantomGuardian = 34180
     }
     self.trackedDebuffIDs = {
-        poison = 2001, -- placeholder
-        stun = 2002    -- placeholder
+        poison = 30097, -- placeholder
+        stun = 26103    -- placeholder
     }
 
     -- abilities (Necromancy)
