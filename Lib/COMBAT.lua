@@ -235,6 +235,7 @@ end
 
 -- tick update
 function CombatEngine:update()
+    local t0 = API.SystemTime()
     if not self.running then return end
     self:updateBuffs()
     self:updateTargetsFromWorld()
@@ -245,6 +246,8 @@ function CombatEngine:update()
             self:scheduleCast(choice.abilityName, choice.targetId, now)
         end
     end
+    local t1 = API.SystemTime()
+    API.logDebug(("Engine:update took %d ms"):format(t1 - t0))
 end
 
 -- start/stop
