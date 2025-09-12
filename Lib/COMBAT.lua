@@ -197,28 +197,48 @@ local function iterPriorityNamesSorted(priorityList)
 end
 
 function CombatEngine:acquireTargetIfNeeded()
-    -- Already in combat or awaiting click to resolve? Do nothing.
+    -- Only when not already targeting and not mid-acquisition
     if API.IsTargeting() or self.awaitingCombat then return end
 
     local t = nowMs()
-    if t - self.lastScanTime < self.scanInterval then return end
+    if t - (self.lastScanTime or 0) < (self.scanInterval or 2000) then return end
     self.lastScanTime = t
 
-    -- Try by priority order; schedule ONE attack attempt
-    for name in iterPriorityNamesSorted(self.priorityList) do
+    local bestNpc, bestScore
+
+    -- For each priority name: get matches, pick the nearest of that name,
+    -- then compare by (priority, distance)
+    for name, pri in pairs(self.priorityList) do
+        local npcs = API.ReadAllObjectsArray({1}, {-1}, {name})
+        if npcs and #npcs > 0 then
+            local nearest, nearestDist
+            for _, npc in ipairs(npcs) do
+                if npc.Life and npc.Life > 0 then
+                    local d = npc.Distance or 999
+                    if not nearestDist or d < nearestDist then
+                        nearest, nearestDist = npc, d
+                    end
+                end
+            end
+            if nearest then
+                local score = (pri or 999) * 1000 + (nearestDist or 999)
+                if not bestScore or score < bestScore then
+                    bestScore, bestNpc = score, nearest
+                end
+            end
+        end
+    end
+
+    if bestNpc then
+        -- Schedule the actual click to keep this tick light
         self.awaitingCombat = true
         self:schedule(50, function()
-            local ok = Interact:NPC(name, "Attack", 30)
-            if ok then
-                self.primaryTargetName = name
-                API.logDebug("Engaging: "..name)
-            end
-            -- Whether it succeeded or not, allow next attempt on next interval.
+            API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, bestNpc)
             self.awaitingCombat = false
         end)
-        break
     end
 end
+
 
 -- ======== Ability Casting ========
 
