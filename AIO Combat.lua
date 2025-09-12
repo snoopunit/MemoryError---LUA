@@ -957,6 +957,10 @@ do------------------------------------------------------------------------------
 
             currentTargetInfo = API.ReadTargetInfo(false)
             
+            if currentTargetInfo.Hitpoints == 0 then
+                break
+            end
+
             if not currentTargetInfo.Target_Name == enemyToFight then
                 attack()
                 API.RandomSleep2(600, 0, 600)
