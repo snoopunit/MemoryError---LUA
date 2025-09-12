@@ -1,3 +1,5 @@
+print("-----BUFF_TESTING-----")
+
 local API = require("api")
 
 local BUFFS = {
@@ -29,17 +31,20 @@ local function fd_reflection_check()
     local function projectile()
         return #API.ReadAllObjectsArray({5},{2875},{})
     end
+    local function cease()
+        local ceaseAB = API.GetABs_name("Cease")
+        if ceaseAB and ceaseAB.enabled then
+            API.DoAction_Ability_Direct(ceaseAB, 1, API.OFF_ACT_GeneralInterface_route)
+        end
+    end
     if projectile() >= 1 then
         API.logWarn("Detected Frost Dragon reflection ability projectile!")
-        local cease = API.GetABs_name("Cease")
-        if cease and cease.enabled then
-            API.DoAction_Ability_Direct(cease, 1, API.OFF_ACT_GeneralInterface_route)
-        end
         while projectile() >= 1 and API.Read_LoopyLoop() do
-            API.logDebug("Looping until the projectile is gone!")
+            API.logDebug("CEASING until the projectile is gone!")
             buffCheck()
             healthCheck()
-            API.RandomSleep2(600,0,600)
+            cease()
+            API.RandomSleep2(6000,0,600)
         end
     end
 end
