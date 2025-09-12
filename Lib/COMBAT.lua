@@ -242,12 +242,12 @@ function CombatEngine:castAbility(name)
         local t = nowMs()
         desc.lastUsed = t
         self.lastGcdEnd = t + math.floor(self.gcd * 1000)
-        -- (optional) API.logDebug("Cast "..name)
+        API.logDebug("Casting: "..name)
     end
 end
 
 function CombatEngine:planAndQueue()
-    if not API.LocalPlayer_IsInCombat_() then return end
+    if not API.IsTargeting() then return end
 
     local bestName, bestScore = nil, -math.huge
     for name, desc in pairs(self.abilities) do
