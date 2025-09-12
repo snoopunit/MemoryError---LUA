@@ -9,7 +9,7 @@ engine.priorityList = {
     ["Chicken"] = 1
 }
 
-local names = {"Chicken", "Cow"}
+local names = {"Chicken"}
 
 local function scanForNPCs()
 
