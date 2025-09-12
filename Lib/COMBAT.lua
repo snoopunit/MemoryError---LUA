@@ -197,20 +197,25 @@ local function iterPriorityNamesSorted(priorityList)
 end
 
 function CombatEngine:acquireTargetIfNeeded()
-    -- Only when not already targeting and not mid-acquisition
     if API.IsTargeting() or self.awaitingCombat then return end
 
     local t = nowMs()
     if t - (self.lastScanTime or 0) < (self.scanInterval or 2000) then return end
     self.lastScanTime = t
 
-    local bestNpc, bestScore
-
-    -- For each priority name: get matches, pick the nearest of that name,
-    -- then compare by (priority, distance)
+    -- Iterate names in ascending priority order
+    local names = {}
     for name, pri in pairs(self.priorityList) do
-        local npcs = API.ReadAllObjectsArray({1}, {-1}, {name})
+        table.insert(names, {name=name, pri=pri})
+    end
+    table.sort(names, function(a,b)
+        return a.pri < b.pri
+    end)
+
+    for _, entry in ipairs(names) do
+        local npcs = API.ReadAllObjectsArray({1}, {-1}, {entry.name})
         if npcs and #npcs > 0 then
+            -- find nearest alive NPC of this name
             local nearest, nearestDist
             for _, npc in ipairs(npcs) do
                 if npc.Life and npc.Life > 0 then
@@ -220,24 +225,20 @@ function CombatEngine:acquireTargetIfNeeded()
                     end
                 end
             end
+
             if nearest then
-                local score = (pri or 999) * 1000 + (nearestDist or 999)
-                if not bestScore or score < bestScore then
-                    bestScore, bestNpc = score, nearest
-                end
+                self.awaitingCombat = true
+                self:schedule(50, function()
+                    API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, nearest)
+                    API.logDebug("Engaging: " .. entry.name)
+                    self.awaitingCombat = false
+                end)
+                break -- ✅ stop after first valid target
             end
         end
     end
-
-    if bestNpc then
-        -- Schedule the actual click to keep this tick light
-        self.awaitingCombat = true
-        self:schedule(50, function()
-            API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, bestNpc)
-            self.awaitingCombat = false
-        end)
-    end
 end
+
 
 
 -- ======== Ability Casting ========
