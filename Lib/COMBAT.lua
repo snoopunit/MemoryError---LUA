@@ -26,6 +26,9 @@ function CombatEngine.new()
     self.primaryTargetId = nil
     self.priorityList = {}
 
+    self.lastScanTime = 0
+    self.scanInterval = 2000 -- ms, adjust as needed (2s)
+
     -- buff tracking
     self.buffs = {}
     self.debuffs = {}
@@ -132,17 +135,24 @@ function CombatEngine:updateBuffs()
 end
 
 function CombatEngine:updateTargetsFromWorld()
-    -- Build the name filter table from priority list keys
+    local now = API.SystemTime()
+
+    -- Only scan every scanInterval ms
+    if now - (self.lastScanTime or 0) < self.scanInterval then
+        return
+    end
+    self.lastScanTime = now
+
+    -- Build the name filter table from priority list
     local nameTable = {}
     for name, _ in pairs(self.priorityList) do
         table.insert(nameTable, name)
     end
 
-    -- Only scan NPCs matching our priority list
+    -- Scan only priority targets
     local npcs = API.ReadAllObjectsArray({1}, {-1}, nameTable)
     if not npcs then return end
 
-    local now = API.SystemTime()
     self.activeTargets = {}
 
     for _, npc in ipairs(npcs) do
@@ -165,14 +175,14 @@ function CombatEngine:updateTargetsFromWorld()
         end
     end
 
-    -- If no lock, pick best based on priority weight + distance
+    -- Pick best target if no lock
     if not self.primaryTargetId then
         local best, bestScore = nil, math.huge
         for _, t in pairs(self.activeTargets) do
             if not t.isDead then
                 local prio = self.priorityList[t.name] or 999
                 local dist = t.dist or 999
-                local score = (prio * 1000) + dist -- priority dominates, distance tiebreak
+                local score = (prio * 1000) + dist
                 if score < bestScore then
                     bestScore = score
                     best = t
@@ -184,7 +194,6 @@ function CombatEngine:updateTargetsFromWorld()
         end
     end
 end
-
 
 -- priority system
 function CombatEngine:getPriorityForName(name)
