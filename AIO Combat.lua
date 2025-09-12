@@ -985,6 +985,7 @@ do------------------------------------------------------------------------------
 
         end     
   
+        prayerCheck()
         currentTarget = nil
         imguiTarget.string_value = ""
         API.DrawTextAt(imguiTarget)
