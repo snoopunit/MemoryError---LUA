@@ -280,8 +280,11 @@ function CombatEngine:update()
     t1 = nowMs()
     if API.IsTargeting() then
         self:planAndQueue()
+        API.logDebug("PlanAndQueue took " .. (nowMs()-t1) .. "ms")
+    else
+        self:acquireTargetIfNeeded()
     end
-    API.logDebug("PlanAndQueue took " .. (nowMs()-t1) .. "ms")
+    
 
     -- Run scheduled jobs (casts, delayed stuff)
     t1 = nowMs()
@@ -300,7 +303,7 @@ function CombatEngine:start()
     TickEvent.Register(function() self:update() end)
 
     -- Separate targeting loop (slower cadence, only does Interact)
-    TickEvent.Register(function() self:acquireTargetIfNeeded() end)
+    TickEvent.Register(function()  end)
 
     API.logDebug("Combat engine started")
 end
