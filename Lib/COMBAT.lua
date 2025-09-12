@@ -268,6 +268,8 @@ end
 function CombatEngine:targetLoop()
     if not self.running then return end
 
+    local t0 = nowMs()
+
     -- Already in combat? Do nothing.
     if API.IsTargeting() then return end
 
@@ -279,11 +281,17 @@ function CombatEngine:targetLoop()
 
     -- Try to acquire by priority order
     for name, _ in pairs(self.priorityList) do
-        if Interact:NPC(name, "Attack", 30) then
+        local t1 = nowMs()
+        local ok = Interact:NPC(name, "Attack", 30)
+        API.logDebug("Interact:NPC(" .. name .. ") took " .. (nowMs()-t1) .. "ms")
+
+        if ok then
             API.logDebug("Targeting: " .. name)
             break
         end
     end
+
+    API.logDebug("TargetLoop total " .. (nowMs()-t0) .. "ms")
 end
 
 
@@ -292,16 +300,26 @@ end
 function CombatEngine:update()
     if not self.running then return end
 
+    local t0 = nowMs()
+
     -- Buff polling
+    local t1 = nowMs()
     self:pollBuffsIfNeeded()
+    API.logDebug("Buff poll took " .. (nowMs()-t1) .. "ms")
 
     -- Ability planning
+    t1 = nowMs()
     if API.IsTargeting() then
         self:planAndQueue()
     end
+    API.logDebug("PlanAndQueue took " .. (nowMs()-t1) .. "ms")
 
     -- Run scheduled jobs (casts, delayed stuff)
+    t1 = nowMs()
     self:processScheduler()
+    API.logDebug("Scheduler took " .. (nowMs()-t1) .. "ms")
+
+    API.logDebug("Engine update total " .. (nowMs()-t0) .. "ms")
 end
 
 
