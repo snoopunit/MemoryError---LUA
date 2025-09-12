@@ -278,21 +278,21 @@ local function invContainsString(string)
     return false
 end
 
-function terminate()
+local function terminate()
     API.logDebug("Shutting down...")
     runLoop = false
     API.Write_LoopyLoop(false)
 end
 
-function hasBuff(buff)
+local function hasBuff(buff)
     return API.Buffbar_GetIDstatus(buff, false).found
 end
 
-function hasDeBuff(debuff)
+local function hasDeBuff(debuff)
     return API.DeBuffbar_GetIDstatus(debuff, false).found
 end
 
-function hasItem(item)
+local function hasItem(item)
     local invitems = API.InvItemcount_String(item)
     if invitems > 0 then
         return true
@@ -300,7 +300,7 @@ function hasItem(item)
     return false    
 end
 
-function getEnemies(names, size)
+local function getEnemies(names, size)
     local NPCs = {}
     if names then
         NPCs = API.ReadAllObjectsArray({1}, {-1}, names)
@@ -314,7 +314,7 @@ function getEnemies(names, size)
     end
 end
 
-function attack()
+local function attack()
     
         API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, closestNPC)
         API.RandomSleep2(1200, 0, 600)
@@ -327,7 +327,7 @@ function attack()
     end
 end
 
-function uniqueEnemies()
+local function uniqueEnemies()
     local uniqueEnemies = {}  
     local seenIDs = {}   
 
@@ -345,7 +345,7 @@ function uniqueEnemies()
     return uniqueEnemies
 end
 
-function moveToEnemy()
+local function moveToEnemy()
     if not moveToTarget then return end
 
     local player = API.PlayerCoord()
@@ -398,13 +398,13 @@ function moveToEnemy()
 
 end
 
-function checkGroundItems()
+local function checkGroundItems()
     local items = API.ReadAllObjectsArray({3}, lootlist, {})
 
     return #items
 end
 
-function openLoot()
+local function openLoot()
 
     if not lootDrops or (STATS.kills == 0) or (checkGroundItems() < 1) then
         return
@@ -447,7 +447,7 @@ function openLoot()
 
 end
 
-function drawGUI()
+local function drawGUI()
 
     if fightBtn.return_click then
         runLoop = not runLoop
@@ -517,7 +517,7 @@ function drawGUI()
     API.DrawTextAt(imguiTarget)
 end
 
-function findClosestEnemy()
+local function findClosestEnemy()
 
     local coords = API.PlayerCoord()
     local playerX, playerY = coords.x, coords.y
@@ -549,11 +549,11 @@ function findClosestEnemy()
     return true
 end
 
-function Check_Timer(int)
+local function Check_Timer(int)
     return (API.SystemTime() - int)
 end
 
-function getTotalRuntime(timer)
+local function getTotalRuntime(timer)
     local currentTime = API.SystemTime()
     local elapsed = currentTime - timer
     local hours = math.floor(elapsed / 3600000)
@@ -562,7 +562,7 @@ function getTotalRuntime(timer)
     return string.format("%dh,%dm,%ds", hours, minutes, seconds)
 end
 
-function antiban()
+local function antiban()
     local elapsedTime = Check_Timer(TIMERS.AFK_Timer)
     local afkThreshold = math.random(Min_AFK, Max_AFK)
     if elapsedTime > afkThreshold then
@@ -579,11 +579,11 @@ function antiban()
     end
 end
 
-function KillsPerHour()   
+local function KillsPerHour()   
     return math.floor((STATS.kills*60)/((API.SystemTime() - TIMERS.Script_Timer)/60000))
 end
 
-function activateAbility(name)
+local function activateAbility(name)
 
     ---MUST BE ON ACTIONBARS
 
@@ -591,7 +591,7 @@ function activateAbility(name)
     API.RandomSleep2(600, 50, 300)
 end
 
-function emergencyTele()
+local function emergencyTele()
     if UTILS.canUseSkill("War's Retreat Teleport") then
         API.logDebug("Teleport: War's Retreat")
         activateAbility("War's Retreat Teleport")  
@@ -609,7 +609,7 @@ function emergencyTele()
     terminate()
 end
 
-function healthCheck()
+local function healthCheck()
     if API.GetHPrecent() < Min_Eat_Percent then
         if UTILS.canUseSkill("Eat Food") then
             API.logDebug("Low HP! Eating Food!")
@@ -636,7 +636,7 @@ function healthCheck()
     end
 end
 
-function buffCheck()
+local function buffCheck()
        
     if API.InvItemcount_String("Ancient elven ritual shard") > 0 then
         if not hasDeBuff(DEBUFFS.Elven_Shard) and (API.GetPrayPrecent() <= 63) then
@@ -694,7 +694,7 @@ local function porterCheck()
     
 end
 
-function setupPrayers()
+local function setupPrayers()
 
     if enemyToFight == nil then
         return false
@@ -749,7 +749,7 @@ function setupPrayers()
     return false
 end
 
-function prayerCheck()
+local function prayerCheck()
 
     if PRAYER_TO_USE == nil then
         API.logDebug(" PRAYER_TO_USE == nil !")
@@ -773,7 +773,7 @@ function prayerCheck()
     end
 end
 
-function noteStuff()
+local function noteStuff()
     if not noteItems then
         return
     end
@@ -800,7 +800,7 @@ function noteStuff()
     end
 end
 
-function specialAttack()
+local function specialAttack()
     if not useSpecial then
         return
     end
@@ -811,7 +811,7 @@ function specialAttack()
     end
 end
 
-function chargePackCheck()
+local function chargePackCheck()
     --[[local chatTexts = API.GatherEvents_chat_check()
     for _, v in ipairs(chatTexts) do
         if (string.find(v.text, "Your charge pack has run out of power")) then
@@ -824,7 +824,7 @@ function chargePackCheck()
     return true
 end
 
-function aggressionCheck()
+local function aggressionCheck()
     local aggPotAB = API.GetABs_name("Aggression potion")
 
     if not hasBuff(37969) then
@@ -834,7 +834,7 @@ function aggressionCheck()
     end
 end
 
-function essenceOfFinality()
+local function essenceOfFinality()
         if not useSpecial then
             return
         end
@@ -845,7 +845,7 @@ function essenceOfFinality()
         end
 end
 
-function rejuvenate()
+local function rejuvenate()
     if not hasItem("shield") then
         return
     end
@@ -874,6 +874,22 @@ function rejuvenate()
     API.RandomSleep2(600, 0, 600)
     
 end
+
+local function fd_reflection_check()
+    local projectile = API.ReadAllObjectsArray({5},{2875},{})
+    if projectile then
+        local cease = API.GetABs_name("Cease")
+        if cease and cease.enabled then
+            API.DoAction_Ability_Direct(cease, 1, API.OFF_ACT_GeneralInterface_route)
+        end
+        while projectile and API.Read_LoopyLoop() do
+            buffCheck()
+            healthCheck()
+            API.RandomSleep2(600,0,600)
+        end
+    end
+end
+
 
 --main loop
 API.Write_LoopyLoop(true)
@@ -942,6 +958,7 @@ do------------------------------------------------------------------------------
             buffCheck()
             prayerCheck()
             healthCheck()
+            fd_reflection_check()
             aggressionCheck()
             --rejuvenate()
             specialAttack()  
