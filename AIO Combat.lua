@@ -687,7 +687,7 @@ local function porterCheck()
 
     local porterAB = API.GetABs_name("Sign of the porter", false)
 
-    if not hasBuff(porterBuff) then
+    if not hasBuff(porterBuff) and porterAB > 0 then
         API.logDebug("Activating: "..tostring(porterAB.name))
         API.DoAction_Interface(0xffffffff,0x7261,2,1670,97,-1,API.OFF_ACT_GeneralInterface_route)
     end 
