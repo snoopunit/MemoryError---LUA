@@ -32,7 +32,7 @@ function CombatEngine.new()
     -- targeting
     self.primaryTargetName = nil      -- we keep the name; Interact finds the nearest
     self.awaitingCombat = false       -- prevent re-spamming Attack while the click resolves
-    self.scanInterval = 2000          -- ms between acquisition attempts
+    self.scanInterval = 2400          -- ms between acquisition attempts
     self.lastScanTime = 0
 
     -- priorities: lower number = higher priority
@@ -54,7 +54,7 @@ function CombatEngine.new()
     self._buffsInterval = 300 -- ms
 
     -- gcd seconds (engine side pacing; bar cooldowns still gate real readiness)
-    self.gcd = 1.2
+    self.gcd = 1.8
 
     -- abilities (keep cd=0; rely on bar cooldowns to avoid bad assumptions)
     self.abilities = {
