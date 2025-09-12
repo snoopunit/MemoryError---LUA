@@ -209,8 +209,7 @@ function CombatEngine:acquireTargetIfNeeded()
     self.lastScanTime = t
 
     for _, name in ipairs(self.priorityList) do
-        local ok = Interact:NPC(name, "Attack", 30)
-        if ok then
+        if Interact:NPC(name, "Attack", 30) then
             local elapsed = nowMs() - startTime
             API.logDebug("Engaging: " .. name .. " | acquireTargetIfNeeded took " .. elapsed .. "ms")
             self.primaryTargetName = name
