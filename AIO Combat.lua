@@ -784,7 +784,6 @@ local function noteStuff()
         end
 
         if not Inventory:Contains(18832) then
-            API.logWarn("No Frost Dragon Bones!")
             return false
         else
             API.DoAction_DontResetSelection()
