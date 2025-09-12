@@ -28,6 +28,7 @@ function CombatEngine.new()
 
     self.lastScanTime = 0
     self.scanInterval = 1200 -- ms, adjust as needed (10s)
+    self.maxScanTargets = 5
 
     -- buff tracking
     self.buffs = {}
@@ -164,8 +165,10 @@ function CombatEngine:updateTargetsFromWorld()
     if not npcs or #npcs == 0 then return end
 
     -- pick best by priority weight + distance
+    local limit = math.min(#npcs, self.maxScanTargets or 5)
     local best, bestScore
-    for _, npc in ipairs(npcs) do
+    for i = 1, limit do
+        local npc = npcs[i]    
         if npc.Life > 0 then
             local prio = self.priorityList[npc.Name] or 999
             local dist = npc.Distance or 999
