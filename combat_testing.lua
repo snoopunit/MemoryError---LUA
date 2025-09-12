@@ -39,12 +39,12 @@ API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(4)
 
 -- start engine
---engine:start()
+engine:start()
 
 -- main loop
 while API.Read_LoopyLoop() do
     -- engine:update() is called automatically on TickEvent.Register
-    scanForNPCs()
+    --scanForNPCs()
     API.RandomSleep2(200, 50, 200)
 end
 
