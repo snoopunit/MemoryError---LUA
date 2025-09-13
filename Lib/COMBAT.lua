@@ -401,7 +401,7 @@ function CombatEngine.new()
             lastUsed = -1e12,
             expectedValue = function(_, engine)
                 if engine:isSkillQueued("Conjure Undead Army") then return 0.0 end
-                if engine:hasAnyConjure() then return 0.0 else return 10.0 end
+                if engine:hasAnyConjure() then return 0.0 else return 11.0 end
             end
         },
 
@@ -713,28 +713,28 @@ function CombatEngine:planAndQueue()
                 bestScore = score
                 bestName = name
             end
-        else
-            -- still record it for visibility
-            evTable[#evTable+1] = { name = name, score = "not ready" }
         end
     end
 
-    -- Debug: print EV table
-    print("=== Ability EVs ===")
-    for _, entry in ipairs(evTable) do
-        print(string.format("%-20s : %s", entry.name, tostring(entry.score)))
+    -- Debug: print EV table (only ready abilities)
+    if #evTable > 0 then
+        print("=== Ready Ability EVs ===")
+        for _, entry in ipairs(evTable) do
+            print(string.format("%-20s : %.2f", entry.name, entry.score))
+        end
+        if bestName then
+            print(string.format(">>> Chosen ability: %s (EV = %.2f)", bestName, bestScore))
+        else
+            print(">>> No ability chosen")
+        end
+        print("=========================")
     end
-    if bestName then
-        print(string.format(">>> Chosen ability: %s (EV = %.2f)", bestName, bestScore))
-    else
-        print(">>> No ability chosen")
-    end
-    print("===================")
 
     if bestName then
         self:schedule(0, function() self:castAbility(bestName) end)
     end
 end
+
 
 
 -- ======== Update Loop ========
