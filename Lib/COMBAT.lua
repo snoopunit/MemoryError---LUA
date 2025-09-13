@@ -474,6 +474,52 @@ function CombatEngine.new()
     return self
 end
 
+-- ======== Queued Ability Helpers ========
+-- Credits to DEAD.UTILS
+
+---Find which bar currently has a queued skill.
+---@return number|nil
+function CombatEngine:findBarWithQueuedSkill()
+    local queuedBar = API.VB_FindPSettinOrder(5861, 0).state
+    if queuedBar == 0 then return nil end
+    if queuedBar == 1003 then return 0 end
+    if queuedBar == 1032 then return 1 end
+    if queuedBar == 1033 then return 2 end
+    if queuedBar == 1034 then return 3 end
+    if queuedBar == 1035 then return 4 end
+    return nil
+end
+
+---Is any ability queued?
+---@return boolean
+function CombatEngine:isAbilityQueued()
+    return API.VB_FindPSettinOrder(5861, 0).state ~= 0
+end
+
+---Get the slot index of the queued ability.
+---@return number
+function CombatEngine:getSlotOfQueuedSkill()
+    return API.VB_FindPSettinOrder(4164, 0).state
+end
+
+---Check if a specific skill is queued.
+---@param skill string
+---@return boolean
+function CombatEngine:isSkillQueued(skill)
+    if not self:isAbilityQueued() then return false end
+    local barNumber = self:findBarWithQueuedSkill()
+    if not barNumber then return false end
+
+    local skillbar = API.GetAB_name(barNumber, skill)
+    if not skillbar then return false end
+
+    local slot = self:getSlotOfQueuedSkill()
+    if slot == 0 then return false end
+
+    return skillbar.slot == slot
+end
+
+
 -- ======== Buffs ========
 
 function CombatEngine:parseBbar(bbar)
@@ -635,28 +681,35 @@ function CombatEngine:castAbility(name)
     local desc = self.abilities[name]
     if not ab or not desc then return end
 
-    -- hard block if any cast is already pending
-    local now = nowMs()
-    if self.pendingCast and now < self.pendingUntil then
+    -- Don’t cast if ability is already queued
+    if self:isSkillQueued(name) then
+        return
+    end
+
+    -- Don’t double-cast while pending
+    local t = nowMs()
+    if self.pendingCast == name and t < self.pendingUntil then
         return
     end
 
     if not self:isAbilityReady(name) then return end
 
     if API.DoAction_Ability_Direct(ab, 1, API.OFF_ACT_GeneralInterface_route) then
-        local t = nowMs()
-        desc.lastUsed = t
+        -- Mark as pending
+        self.pendingCast = name
+        self.pendingUntil = t + 600
 
-        -- set GCD and hold pending through the whole GCD (+ small pad)
+        -- Record use
+        desc.lastUsed = t
         self.lastGcdEnd = t + math.floor(self.gcd * 1000)
 
-        self.pendingCast  = name
-        self.pendingUntil = self.lastGcdEnd + 80  -- pad ~80ms past GCD
-
-        API.logInfo("Casting: " .. name)
-        if desc.onCast then desc.onCast(self) end
+        API.logInfo("Casting: "..name)
+        if desc.onCast then
+            desc.onCast(self)
+        end
     end
 end
+
 
 function CombatEngine:planAndQueue()
     if not API.IsTargeting() then return end
