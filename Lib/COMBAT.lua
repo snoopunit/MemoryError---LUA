@@ -312,13 +312,8 @@ function CombatEngine.new()
             lastUsed = -1e12,
             expectedValue = function(_, engine)
                 if engine:hasConjure("vengefulGhost") and engine:isAbilityReady("Command Vengeful Ghost") then
-                    if engine:targetHasDebuff(engine.enemyDebuffIDs.haunted) then
-                        return 1.5 -- can tweak if Haunted debuff is detected on enemy
-                    else
-                        return 9.0
-                    end
+                    if engine:targetHasDebuff(engine.enemyDebuffIDs.haunted) then return 0.0 else return 4.0 end
                 end
-                return 0.0
             end
         },
 
@@ -726,10 +721,6 @@ function CombatEngine:planAndQueue()
     print("=== Ability EVs (READY) ===")
     for _, e in ipairs(evReady) do
         print(string.format("%-22s : %.2f", e.name, e.score))
-    end
-    print("=== Skipped (NOT READY) ===")
-    for _, e in ipairs(evSkipped) do
-        print(string.format("%-22s : %s", e.name, e.reason))
     end
 
     if bestName and bestScore > 0 then
