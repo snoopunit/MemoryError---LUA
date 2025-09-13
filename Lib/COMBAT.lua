@@ -291,13 +291,23 @@ end
 
 function CombatEngine:isAbilityReady(name)
     local ab = self.abilityBars[name]
-    if not ab then return false end
+    local desc = self.abilities[name]
+    if not ab or not desc then return false end
     if not ab.enabled then return false end
+
+    -- Check client-side cooldown timer
     if ab.cooldown_timer and ab.cooldown_timer > 0 then return false end
-    -- GCD check (ms)
-    if nowMs() < self.lastGcdEnd then return false end
+
+    -- Check engine’s own cooldown tracker
+    local t = nowMs()
+    if t - desc.lastUsed < (desc.cd or 0) then return false end
+
+    -- Check global cooldown
+    if t < self.lastGcdEnd then return false end
+
     return true
 end
+
 
 function CombatEngine:castAbility(name)
     local ab = self.abilityBars[name]
@@ -305,12 +315,12 @@ function CombatEngine:castAbility(name)
     if not ab or not desc then return end
     if not self:isAbilityReady(name) then return end
 
-    --[[if API.DoAction_Ability_Direct(ab, 1, API.OFF_ACT_GeneralInterface_route) then
+    if API.DoAction_Ability_Direct(ab, 1, API.OFF_ACT_GeneralInterface_route) then
         local t = nowMs()
         desc.lastUsed = t
         self.lastGcdEnd = t + math.floor(self.gcd * 1000)
         API.logInfo("Casting: "..name)
-    end]]
+    end
 end
 
 function CombatEngine:planAndQueue()
