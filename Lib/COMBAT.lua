@@ -635,32 +635,37 @@ function CombatEngine:castAbility(name)
     local desc = self.abilities[name]
     if not ab or not desc then return end
 
-    -- Don’t double-cast while pending
-    local t = nowMs()
-    if self.pendingCast == name and t < self.pendingUntil then
+    -- hard block if any cast is already pending
+    local now = nowMs()
+    if self.pendingCast and now < self.pendingUntil then
         return
     end
 
     if not self:isAbilityReady(name) then return end
 
     if API.DoAction_Ability_Direct(ab, 1, API.OFF_ACT_GeneralInterface_route) then
-        -- Mark as pending
-        self.pendingCast = name
-        self.pendingUntil = t + 600 -- allow ~0.6s for client to register
-
-        -- Record use
+        local t = nowMs()
         desc.lastUsed = t
+
+        -- set GCD and hold pending through the whole GCD (+ small pad)
         self.lastGcdEnd = t + math.floor(self.gcd * 1000)
 
-        API.logInfo("Casting: "..name)
-        if desc.onCast then
-            desc.onCast(self)
-        end
+        self.pendingCast  = name
+        self.pendingUntil = self.lastGcdEnd + 80  -- pad ~80ms past GCD
+
+        API.logInfo("Casting: " .. name)
+        if desc.onCast then desc.onCast(self) end
     end
 end
 
+
 function CombatEngine:planAndQueue()
     if not API.IsTargeting() then return end
+
+    -- skip picking a new ability while a cast is pending
+    if self.pendingCast and nowMs() < self.pendingUntil then
+        return
+    end
 
     local bestName, bestScore = nil, -math.huge
     for name, desc in pairs(self.abilities) do
