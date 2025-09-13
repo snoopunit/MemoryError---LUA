@@ -49,12 +49,29 @@ local function fd_reflection_check()
     end
 end
 
+local function dumpTargetDebuffs()
+    local tInfo = API.ReadTargetInfo(true)
+    if not tInfo or not tInfo.Buff_stack then
+        API.logDebug("No target debuffs found (no target or Buff_stack missing)")
+        return
+    end
+
+    API.logDebug("=== Target Debuffs Dump ===")
+    for i, buff in ipairs(tInfo.Buff_stack) do
+        local id   = buff.id or buff.ID or "?"
+        local name = buff.name or buff.conv_text or buff.text or "?"
+        local raw  = buff.text or ""
+        API.logDebug(string.format("[%d] ID=%s | Name=%s | Text=%s", i, tostring(id), tostring(name), tostring(raw)))
+    end
+end
+
+
 API.Write_LoopyLoop(true)
 API.SetDrawLogs(true)
 
 while API.Read_LoopyLoop() do
 
-    DumpAllBuffs()
+    dumpTargetDebuffs()
     API.RandomSleep2(2400, 0, 0)
 
 end
