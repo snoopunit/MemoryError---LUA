@@ -83,6 +83,6 @@ while API.Read_LoopyLoop() do
 
     dumpTargetDebuffs()
     --DumpAllBuffs()
-    API.RandomSleep2(2400, 0, 0)
+    API.RandomSleep2(100, 0, 0)
 
 end
