@@ -49,6 +49,12 @@ function CombatEngine.new()
         putridZombie    = 34179,
         phantomGuardian = 34180,
     }
+    self.enemyDebuffIDs = {
+        immune_poison = 30094,
+        immune_stun = 26104,
+        haunted = 30212,
+        bloated = 30098
+    }
     self._lastBuffPoll = 0
     self._buffsInterval = 300 -- ms
 
@@ -57,21 +63,21 @@ function CombatEngine.new()
 
     -- abilities (keep cd=0; rely on bar cooldowns to avoid bad assumptions)
     self.abilities = {
-        ["Necromancy Auto"] = { 
+        --[[["Necromancy Auto"] = { 
             adrenaline = 0, 
             cd = 0, 
             lastUsed = -1e12, 
-            expectedValue = function() return 1.0 end },
+            expectedValue = function() return 1.0 end },]]
         ["Touch of Death"]  = { 
             adrenaline = 9, 
             cd = 0, 
             lastUsed = -1e12, 
-            expectedValue = function() return 1.0 end },
+            expectedValue = function() return 3.0 end },
         ["Soul Sap"]        = { 
             adrenaline = 9, 
             cd = 0, 
             lastUsed = -1e12, 
-            expectedValue = function() return 1.0 end },
+            expectedValue = function() return 4.0 end },
 
         ["Finger of Death"] = {
             adrenaline = -60,
@@ -92,15 +98,15 @@ function CombatEngine.new()
                 selfDesc._runtimeAdren = -60 + costReduction
 
                 -- EV calculation: only “worth it” at 6 stacks
-                if stacks == 6 then
+                if stacks == 12 then
                     return 10.0
+                elseif stacks == 6 then
+                    return 9.0
                 else
-                    return 0.1 -- very low priority otherwise
+                    return 0.5 -- very low priority otherwise
                 end
             end
         },
-
-
         ["Volley of Souls"] = {
             adrenaline = 0, lastUsed = -1e12,
             expectedValue = function(_, engine)
@@ -110,7 +116,13 @@ function CombatEngine.new()
             end
         },
 
-        ["Bloat"] =          { adrenaline = -20, lastUsed = -1e12, expectedValue = function() return 6.5 end },
+        ["Bloat"] =          { 
+            adrenaline = -20, 
+            lastUsed = -1e12, 
+            expectedValue = function() 
+                return 6.5 
+            end 
+        },
         ["Soul Strike"] =    { adrenaline = 0,   lastUsed = -1e12, expectedValue = function() return 1.5 end },
 
         ["Death Skulls"] =   { adrenaline = -100,lastUsed = -1e12, expectedValue = function() return 5.0 end },
@@ -169,7 +181,11 @@ function CombatEngine.new()
             lastUsed = -1e12,
             expectedValue = function(_, engine)
                 if engine:hasConjure("vengefulGhost") and engine:isAbilityReady("Command Vengeful Ghost") then
-                    return 9.0 -- can tweak if Haunted debuff is detected on enemy
+                    if engine:targetHasDebuff(engine.enemyDebuffIDs.haunted) then
+                        return 1.5 -- can tweak if Haunted debuff is detected on enemy
+                    else
+                        return 9.0
+                    end
                 end
                 return 0.0
             end
@@ -206,17 +222,51 @@ function CombatEngine.new()
                 return engine:hasAnyConjure() and 0.0 or 10.0
             end
         },
-        ["Blood Siphon"]              = { 
-            adrenaline = 0, 
-            lastUsed=-1e12, 
-            expectedValue=function()
+        ["Blood Siphon"] = { 
+            adrenaline = 0,
+            cd = 45000, 
+            lastUsed = -1e12, 
+            expectedValue = function()
                 local hp = API.GetHPrecent() or 100
-                -- Clamp to 0–100 just in case API gives weird values
                 if hp > 100 then hp = 100 end
                 if hp < 0 then hp = 0 end
-                return (100 - hp) / 10
+
+                if hp >= 50 then
+                    -- Scale linearly from 0.0 at 100% to 10.0 at 50%
+                    local ev = (100 - hp) / 5.0
+                    return ev
+                else
+                    -- At or below 50%, force max priority
+                    return 10.0
+                end
             end 
         },
+        ["Death Grasp"] = {
+            adrenaline = -25,        -- Costs 25% adrenaline
+            cd = 30000,              -- 30 sec cooldown (ms)
+            lastUsed = -1e12,
+            expectedValue = function(_, engine)
+                -- Don’t cast if target has immune_stun debuff
+                if engine:targetHasDebuff(engine.debuffIDs.immune_stun) then
+                    return 0.0
+                end
+
+                -- Get necrosis stacks from buff data
+                local nec = engine.buffs.necrosis
+                local stacks = (nec and nec.stacks) or 0
+
+                -- Only valid between 2 and 5 stacks
+                if stacks >= 2 and stacks <= 5 then
+                    return 9.0 -- strong priority
+                elseif stacks >= 6 then
+                    return 0.0 -- never cast at 6 or more
+                end
+
+                -- Default case (not in range)
+                return 0.0
+            end
+        },
+
     }
 
     -- cache ability-bar entries once
@@ -276,6 +326,23 @@ function CombatEngine:hasConjure(name)
     local b = self.buffs[name]
     return b and b.found or false
 end
+
+---Check if targetInfo has debuff id
+---@param number id of enemy debuff
+---@return boolean
+function CombatEngine:targetHasDebuff(id)
+    local tInfo = API.ReadTargetInfo(true)
+    if not tInfo or not tInfo.Buff_stack then
+        return false
+    end
+    for _, buffId in ipairs(tInfo.Buff_stack) do
+        if buffId == id then
+            return true
+        end
+    end
+    return false
+end
+
 
 -- ======== Scheduler ========
 
