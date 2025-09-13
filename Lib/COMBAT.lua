@@ -136,7 +136,7 @@ function CombatEngine.new()
                 if stacks >= 6 then
                     return 10.0
                 else
-                    return 0.5 -- very low priority otherwise
+                    return 0.0 -- very low priority otherwise
                 end
             end
         },
@@ -425,7 +425,6 @@ function CombatEngine.new()
             lastUsed = -1e12, 
             expectedValue = function()
                 local hp = API.GetHPrecent()
-                API.logInfo("Blood Siphon HP%: "..tostring(hp))
                 if hp >= 70 then
                     return 0.0
                 else
