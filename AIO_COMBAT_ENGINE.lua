@@ -831,7 +831,7 @@ do------------------------------------------------------------------------------
 
     if engine.running then
 
-        if API.IsTargeting() do
+        if API.IsTargeting() then
         
             buffCheck()
             prayerCheck()
