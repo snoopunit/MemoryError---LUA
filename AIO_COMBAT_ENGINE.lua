@@ -831,19 +831,13 @@ do------------------------------------------------------------------------------
 
     if engine.running then
 
-        setupPrayers()
-        chargePackCheck()
-        healthCheck()
-        porterCheck()
-
-        while API.IsTargeting() and API.Read_LoopyLoop() do
+        if API.IsTargeting() do
         
             buffCheck()
             prayerCheck()
             healthCheck()
             fd_reflection_check()
             aggressionCheck()
-            --rejuvenate()
             specialAttack()  
             essenceOfFinality()
             noteStuff()
@@ -852,17 +846,16 @@ do------------------------------------------------------------------------------
                 moveToEnemy() 
                 hasMoved = true
             end
-            antiban()
-            API.RandomSleep2(2400, 0, 0)  
+            
+        else
+
+            setupPrayers()
+            chargePackCheck()
+            porterCheck()
 
         end     
   
-        prayerCheck()
-        if waitForDeath then 
-            API.RandomSleep2(3000, 0, 0)
-        end
-        openLoot()
-        noteStuff()
+    
     else
         API.RandomSleep2(600, 0, 600)
     end
