@@ -434,7 +434,7 @@ local function drawGUI()
     if imguibox5.return_click then
         imguibox5.return_click = false
         useAoE = not useAoE
-        engine.useAoE = useAoE  -- 🔑 keep engine in sync
+        engine.useAoE = useAoE 
         API.logDebug("Use AoE abilities: " .. tostring(useAoE))
     end
 
