@@ -218,7 +218,7 @@ function CombatEngine:acquireTargetIfNeeded()
         local ok = API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, closestNPC)
         local elapsed = nowMs() - startTime
         if ok then
-            API.logDebug("Engaging: " .. chosenName .. " | acquireTargetIfNeeded took " .. elapsed .. "ms")
+            API.logDebug("Engaging: " .. chosenName .. " took " .. elapsed .. "ms")
             self.primaryTargetName = chosenName
         else
             API.logDebug("Attack failed on: " .. chosenName .. " | time " .. elapsed .. "ms")
