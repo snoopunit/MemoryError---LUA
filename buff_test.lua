@@ -81,8 +81,8 @@ API.SetDrawLogs(true)
 
 while API.Read_LoopyLoop() do
 
-    --dumpTargetDebuffs()
-    DumpAllBuffs()
+    dumpTargetDebuffs()
+    --DumpAllBuffs()
     API.RandomSleep2(2400, 0, 0)
 
 end
