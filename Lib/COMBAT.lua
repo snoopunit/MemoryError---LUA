@@ -305,7 +305,7 @@ function CombatEngine:castAbility(name)
     if not ab or not desc then return end
     if not self:isAbilityReady(name) then return end
 
-    if API.DoAction_Ability_Direct(ab, 1, 0) then
+    if API.DoAction_Ability_Direct(ab, 1, API.OFF_ACT_GeneralInterface_route) then
         local t = nowMs()
         desc.lastUsed = t
         self.lastGcdEnd = t + math.floor(self.gcd * 1000)
