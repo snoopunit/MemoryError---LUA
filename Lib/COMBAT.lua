@@ -276,7 +276,7 @@ function CombatEngine.new()
             adrenaline = 0,
             lastUsed = -1e12,
             expectedValue = function(_, engine)
-                return engine:hasConjure("skeletonWarrior") and 0.0 or 8.0
+                return engine:hasConjure("skeletonWarrior") and 0.0 or 1.8
             end
         },
 
@@ -296,7 +296,7 @@ function CombatEngine.new()
             adrenaline = 0,
             lastUsed = -1e12,
             expectedValue = function(_, engine)
-                return engine:hasConjure("putridZombie") and 0.0 or 8.0
+                return engine:hasConjure("putridZombie") and 0.0 or 1.8
             end
         },
 
@@ -316,7 +316,7 @@ function CombatEngine.new()
             adrenaline = 0,
             lastUsed = -1e12,
             expectedValue = function(_, engine)
-                return engine:hasConjure("vengefulGhost") and 0.0 or 8.0
+                return engine:hasConjure("vengefulGhost") and 0.0 or 1.8
             end
         },
 
@@ -340,7 +340,7 @@ function CombatEngine.new()
             adrenaline = 0,
             lastUsed = -1e12,
             expectedValue = function(_, engine)
-                return engine:hasConjure("phantomGuardian") and 0.0 or 8.0
+                return engine:hasConjure("phantomGuardian") and 0.0 or 1.8
             end
         },
 
@@ -657,7 +657,6 @@ function CombatEngine:castAbility(name)
         if desc.onCast then desc.onCast(self) end
     end
 end
-
 
 function CombatEngine:planAndQueue()
     if not API.IsTargeting() then return end
