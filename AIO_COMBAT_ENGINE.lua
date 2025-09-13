@@ -42,7 +42,7 @@
 
 local API = require("api")
 local UTILS = require("utils")
-local CombatEngine = require("combat_engine")
+local CombatEngine = require("lib/COMBAT")
 local engine = CombatEngine.new()
 
 ------------------------SCRIPT SETUP------------------------
