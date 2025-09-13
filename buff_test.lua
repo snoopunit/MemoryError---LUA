@@ -49,7 +49,7 @@ local function fd_reflection_check()
     end
 end
 
---- Dumps all debuff IDs from the current target's Buff_stack
+-- Dumps all debuff IDs from the current target's Buff_stack, skipping any -1 entries
 function dumpTargetDebuffs()
     local tInfo = API.ReadTargetInfo(true)
     if not tInfo or not tInfo.Buff_stack then
@@ -61,20 +61,27 @@ function dumpTargetDebuffs()
 
     for i, buff in ipairs(tInfo.Buff_stack) do
         if type(buff) == "number" then
-            -- most likely just an ID
-            API.logDebug(string.format("[%d] ID=%d", i, buff))
+            -- skip numeric -1 sentinels
+            if buff ~= -1 then
+                API.logDebug(string.format("[%d] ID=%d", i, buff))
+            end
+
         elseif type(buff) == "table" then
-            -- defensive: try to show what fields exist
-            local id   = buff.id or buff.ID or "?"
-            local text = buff.text or buff.conv_text or "?"
-            API.logDebug(string.format("[%d] ID=%s | Text=%s", i, tostring(id), tostring(text)))
+            -- read possible id fields
+            local raw_id = buff.id or buff.ID
+            local num_id = tonumber(raw_id)
+
+            -- skip when id is exactly -1
+            if num_id ~= -1 then
+                local text = buff.text or buff.conv_text or "?"
+                API.logDebug(string.format("[%d] ID=%s | Text=%s", i, tostring(raw_id or "?"), tostring(text)))
+            end
+
         else
             API.logDebug(string.format("[%d] Unexpected buff type: %s", i, type(buff)))
         end
     end
 end
-
-
 
 API.Write_LoopyLoop(true)
 API.SetDrawLogs(true)
