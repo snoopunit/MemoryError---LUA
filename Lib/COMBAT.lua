@@ -406,6 +406,7 @@ function CombatEngine.new()
             lastUsed = -1e12, 
             expectedValue = function()
                 local hp = API.GetHPrecent()
+                API.logInfo("Blood Siphon: "..tostring(hp))
                 if hp >= 70 then
                     return 0.0
                 else
