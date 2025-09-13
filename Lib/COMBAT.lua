@@ -411,9 +411,11 @@ function CombatEngine.new()
 
         ["Conjure Undead Army"] = {
             adrenaline = 0,
+            cd = 60000,
             lastUsed = -1e12,
             expectedValue = function(_, engine)
-                return engine:hasAnyConjure() and 0.0 or 10.0
+                if engine:isSkillQueued("Conjure Undead Army") then return 0.0 end
+                if engine:hasAnyConjure() then return 0.0 else return 10.0 end
             end
         },
 
