@@ -62,6 +62,10 @@ function CombatEngine.new()
     -- gcd seconds (engine side pacing; bar cooldowns still gate real readiness)
     self.gcd = 1.8
 
+    self.pendingCast = nil
+    self.pendingUntil = 600
+
+
     -- abilities (keep cd=0; rely on bar cooldowns to avoid bad assumptions)
     self.abilities = {
         ["Touch of Death"] = {
@@ -630,15 +634,27 @@ function CombatEngine:castAbility(name)
     local ab = self.abilityBars[name]
     local desc = self.abilities[name]
     if not ab or not desc then return end
+
+    -- Don’t double-cast while pending
+    local t = nowMs()
+    if self.pendingCast == name and t < self.pendingUntil then
+        return
+    end
+
     if not self:isAbilityReady(name) then return end
 
     if API.DoAction_Ability_Direct(ab, 1, API.OFF_ACT_GeneralInterface_route) then
-        local t = nowMs()
+        -- Mark as pending
+        self.pendingCast = name
+        self.pendingUntil = t + 600 -- allow ~0.6s for client to register
+
+        -- Record use
         desc.lastUsed = t
         self.lastGcdEnd = t + math.floor(self.gcd * 1000)
+
         API.logInfo("Casting: "..name)
         if desc.onCast then
-            desc.onCast(self) -- pass engine so it can manipulate other state
+            desc.onCast(self)
         end
     end
 end
@@ -668,6 +684,19 @@ function CombatEngine:update()
     if not self.running then return end
 
     local t0 = nowMs()
+
+    -- Reset pending if ability shows cooldown now
+    if self.pendingCast then
+        local ab = self.abilityBars[self.pendingCast]
+        if ab and ab.cooldown_timer and ab.cooldown_timer > 0 then
+            self.pendingCast = nil
+            self.pendingUntil = 0
+        elseif nowMs() > self.pendingUntil then
+            -- safety reset if too long
+            self.pendingCast = nil
+            self.pendingUntil = 0
+        end
+    end
 
     -- Buff polling
     local t1 = nowMs()
