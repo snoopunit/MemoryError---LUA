@@ -54,7 +54,7 @@ API.SetDrawLogs(true)
 
 while API.Read_LoopyLoop() do
 
-    fd_reflection_check()
+    DumpAllBuffs()
     API.RandomSleep2(2400, 0, 0)
 
 end
