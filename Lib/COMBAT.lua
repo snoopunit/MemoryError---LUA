@@ -736,13 +736,13 @@ function CombatEngine:update()
     -- Buff polling
     local t1 = nowMs()
     self:pollBuffsIfNeeded()
-    API.logDebug("Buff poll took " .. (nowMs()-t1) .. "ms")
+    --API.logDebug("Buff poll took " .. (nowMs()-t1) .. "ms")
 
     -- Ability planning
     t1 = nowMs()
     if API.IsTargeting() then
         self:planAndQueue()
-        API.logDebug("PlanAndQueue took " .. (nowMs()-t1) .. "ms")
+        --API.logDebug("PlanAndQueue took " .. (nowMs()-t1) .. "ms")
     else
         self:acquireTargetIfNeeded()
     end
@@ -751,9 +751,9 @@ function CombatEngine:update()
     -- Run scheduled jobs (casts, delayed stuff)
     t1 = nowMs()
     self:processScheduler()
-    API.logDebug("Scheduler took " .. (nowMs()-t1) .. "ms")
+    --API.logDebug("Scheduler took " .. (nowMs()-t1) .. "ms")
 
-    API.logDebug("Engine update total " .. (nowMs()-t0) .. "ms")
+    --API.logDebug("Engine update total " .. (nowMs()-t0) .. "ms")
 end
 
 function CombatEngine:start()
