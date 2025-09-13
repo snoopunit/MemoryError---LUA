@@ -202,10 +202,19 @@ function CombatEngine:acquireTargetIfNeeded()
     local startTime = nowMs()
     local closestNPC
     local closestDist = 9999
+    local chosenName
 
-    -- Assume priorityList is already ordered (highest → lowest priority)
-    for _, name in ipairs(self.priorityList) do
-        local npcs = API.ReadAllObjectsArray({1}, {-1}, {name})
+    -- priorityList is a map { ["Name"] = weight }
+    -- we’ll sort names by weight first
+    local prios = {}
+    for name, weight in pairs(self.priorityList) do
+        table.insert(prios, { name = name, weight = weight })
+    end
+    table.sort(prios, function(a, b) return a.weight < b.weight end)
+
+    -- check each name in priority order
+    for _, entry in ipairs(prios) do
+        local npcs = API.ReadAllObjectsArray({1}, {-1}, {entry.name})
         if npcs and #npcs > 0 then
             for _, npc in ipairs(npcs) do
                 if npc.Life and npc.Life > 0 then
@@ -213,26 +222,29 @@ function CombatEngine:acquireTargetIfNeeded()
                     if d < closestDist then
                         closestNPC = npc
                         closestDist = d
+                        chosenName = entry.name
                     end
                 end
             end
         end
         if closestNPC then
-            break -- ✅ stop at the first priority name that has a living NPC
+            break -- ✅ stop after first priority with a living NPC
         end
     end
 
+    -- try to attack
     if closestNPC then
         local ok = API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, closestNPC)
         local elapsed = nowMs() - startTime
         if ok then
-            API.logDebug("Engaging: " .. closestNPC.Name .. " | acquireTargetIfNeeded took " .. elapsed .. "ms")
-            self.primaryTargetName = closestNPC.Name
+            API.logDebug("Engaging: " .. chosenName .. " | acquireTargetIfNeeded took " .. elapsed .. "ms")
+            self.primaryTargetName = chosenName
         else
-            API.logDebug("Attack failed on: " .. closestNPC.Name .. " | time " .. elapsed .. "ms")
+            API.logDebug("Attack failed on: " .. chosenName .. " | time " .. elapsed .. "ms")
         end
     end
 end
+
 
 
 
