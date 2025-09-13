@@ -68,7 +68,7 @@ function CombatEngine.new()
 
     -- abilities (keep cd=0; rely on bar cooldowns to avoid bad assumptions)
     self.abilities = {
-        ["Touch of Death"] = {
+        --[[["Touch of Death"] = {
             adrenaline = 9,
             cd = 14400, -- 14.4s cooldown
             lastUsed = -1e12,
@@ -106,7 +106,7 @@ function CombatEngine.new()
                     return 0.0
                 end
             end 
-        },
+        },]]
 
         ["Finger of Death"] = {
             adrenaline = -60,
