@@ -640,28 +640,27 @@ function CombatEngine:acquireTargetIfNeeded()
 end
 
 -- ======== Ability Casting ========
+function CombatEngine:getAbilityBar(name)
+    -- Always fetch fresh so cooldown/enabled reflect current UI state
+    local ab = API.GetABs_name(name, true)
+    self.abilityBars[name] = ab -- optional: keep latest for inspections
+    return ab
+end     
 
 function CombatEngine:isAbilityReady(name)
-    local ab = self.abilityBars[name]
+    local ab   = self:getAbilityBar(name)
     local desc = self.abilities[name]
     if not ab or not desc then return false end
-    if not ab.enabled then return false end
-
-    -- Check client-side cooldown timer
+    if ab.enabled == false then return false end
     if ab.cooldown_timer and ab.cooldown_timer > 0 then return false end
-
-    -- Check engine’s own cooldown tracker
     local t = nowMs()
     if t - desc.lastUsed < (desc.cd or 0) then return false end
-
-    -- Check global cooldown
     if t < self.lastGcdEnd then return false end
-
     return true
 end
 
 function CombatEngine:castAbility(name)
-    local ab = self.abilityBars[name]
+    local ab   = self:getAbilityBar(name)
     local desc = self.abilities[name]
     if not ab or not desc then return end
 
@@ -696,46 +695,49 @@ end
 
 function CombatEngine:planAndQueue()
     if not API.IsTargeting() then return end
-
-    -- skip picking a new ability while a cast is pending
-    if self.pendingCast and nowMs() < self.pendingUntil then
-        return
-    end
+    if self.pendingCast and nowMs() < self.pendingUntil then return end
 
     local bestName, bestScore = nil, -math.huge
-    local evTable = {}
+    local evReady, evSkipped = {}, {}
 
     for name, desc in pairs(self.abilities) do
-        if self:isAbilityReady(name) then
-            local score = (desc.expectedValue and desc.expectedValue(desc, self, nil)) or 0
-            evTable[#evTable+1] = { name = name, score = score }
-            if score > bestScore then
-                bestScore = score
-                bestName = name
+        local ab = self:getAbilityBar(name)
+        if not ab then
+            evSkipped[#evSkipped+1] = {name=name, reason="no bar entry"}
+        else
+            local ready, reason = self:isAbilityReady(name), nil
+            if ready then
+                local score = (desc.expectedValue and desc.expectedValue(desc, self, nil)) or 0
+                evReady[#evReady+1] = { name = name, score = score }
+                if score > bestScore then bestScore, bestName = score, name end
+            else
+                -- mirror isAbilityReady logic for reason
+                if ab.enabled == false then reason = "disabled"
+                elseif ab.cooldown_timer and ab.cooldown_timer > 0 then reason = "cd "..tostring(ab.cooldown_timer)
+                elseif nowMs() - (desc.lastUsed or 0) < (desc.cd or 0) then reason = "engine cd"
+                elseif nowMs() < self.lastGcdEnd then reason = "gcd"
+                else reason = "unknown" end
+                evSkipped[#evSkipped+1] = { name=name, reason=reason }
             end
         end
     end
 
-    -- Debug: print EV table (only ready abilities)
-    if #evTable > 0 then
-        print("=== Ready Ability EVs ===")
-        for _, entry in ipairs(evTable) do
-            print(string.format("%-20s : %.2f", entry.name, entry.score))
-        end
-        if bestName then
-            print(string.format(">>> Chosen ability: %s (EV = %.2f)", bestName, bestScore))
-        else
-            print(">>> No ability chosen")
-        end
-        print("=========================")
+    -- Debug dump
+    print("=== Ability EVs (READY) ===")
+    for _, e in ipairs(evReady) do
+        print(string.format("%-22s : %.2f", e.name, e.score))
+    end
+    print("=== Skipped (NOT READY) ===")
+    for _, e in ipairs(evSkipped) do
+        print(string.format("%-22s : %s", e.name, e.reason))
     end
 
-    if bestName then
+    if bestName and bestScore > 0 then
         self:schedule(0, function() self:castAbility(bestName) end)
+    else
+        -- no positive-EV choice; do nothing this tick
     end
 end
-
-
 
 -- ======== Update Loop ========
 
