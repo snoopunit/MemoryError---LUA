@@ -49,7 +49,8 @@ local function fd_reflection_check()
     end
 end
 
-local function dumpTargetDebuffs()
+--- Dumps all debuff IDs from the current target's Buff_stack
+function dumpTargetDebuffs()
     local tInfo = API.ReadTargetInfo(true)
     if not tInfo or not tInfo.Buff_stack then
         API.logDebug("No target debuffs found (no target or Buff_stack missing)")
@@ -57,13 +58,22 @@ local function dumpTargetDebuffs()
     end
 
     API.logDebug("=== Target Debuffs Dump ===")
+
     for i, buff in ipairs(tInfo.Buff_stack) do
-        local id   = buff.id or buff.ID or "?"
-        local name = buff.name or buff.conv_text or buff.text or "?"
-        local raw  = buff.text or ""
-        API.logDebug(string.format("[%d] ID=%s | Name=%s | Text=%s", i, tostring(id), tostring(name), tostring(raw)))
+        if type(buff) == "number" then
+            -- most likely just an ID
+            API.logDebug(string.format("[%d] ID=%d", i, buff))
+        elseif type(buff) == "table" then
+            -- defensive: try to show what fields exist
+            local id   = buff.id or buff.ID or "?"
+            local text = buff.text or buff.conv_text or "?"
+            API.logDebug(string.format("[%d] ID=%s | Text=%s", i, tostring(id), tostring(text)))
+        else
+            API.logDebug(string.format("[%d] Unexpected buff type: %s", i, type(buff)))
+        end
     end
 end
+
 
 
 API.Write_LoopyLoop(true)

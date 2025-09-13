@@ -57,21 +57,49 @@ function CombatEngine.new()
 
     -- abilities (keep cd=0; rely on bar cooldowns to avoid bad assumptions)
     self.abilities = {
-        ["Necromancy Auto"] = { adrenaline = 0,  lastUsed = -1e12, expectedValue = function() return 1.0 end },
-        ["Touch of Death"]  = { adrenaline = 9,  lastUsed = -1e12, expectedValue = function() return 1.0 end },
-        ["Soul Sap"]        = { adrenaline = 9,  lastUsed = -1e12, expectedValue = function() return 1.0 end },
+        ["Necromancy Auto"] = { 
+            adrenaline = 0, 
+            cd = 0, 
+            lastUsed = -1e12, 
+            expectedValue = function() return 1.0 end },
+        ["Touch of Death"]  = { 
+            adrenaline = 9, 
+            cd = 0, 
+            lastUsed = -1e12, 
+            expectedValue = function() return 1.0 end },
+        ["Soul Sap"]        = { 
+            adrenaline = 9, 
+            cd = 0, 
+            lastUsed = -1e12, 
+            expectedValue = function() return 1.0 end },
 
         ["Finger of Death"] = {
-            adrenaline = -60, lastUsed = -1e12,
+            adrenaline = -60,
+            lastUsed   = -1e12,
             expectedValue = function(selfDesc, engine)
+                -- make sure buffs are up to date
+                engine:pollBuffsIfNeeded()
+
                 local nec = engine.buffs.necrosis
-                local stacks = (nec and nec.stacks) or 0
+                if not nec or not nec.found then
+                    return 0.0 -- no stacks, don’t use
+                end
+
+                local stacks = nec.stacks or 0
+
+                -- Adjust the effective adrenaline cost based on stacks:
                 local costReduction = math.min(stacks * 10, 60)
-                -- reflect runtime cost (optional)
                 selfDesc._runtimeAdren = -60 + costReduction
-                return 3.0 -- 300% baseline
+
+                -- EV calculation: only “worth it” at 6 stacks
+                if stacks == 6 then
+                    return 10.0
+                else
+                    return 0.1 -- very low priority otherwise
+                end
             end
         },
+
 
         ["Volley of Souls"] = {
             adrenaline = 0, lastUsed = -1e12,
@@ -96,7 +124,18 @@ function CombatEngine.new()
                 return engine:hasConjure("skeletonWarrior") and 0.0 or 8.0
             end
         },
-        ["Command Skeleton Warrior"]  = { adrenaline = 0, lastUsed=-1e12, expectedValue=function() return 3.5 end },
+        ["Command Skeleton Warrior"] = {
+            adrenaline = 0,
+            cd = 15000,  -- cooldown in ms (15s)
+            lastUsed = -1e12,
+            expectedValue = function(_, engine)
+                if engine:hasConjure("skeletonWarrior") and engine:isAbilityReady("Command Skeleton Warrior") then
+                    return 8.5
+                end
+                return 0.0
+            end
+        },
+
 
         ["Conjure Putrid Zombie"] = {
             adrenaline = 0,
@@ -105,7 +144,17 @@ function CombatEngine.new()
                 return engine:hasConjure("putridZombie") and 0.0 or 8.0
             end
         },
-        ["Command Putrid Zombie"]     = { adrenaline = 0, lastUsed=-1e12, expectedValue=function() return 4.0 end },
+        ["Command Putrid Zombie"] = {
+            adrenaline = 0,
+            cd = 15000, -- ms
+            lastUsed = -1e12,
+            expectedValue = function(_, engine)
+                if engine:hasConjure("putridZombie") and engine:isAbilityReady("Command Putrid Zombie") then
+                    return 3.5
+                end
+                return 0.0
+            end
+        },
 
         ["Conjure Vengeful Ghost"] = {
             adrenaline = 0,
@@ -114,11 +163,15 @@ function CombatEngine.new()
                 return engine:hasConjure("vengefulGhost") and 0.0 or 8.0
             end
         },
-        ["Command Vengeful Ghost"]    = {
-            adrenaline=0, lastUsed=-1e12,
-            expectedValue=function(_, engine, target)
-                -- If you wire enemy debuffs later, bump value while Haunted is active.
-                return 0.1
+        ["Command Vengeful Ghost"] = {
+            adrenaline = 0,
+            cd = 15000, -- ms
+            lastUsed = -1e12,
+            expectedValue = function(_, engine)
+                if engine:hasConjure("vengefulGhost") and engine:isAbilityReady("Command Vengeful Ghost") then
+                    return 9.0 -- can tweak if Haunted debuff is detected on enemy
+                end
+                return 0.0
             end
         },
 
@@ -129,7 +182,17 @@ function CombatEngine.new()
                 return engine:hasConjure("phantomGuardian") and 0.0 or 8.0
             end
         },
-        ["Command Phantom Guardian"]  = { adrenaline = 0, lastUsed=-1e12, expectedValue=function() return 3.0 end },
+        ["Command Phantom Guardian"] = {
+            adrenaline = 0,
+            cd = 15000, -- ms
+            lastUsed = -1e12,
+            expectedValue = function(_, engine)
+                if engine:hasConjure("phantomGuardian") and engine:isAbilityReady("Command Phantom Guardian") then
+                    return 3.0
+                end
+                return 0.0
+            end
+        },
 
         -- Spectral Scythe stages (rough EVs)
         ["Spectral Scythe (Stage 1)"] = { adrenaline = -10, lastUsed=-1e12, expectedValue=function() return 0.8 end },
