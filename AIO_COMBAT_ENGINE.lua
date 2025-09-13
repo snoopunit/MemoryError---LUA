@@ -171,6 +171,7 @@ local lootDrops = true
 local noteItems = true
 local useSpecial = true
 local waitForDeath = false
+local useAoE = false
 
 ----GUI----
 local imguiBackground = API.CreateIG_answer()
@@ -228,6 +229,13 @@ imguibox4.box_start = FFPOINT.new(start_x + checkbox_width + checkbox_spacing, 8
 imguibox4.box_size = FFPOINT.new(checkbox_width, 30, 0)
 imguibox4.tooltip_text = "Wait for enemies to die and drop loot"
 imguibox4.box_ticked = waitForDeath
+
+local imguibox5 = API.CreateIG_answer()
+imguibox5.box_name = "Use AoE"
+imguibox5.box_start = FFPOINT.new(start_x + 2 * (checkbox_width + checkbox_spacing), 85, 0)  
+imguibox5.box_size = FFPOINT.new(checkbox_width, 30, 0)
+imguibox5.tooltip_text = "Toggle AoE abilities (Death Skulls, Bloat, Soul Strike, Scythe)"
+imguibox5.box_ticked = useAoE
 
 local imguiTargetLabel = API.CreateIG_answer()
 imguiTargetLabel.box_name = "CurrentTarget"
@@ -421,6 +429,13 @@ local function drawGUI()
         imguibox4.return_click = false
         waitForDeath = not waitForDeath
         API.logDebug("Wait for Death: "..tostring(waitForDeath))
+    end
+
+    if imguibox5.return_click then
+        imguibox5.return_click = false
+        useAoE = not useAoE
+        engine.useAoE = useAoE  -- 🔑 keep engine in sync
+        API.logDebug("Use AoE abilities: " .. tostring(useAoE))
     end
 
     API.DrawSquareFilled(imguiBackground)
@@ -783,13 +798,10 @@ do------------------------------------------------------------------------------
             chargePackCheck()
             porterCheck()
 
-            API.RandomSleep2(600, 0, 600)
-
         end     
-  
-    
-    else
-        API.RandomSleep2(600, 0, 600)
+
     end
+
+    API.RandomSleep2(50,0,0)
 
 end----------------------------------------------------------------------------------
