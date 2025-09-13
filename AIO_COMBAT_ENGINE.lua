@@ -166,13 +166,11 @@ table.insert(lootlist, ITEMS.MISC.black_dhide)
 --table.insert(lootlist, ITEMS.MISC.gs_shard2)
 --table.insert(lootlist, ITEMS.MISC.gs_shard3)
 
-
+local enemyToFight = nil
 local lootDrops = true
 local noteItems = true
 local useSpecial = true
 local waitForDeath = false
-local moveToTarget = false
-local hasMoved = false
 
 ----GUI----
 local imguiBackground = API.CreateIG_answer()
@@ -230,13 +228,6 @@ imguibox4.box_start = FFPOINT.new(start_x + checkbox_width + checkbox_spacing, 8
 imguibox4.box_size = FFPOINT.new(checkbox_width, 30, 0)
 imguibox4.tooltip_text = "Wait for enemies to die and drop loot"
 imguibox4.box_ticked = waitForDeath
-
-local imguibox5 = API.CreateIG_answer()
-imguibox5.box_name = "Move"
-imguibox5.box_start = FFPOINT.new(start_x + 2 * (checkbox_width + checkbox_spacing), 85, 0)  
-imguibox5.box_size = FFPOINT.new(checkbox_width, 30, 0)
-imguibox5.tooltip_text = "Move closer to enemies for area loot"
-imguibox5.box_ticked = moveToTarget
 
 local imguiTargetLabel = API.CreateIG_answer()
 imguiTargetLabel.box_name = "CurrentTarget"
@@ -320,59 +311,6 @@ local function uniqueEnemies()
     return uniqueEnemies
 end
 
-local function moveToEnemy()
-    if not moveToTarget then return end
-
-    local player = API.PlayerCoord()
-    local enemyX, enemyY, enemyZ = currentTarget.Tile_XYZ.x, currentTarget.Tile_XYZ.y, currentTarget.Tile_XYZ.z
-
-    local direction = {
-        x = player.x - enemyX,
-        y = player.y - enemyY,
-        z = player.z - enemyZ
-    }
-
-    local length = math.sqrt(direction.x^2 + direction.y^2 + direction.z^2)
-
-    if length <= 4 then
-        return 
-    end
-    
-    local unit_vector = {
-        x = direction.x / length,
-        y = direction.y / length,
-        z = direction.z / length
-    }
-    
-    local target_tile = WPOINT:new(
-        math.floor(enemyX + 2 * unit_vector.x),
-        math.floor(enemyY + 2 * unit_vector.y),
-        math.floor(enemyZ + 2 * unit_vector.z)
-    )
-    
-    
-    API.DoAction_WalkerW(target_tile)
-    API.RandomSleep2(1600, 0, 250)
-
-    if length > 14 then
-        if UTILS.canUseSkill("Surge") then
-            activateAbility("Surge")
-            API.RandomSleep2(600, 0, 250)
-        end
-    elseif length >= 7 then
-        if UTILS.canUseSkill("Barge") then
-            activateAbility("Barge")
-            API.RandomSleep2(600, 0, 250)
-        end
-    end
-  
-    while API.ReadPlayerMovin2() do
-        API.RandomSleep2(600, 0, 250)
-        attack()
-    end
-
-end
-
 local function checkGroundItems()
     local items = API.ReadAllObjectsArray({3}, lootlist, {})
 
@@ -442,6 +380,7 @@ local function drawGUI()
         imguicombo.return_click = false
         local chosen = imguicombo.string_value
         if chosen and chosen ~= "Select an enemy" then
+            enemyToFight = chosen
             engine.priorityList = { [chosen] = 1 }
             imguiTarget.string_value = chosen
             API.logDebug("Selected Target: " .. chosen)
@@ -482,12 +421,6 @@ local function drawGUI()
         imguibox4.return_click = false
         waitForDeath = not waitForDeath
         API.logDebug("Wait for Death: "..tostring(waitForDeath))
-    end
-
-    if imguibox5.return_click then
-        imguibox5.return_click = false
-        moveToTarget = not moveToTarget
-        API.logDebug("Move to target: "..tostring(moveToTarget))
     end
 
     API.DrawSquareFilled(imguiBackground)
@@ -827,7 +760,6 @@ while(API.Read_LoopyLoop())
 do-----------------------------------------------------------------------------------
 
     drawGUI()
-    hasMoved = false
 
     if engine.running then
 
@@ -842,10 +774,6 @@ do------------------------------------------------------------------------------
             essenceOfFinality()
             noteStuff()
             openLoot()
-            if not hasMoved then 
-                moveToEnemy() 
-                hasMoved = true
-            end
             
         else
 
