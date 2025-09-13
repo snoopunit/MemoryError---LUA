@@ -710,12 +710,6 @@ function CombatEngine:planAndQueue()
         end
     end
 
-    -- Debug dump
-    print("=== Ability EVs (READY) ===")
-    for _, e in ipairs(evReady) do
-        print(string.format("%-22s : %.2f", e.name, e.score))
-    end
-
     if bestName and bestScore > 0 then
         self:schedule(0, function() self:castAbility(bestName) end)
     else
