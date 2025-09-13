@@ -31,7 +31,6 @@ function CombatEngine.new()
 
     -- targeting
     self.primaryTargetName = nil      -- we keep the name; Interact finds the nearest
-    self.awaitingCombat = false       -- prevent re-spamming Attack while the click resolves
     self.scanInterval = 2400          -- ms between acquisition attempts
     self.lastScanTime = 0
 
@@ -177,24 +176,6 @@ function CombatEngine:processScheduler()
 end
 
 -- ======== Targeting (scheduled) ========
-
-local function iterPriorityNamesSorted(priorityList)
-    -- produce array of names sorted by priority ASC (lower number first)
-    local arr = {}
-    for name, pri in pairs(priorityList) do
-        table.insert(arr, { name=name, pri=pri })
-    end
-    table.sort(arr, function(a,b)
-        if a.pri == b.pri then return a.name < b.name end
-        return a.pri < b.pri
-    end)
-    local i = 0
-    return function()
-        i = i + 1
-        local r = arr[i]
-        return r and r.name or nil
-    end
-end
 
 function CombatEngine:acquireTargetIfNeeded()
     if API.IsTargeting() then return end
