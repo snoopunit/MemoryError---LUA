@@ -33,6 +33,7 @@ function CombatEngine.new()
     self.primaryTargetName = nil      -- we keep the name; Interact finds the nearest
     self.scanInterval = 2400          -- ms between acquisition attempts
     self.lastScanTime = 0
+    self.useAoE = false
 
     -- priorities: lower number = higher priority
     self.priorityList = {
@@ -63,21 +64,51 @@ function CombatEngine.new()
 
     -- abilities (keep cd=0; rely on bar cooldowns to avoid bad assumptions)
     self.abilities = {
-        --[[["Necromancy Auto"] = { 
-            adrenaline = 0, 
-            cd = 0, 
-            lastUsed = -1e12, 
-            expectedValue = function() return 1.0 end },]]
-        ["Touch of Death"]  = { 
+        ["Touch of Death"] = {
+            adrenaline = 9,
+            cd = 14400, -- 14.4s cooldown in ms
+            lastUsed = -1e12,
+            expectedValue = function(_, engine)
+                -- Skip if adrenaline already full
+                local adren = API.GetAddreline_() or 0
+                if adren >= 100 then
+                    return 0.0
+                end
+
+                -- Get necrosis stacks from tracked buffs
+                local nec = engine.buffs.necrosis
+                local stacks = (nec and nec.stacks) or 0
+
+                if stacks >= 6 then
+                    return 1.0 -- low priority at 6+
+                else
+                    return 8.0 -- high priority if <6 stacks
+                end
+            end
+        },
+
+        ["Soul Sap"] = { 
             adrenaline = 9, 
-            cd = 0, 
+            cd = 5400, -- 5.4s cooldown in ms
             lastUsed = -1e12, 
-            expectedValue = function() return 3.0 end },
-        ["Soul Sap"]        = { 
-            adrenaline = 9, 
-            cd = 0, 
-            lastUsed = -1e12, 
-            expectedValue = function() return 4.0 end },
+            expectedValue = function(_, engine)
+                -- Skip if adrenaline is already capped
+                local adren = API.GetAddreline_() or 0
+                if adren >= 100 then
+                    return 0.0
+                end
+
+                -- Check residual souls buff stacks
+                local rs = engine.buffs.residualSouls
+                local stacks = (rs and rs.stacks) or 0
+
+                if stacks < 3 then
+                    return 6.0 
+                else
+                    return 1.0  
+                end
+            end 
+        },
 
         ["Finger of Death"] = {
             adrenaline = -60,
@@ -98,37 +129,145 @@ function CombatEngine.new()
                 selfDesc._runtimeAdren = -60 + costReduction
 
                 -- EV calculation: only “worth it” at 6 stacks
-                if stacks == 12 then
+                if stacks >= 6 then
                     return 10.0
-                elseif stacks == 6 then
-                    return 9.0
                 else
                     return 0.5 -- very low priority otherwise
                 end
             end
         },
+
         ["Volley of Souls"] = {
-            adrenaline = 0, lastUsed = -1e12,
+            adrenaline = 0, 
+            cd = 0, -- if it has one, add it here in ms
+            lastUsed = -1e12,
             expectedValue = function(_, engine)
                 local rs = engine.buffs.residualSouls
                 local stacks = (rs and rs.stacks) or 0
-                return 1.5 * stacks -- ~150% per stack
+
+                if stacks == 3 then
+                    return 7.0   
+                else
+                    return 0.0   
+                end
             end
         },
 
-        ["Bloat"] =          { 
-            adrenaline = -20, 
+        ["Bloat"] = {
+            adrenaline = -20,
+            lastUsed = -1e12,
+            expectedValue = function(_, engine)
+                if not engine.useAoE then return 0.0 end
+                -- If the target has the "bloated" debuff, deprioritize it
+                if engine:targetHasDebuff(engine.enemyDebuffIDs.bloated) then
+                    return 0.1 -- very low priority
+                else
+                    return 9.5 -- strong priority if target is not bloated
+                end
+            end
+        },
+
+        ["Soul Strike"] = { 
+            adrenaline = 0,   
             lastUsed = -1e12, 
-            expectedValue = function() 
-                return 6.5 
+            expectedValue = function(_, engine)
+                -- Don’t cast if target has immune_stun debuff
+                if engine:targetHasDebuff(engine.enemyDebuffIDs.immune_stun) then 
+                    return 0.0 
+                end
+                
+                -- Only cast when AoE mode is active
+                if not engine.useAoE then 
+                    return 0.0 
+                end
+
+                -- Require at least 1 Residual Souls stack
+                local rs = engine.buffs.residualSouls
+                local stacks = (rs and rs.stacks) or 0
+                if stacks < 1 then 
+                    return 0.0 
+                end
+
+                return 2.5 
             end 
         },
-        ["Soul Strike"] =    { adrenaline = 0,   lastUsed = -1e12, expectedValue = function() return 1.5 end },
 
-        ["Death Skulls"] =   { adrenaline = -100,lastUsed = -1e12, expectedValue = function() return 5.0 end },
-        ["Living Death"] =   { adrenaline = -100,lastUsed = -1e12, expectedValue = function() return 0   end },
+        ["Death Skulls"] = {
+            adrenaline = -100,
+            cd = 60000, -- 60 seconds (ms)
+            lastUsed = -1e12,
+            expectedValue = function(_, engine)
+                -- Must have AoE mode enabled
+                if not engine.useAoE then return 0.0 end
 
-        -- Conjures / Commands (utility EVs kept low or situational)
+                -- Must be at 100% adrenaline
+                if API.GetAddreline_() < 100 then return 0.0 end
+
+                -- Respect cooldown
+                local t = API.SystemTime()
+                local desc = engine.abilities["Death Skulls"]
+                if desc and (t - desc.lastUsed < (desc.cd or 0)) then
+                    return 0.0
+                end
+
+                return 10.0
+            end
+        },
+
+        ["Living Death"] = {
+            adrenaline = -100,
+            cd = 90000, -- 1m30s
+            lastUsed = -1e12,
+            expectedValue = function(_, engine)
+                -- Require 100% adrenaline
+                if API.GetAddreline_() < 100 then return 0.0 end
+
+                -- Respect Living Death’s own cooldown
+                local t = API.SystemTime()
+                local desc = engine.abilities["Living Death"]
+                if desc and (t - desc.lastUsed < (desc.cd or 0)) then
+                    return 0.0
+                end
+
+                -- Check if Death Skulls is available
+                local ds = engine.abilities["Death Skulls"]
+                local dsReady = false
+                if ds and engine:isAbilityReady("Death Skulls") then
+                    if engine.useAoE then
+                        dsReady = true
+                    end
+                end
+
+                -- Only cast if Death Skulls is NOT ready or AoE disabled
+                if dsReady then
+                    return 0.0
+                end
+
+                return 9.0 -- high priority when eligible
+            end,
+            onCast = function(engine)
+                local t = API.SystemTime()
+
+                -- Reset Death Skulls & Touch of Death immediately
+                if engine.abilities["Death Skulls"] then
+                    engine.abilities["Death Skulls"].lastUsed = -1e12
+                    engine.abilities["Death Skulls"].cd = 12000 -- 12s during LD
+                end
+                if engine.abilities["Touch of Death"] then
+                    engine.abilities["Touch of Death"].lastUsed = -1e12
+                end
+
+                -- After 30s, restore Death Skulls’ normal cooldown
+                engine:schedule(30000, function()
+                    if engine.abilities["Death Skulls"] then
+                        engine.abilities["Death Skulls"].cd = 60000 -- back to 1m
+                    end
+                end)
+
+                API.logDebug("Living Death cast: DS/ToD reset, DS cd reduced to 12s for 30s")
+            end
+        },
+
         ["Conjure Skeleton Warrior"] = {
             adrenaline = 0,
             lastUsed = -1e12,
@@ -136,6 +275,7 @@ function CombatEngine.new()
                 return engine:hasConjure("skeletonWarrior") and 0.0 or 8.0
             end
         },
+
         ["Command Skeleton Warrior"] = {
             adrenaline = 0,
             cd = 15000,  -- cooldown in ms (15s)
@@ -148,7 +288,6 @@ function CombatEngine.new()
             end
         },
 
-
         ["Conjure Putrid Zombie"] = {
             adrenaline = 0,
             lastUsed = -1e12,
@@ -156,6 +295,7 @@ function CombatEngine.new()
                 return engine:hasConjure("putridZombie") and 0.0 or 8.0
             end
         },
+
         ["Command Putrid Zombie"] = {
             adrenaline = 0,
             cd = 15000, -- ms
@@ -175,6 +315,7 @@ function CombatEngine.new()
                 return engine:hasConjure("vengefulGhost") and 0.0 or 8.0
             end
         },
+
         ["Command Vengeful Ghost"] = {
             adrenaline = 0,
             cd = 15000, -- ms
@@ -198,6 +339,7 @@ function CombatEngine.new()
                 return engine:hasConjure("phantomGuardian") and 0.0 or 8.0
             end
         },
+
         ["Command Phantom Guardian"] = {
             adrenaline = 0,
             cd = 15000, -- ms
@@ -210,10 +352,58 @@ function CombatEngine.new()
             end
         },
 
-        -- Spectral Scythe stages (rough EVs)
-        ["Spectral Scythe (Stage 1)"] = { adrenaline = -10, lastUsed=-1e12, expectedValue=function() return 0.8 end },
-        ["Spectral Scythe (Stage 2)"] = { adrenaline = -20, lastUsed=-1e12, expectedValue=function() return 2.0 end },
-        ["Spectral Scythe (Stage 3)"] = { adrenaline = -30, lastUsed=-1e12, expectedValue=function() return 2.5 end },
+        ["Spectral Scythe"] = {
+            adrenaline = -10,
+            cd = 15000, -- 15s full cooldown
+            lastUsed = -1e12,
+            stage = 0,       -- 0 = fresh, 1 = after first cast, 2 = after second
+            stageExpire = 0, -- timestamp when the chain expires
+
+            expectedValue = function(self, engine)
+                if not engine.useAoE then return 0.0 end
+
+                local rs = engine.buffs.residualSouls
+                local stacks = (rs and rs.stacks) or 0
+                if stacks >= 3 then return 0.0 end
+
+                -- Check if stage window expired
+                if nowMs() > self.stageExpire then
+                    self.stage = 0
+                end
+
+                -- EV by stage
+                if self.stage == 0 then
+                    return 2.5
+                elseif self.stage == 1 then
+                    return 3.0
+                elseif self.stage == 2 then
+                    return 3.5
+                end
+
+                return 0.0
+            end,
+
+            onCast = function(self, engine)
+                local t = nowMs()
+
+                -- If chain expired, reset to stage 0 before advancing
+                if t > self.stageExpire then
+                    self.stage = 0
+                end
+
+                -- Advance stage
+                if self.stage < 2 then
+                    self.stage = self.stage + 1
+                    -- Reset chain expiry window (15s to use next stage)
+                    self.stageExpire = t + 15000
+                else
+                    -- Stage 3 cast -> reset to 0 and trigger full cooldown
+                    self.stage = 0
+                    self.lastUsed = t
+                    self.stageExpire = 0
+                end
+            end
+        },
 
         ["Conjure Undead Army"] = {
             adrenaline = 0,
@@ -222,6 +412,7 @@ function CombatEngine.new()
                 return engine:hasAnyConjure() and 0.0 or 10.0
             end
         },
+
         ["Blood Siphon"] = { 
             adrenaline = 0,
             cd = 45000, 
@@ -241,13 +432,14 @@ function CombatEngine.new()
                 end
             end 
         },
+
         ["Death Grasp"] = {
             adrenaline = -25,        -- Costs 25% adrenaline
             cd = 30000,              -- 30 sec cooldown (ms)
             lastUsed = -1e12,
             expectedValue = function(_, engine)
                 -- Don’t cast if target has immune_stun debuff
-                if engine:targetHasDebuff(engine.debuffIDs.immune_stun) then
+                if engine:targetHasDebuff(engine.enemyDebuffIDs.immune_stun) then
                     return 0.0
                 end
 
@@ -343,7 +535,6 @@ function CombatEngine:targetHasDebuff(id)
     return false
 end
 
-
 -- ======== Scheduler ========
 
 function CombatEngine:schedule(delayMs, job)
@@ -414,9 +605,6 @@ function CombatEngine:acquireTargetIfNeeded()
     end
 end
 
-
-
-
 -- ======== Ability Casting ========
 
 function CombatEngine:isAbilityReady(name)
@@ -438,7 +626,6 @@ function CombatEngine:isAbilityReady(name)
     return true
 end
 
-
 function CombatEngine:castAbility(name)
     local ab = self.abilityBars[name]
     local desc = self.abilities[name]
@@ -450,6 +637,9 @@ function CombatEngine:castAbility(name)
         desc.lastUsed = t
         self.lastGcdEnd = t + math.floor(self.gcd * 1000)
         API.logInfo("Casting: "..name)
+        if desc.onCast then
+            desc.onCast(self) -- pass engine so it can manipulate other state
+        end
     end
 end
 
@@ -502,7 +692,6 @@ function CombatEngine:update()
     API.logDebug("Engine update total " .. (nowMs()-t0) .. "ms")
 end
 
-
 function CombatEngine:start()
     if self.running then return end
     self.running = true
@@ -513,7 +702,6 @@ function CombatEngine:start()
 
     API.logDebug("Combat engine started")
 end
-
 
 function CombatEngine:stop()
     self.running = false
