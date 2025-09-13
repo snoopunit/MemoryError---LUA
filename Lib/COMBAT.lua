@@ -117,8 +117,7 @@ function CombatEngine.new()
                 local stacks = (nec and nec.stacks) or 0
 
                 if stacks >= 6 then
-                    API.logDebug("FOD #Stacks: "..tostring(stacks))
-                    return 10.0   -- spender: fire only at cap
+                    return 10.0   
                 else
                     return 0.0
                 end
@@ -134,7 +133,6 @@ function CombatEngine.new()
                 local stacks = (rs and rs.stacks) or 0
 
                 if stacks == 3 then
-                    API.logDebug("Volley #Stacks: "..tostring(stacks))
                     return 9.0   -- spender: high priority when capped
                 else
                     return 0.0
@@ -161,6 +159,7 @@ function CombatEngine.new()
             adrenaline = 0,   
             lastUsed = -1e12, 
             expectedValue = function(_, engine)
+                
                 -- Don’t cast if target has immune_stun debuff
                 if engine:targetHasDebuff(engine.enemyDebuffIDs.immune_stun) then 
                     return 0.0 
@@ -221,16 +220,7 @@ function CombatEngine.new()
                 end
 
                 -- Check if Death Skulls is available
-                local ds = engine.abilities["Death Skulls"]
-                local dsReady = false
-                if ds and engine:isAbilityReady("Death Skulls") then
-                    if engine.useAoE then
-                        dsReady = true
-                    end
-                end
-
-                -- Only cast if Death Skulls is NOT ready or AoE disabled
-                if dsReady then
+                if engine:isAbilityReady("Death Skulls") then
                     return 0.0
                 end
 
@@ -273,7 +263,7 @@ function CombatEngine.new()
             lastUsed = -1e12,
             expectedValue = function(_, engine)
                 if engine:hasConjure("skeletonWarrior") and engine:isAbilityReady("Command Skeleton Warrior") then
-                    return 8.5
+                    return 3.5
                 end
                 return 0.0
             end
@@ -287,17 +277,18 @@ function CombatEngine.new()
             end
         },]]
 
-        ["Command Putrid Zombie"] = {
+        --[[["Command Putrid Zombie"] = {
             adrenaline = 0,
             cd = 15000, -- ms
             lastUsed = -1e12,
             expectedValue = function(_, engine)
+                engine:pollBuffsIfNeeded()
                 if engine:hasConjure("putridZombie") and engine:isAbilityReady("Command Putrid Zombie") then
-                    return 3.5
+                    return 1.5
                 end
                 return 0.0
             end
-        },
+        },]]
 
         --[[["Conjure Vengeful Ghost"] = {
             adrenaline = 0,
@@ -312,6 +303,7 @@ function CombatEngine.new()
             cd = 15000, -- ms
             lastUsed = -1e12,
             expectedValue = function(_, engine)
+                engine:pollBuffsIfNeeded()
                 if engine:hasConjure("vengefulGhost") and engine:isAbilityReady("Command Vengeful Ghost") then
                     if engine:targetHasDebuff(engine.enemyDebuffIDs.haunted) then return 0.0 else return 4.0 end
                 end
@@ -326,17 +318,18 @@ function CombatEngine.new()
             end
         },]]
 
-        ["Command Phantom Guardian"] = {
+        --[[["Command Phantom Guardian"] = {
             adrenaline = 0,
             cd = 15000, -- ms
             lastUsed = -1e12,
             expectedValue = function(_, engine)
+                engine:pollBuffsIfNeeded()
                 if engine:hasConjure("phantomGuardian") and engine:isAbilityReady("Command Phantom Guardian") then
                     return 3.0
                 end
                 return 0.0
             end
-        },
+        },]]
 
         ["Spectral Scythe"] = {
             adrenaline = -10,
@@ -410,7 +403,6 @@ function CombatEngine.new()
                 if hp >= 70 then
                     return 0.0
                 else
-                    API.logDebug("Blood Siphon: "..tostring(hp))
                     return 7.5
                 end
             end 
