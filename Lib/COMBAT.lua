@@ -70,46 +70,38 @@ function CombatEngine.new()
     self.abilities = {
         ["Touch of Death"] = {
             adrenaline = 9,
-            cd = 14400, -- 14.4s cooldown in ms
+            cd = 14400, -- 14.4s cooldown
             lastUsed = -1e12,
             expectedValue = function(_, engine)
-                -- Skip if adrenaline already full
-                local adren = API.GetAddreline_()
-                if adren >= 100 then
-                    return 0.0
-                end
+                local adren = API.GetAddreline_() or 0
+                if adren >= 100 then return 0.0 end
 
-                -- Get necrosis stacks from tracked buffs
                 local nec = engine.buffs.necrosis
-                local stacks = (nec and nec.stacks)
+                local stacks = (nec and nec.stacks) or 0
 
-                if stacks >= 6 then
-                    return 1.0 -- low priority at 6+
+                if stacks < 6 then
+                    return 7.5   -- slightly higher than Soul Sap
                 else
-                    return 8.0 -- high priority if <6 stacks
+                    return 0.5
                 end
             end
         },
 
         ["Soul Sap"] = { 
-            adrenaline = 9, 
-            cd = 5400, -- 5.4s cooldown in ms
-            lastUsed = -1e12, 
+            adrenaline = 9,
+            cd = 5400, -- 5.4s cooldown
+            lastUsed = -1e12,
             expectedValue = function(_, engine)
-                -- Skip if adrenaline is already capped
-                local adren = API.GetAddreline_()
-                if adren >= 100 then
-                    return 0.0
-                end
+                local adren = API.GetAddreline_() or 0
+                if adren >= 100 then return 0.0 end
 
-                -- Check residual souls buff stacks
                 local rs = engine.buffs.residualSouls
-                local stacks = (rs and rs.stacks)
+                local stacks = (rs and rs.stacks) or 0
 
                 if stacks < 3 then
-                    return 6.0 
+                    return 6.0  -- lower than ToD, still good filler
                 else
-                    return 1.0  
+                    return 0.0
                 end
             end 
         },
@@ -118,44 +110,33 @@ function CombatEngine.new()
             adrenaline = -60,
             lastUsed   = -1e12,
             expectedValue = function(selfDesc, engine)
-                -- make sure buffs are up to date
                 engine:pollBuffsIfNeeded()
-
                 local nec = engine.buffs.necrosis
-                if not nec or not nec.found then
-                    return 0.0 -- no stacks, don’t use
-                end
+                local stacks = (nec and nec.stacks) or 0
 
-                local stacks = nec.stacks or 0
-
-                -- Adjust the effective adrenaline cost based on stacks:
-                local costReduction = math.min(stacks * 10, 60)
-                selfDesc._runtimeAdren = -60 + costReduction
-
-                -- EV calculation: only “worth it” at 6 stacks
                 if stacks >= 6 then
-                    return 10.0
+                    return 10.0   -- spender: fire only at cap
                 else
-                    return 0.0 -- very low priority otherwise
+                    return 0.0
                 end
             end
         },
 
         ["Volley of Souls"] = {
-            adrenaline = 0, 
-            cd = 0, -- if it has one, add it here in ms
+            adrenaline = 0,
             lastUsed = -1e12,
             expectedValue = function(_, engine)
                 local rs = engine.buffs.residualSouls
                 local stacks = (rs and rs.stacks) or 0
 
                 if stacks == 3 then
-                    return 7.0   
+                    return 9.0   -- spender: high priority when capped
                 else
-                    return 0.0   
+                    return 0.0
                 end
             end
         },
+
 
         ["Bloat"] = {
             adrenaline = -20,
