@@ -774,12 +774,16 @@ do------------------------------------------------------------------------------
             essenceOfFinality()
             noteStuff()
             openLoot()
+
+            API.RandomSleep2(600, 0, 600)
             
         else
 
             setupPrayers()
             chargePackCheck()
             porterCheck()
+
+            API.RandomSleep2(600, 0, 600)
 
         end     
   
