@@ -89,13 +89,31 @@ function CombatEngine.new()
         ["Living Death"] =   { adrenaline = -100,lastUsed = -1e12, expectedValue = function() return 0   end },
 
         -- Conjures / Commands (utility EVs kept low or situational)
-        ["Conjure Skeleton Warrior"]  = { adrenaline = 0, lastUsed=-1e12, expectedValue=function() return 0 end },
+        ["Conjure Skeleton Warrior"] = {
+            adrenaline = 0,
+            lastUsed = -1e12,
+            expectedValue = function(_, engine)
+                return engine:hasConjure("skeletonWarrior") and 0.0 or 8.0
+            end
+        },
         ["Command Skeleton Warrior"]  = { adrenaline = 0, lastUsed=-1e12, expectedValue=function() return 3.5 end },
 
-        ["Conjure Putrid Zombie"]     = { adrenaline = 0, lastUsed=-1e12, expectedValue=function() return 0 end },
+        ["Conjure Putrid Zombie"] = {
+            adrenaline = 0,
+            lastUsed = -1e12,
+            expectedValue = function(_, engine)
+                return engine:hasConjure("putridZombie") and 0.0 or 8.0
+            end
+        },
         ["Command Putrid Zombie"]     = { adrenaline = 0, lastUsed=-1e12, expectedValue=function() return 4.0 end },
 
-        ["Conjure Vengeful Ghost"]    = { adrenaline = 0, lastUsed=-1e12, expectedValue=function() return 0 end },
+        ["Conjure Vengeful Ghost"] = {
+            adrenaline = 0,
+            lastUsed = -1e12,
+            expectedValue = function(_, engine)
+                return engine:hasConjure("vengefulGhost") and 0.0 or 8.0
+            end
+        },
         ["Command Vengeful Ghost"]    = {
             adrenaline=0, lastUsed=-1e12,
             expectedValue=function(_, engine, target)
@@ -104,7 +122,13 @@ function CombatEngine.new()
             end
         },
 
-        ["Conjure Phantom Guardian"]  = { adrenaline = 0, lastUsed=-1e12, expectedValue=function() return 0   end },
+        ["Conjure Phantom Guardian"] = {
+            adrenaline = 0,
+            lastUsed = -1e12,
+            expectedValue = function(_, engine)
+                return engine:hasConjure("phantomGuardian") and 0.0 or 8.0
+            end
+        },
         ["Command Phantom Guardian"]  = { adrenaline = 0, lastUsed=-1e12, expectedValue=function() return 3.0 end },
 
         -- Spectral Scythe stages (rough EVs)
@@ -112,8 +136,24 @@ function CombatEngine.new()
         ["Spectral Scythe (Stage 2)"] = { adrenaline = -20, lastUsed=-1e12, expectedValue=function() return 2.0 end },
         ["Spectral Scythe (Stage 3)"] = { adrenaline = -30, lastUsed=-1e12, expectedValue=function() return 2.5 end },
 
-        ["Conjure Undead Army"]       = { adrenaline = 0, lastUsed=-1e12, expectedValue=function() return 0 end },
-        ["Blood Siphon"]              = { adrenaline = 0, lastUsed=-1e12, expectedValue=function() return 2.0 end },
+        ["Conjure Undead Army"] = {
+            adrenaline = 0,
+            lastUsed = -1e12,
+            expectedValue = function(_, engine)
+                return engine:hasAnyConjure() and 0.0 or 10.0
+            end
+        },
+        ["Blood Siphon"]              = { 
+            adrenaline = 0, 
+            lastUsed=-1e12, 
+            expectedValue=function()
+                local hp = API.GetHPrecent() or 100
+                -- Clamp to 0–100 just in case API gives weird values
+                if hp > 100 then hp = 100 end
+                if hp < 0 then hp = 0 end
+                return (100 - hp) / 10
+            end 
+        },
     }
 
     -- cache ability-bar entries once
@@ -155,6 +195,23 @@ function CombatEngine:pollBuffsIfNeeded()
     end
     inferStacks(self.buffs.necrosis)
     inferStacks(self.buffs.residualSouls)
+end
+
+--- Check if any conjure buff is active
+--- @return boolean
+function CombatEngine:hasAnyConjure()
+    return (self.buffs.skeletonWarrior and self.buffs.skeletonWarrior.found)
+        or (self.buffs.vengefulGhost and self.buffs.vengefulGhost.found)
+        or (self.buffs.putridZombie and self.buffs.putridZombie.found)
+        or (self.buffs.phantomGuardian and self.buffs.phantomGuardian.found)
+end
+
+--- Check if a specific conjure is active
+--- @param name string One of: "skeletonWarrior","vengefulGhost","putridZombie","phantomGuardian"
+--- @return boolean
+function CombatEngine:hasConjure(name)
+    local b = self.buffs[name]
+    return b and b.found or false
 end
 
 -- ======== Scheduler ========
