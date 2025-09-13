@@ -74,14 +74,14 @@ function CombatEngine.new()
             lastUsed = -1e12,
             expectedValue = function(_, engine)
                 -- Skip if adrenaline already full
-                local adren = API.GetAddreline_() or 0
+                local adren = API.GetAddreline_()
                 if adren >= 100 then
                     return 0.0
                 end
 
                 -- Get necrosis stacks from tracked buffs
                 local nec = engine.buffs.necrosis
-                local stacks = (nec and nec.stacks) or 0
+                local stacks = (nec and nec.stacks)
 
                 if stacks >= 6 then
                     return 1.0 -- low priority at 6+
@@ -97,14 +97,14 @@ function CombatEngine.new()
             lastUsed = -1e12, 
             expectedValue = function(_, engine)
                 -- Skip if adrenaline is already capped
-                local adren = API.GetAddreline_() or 0
+                local adren = API.GetAddreline_()
                 if adren >= 100 then
                     return 0.0
                 end
 
                 -- Check residual souls buff stacks
                 local rs = engine.buffs.residualSouls
-                local stacks = (rs and rs.stacks) or 0
+                local stacks = (rs and rs.stacks)
 
                 if stacks < 3 then
                     return 6.0 
