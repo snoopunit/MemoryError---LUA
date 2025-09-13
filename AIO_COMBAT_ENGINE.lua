@@ -822,11 +822,11 @@ API.Write_LoopyLoop(true)
 API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(4)
-drawGUI()
 
 while(API.Read_LoopyLoop())
 do-----------------------------------------------------------------------------------
 
+    drawGUI()
     hasMoved = false
 
     if engine.running then
