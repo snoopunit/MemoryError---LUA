@@ -703,20 +703,39 @@ function CombatEngine:planAndQueue()
     end
 
     local bestName, bestScore = nil, -math.huge
+    local evTable = {}
+
     for name, desc in pairs(self.abilities) do
         if self:isAbilityReady(name) then
             local score = (desc.expectedValue and desc.expectedValue(desc, self, nil)) or 0
+            evTable[#evTable+1] = { name = name, score = score }
             if score > bestScore then
                 bestScore = score
                 bestName = name
             end
+        else
+            -- still record it for visibility
+            evTable[#evTable+1] = { name = name, score = "not ready" }
         end
     end
+
+    -- Debug: print EV table
+    print("=== Ability EVs ===")
+    for _, entry in ipairs(evTable) do
+        print(string.format("%-20s : %s", entry.name, tostring(entry.score)))
+    end
+    if bestName then
+        print(string.format(">>> Chosen ability: %s (EV = %.2f)", bestName, bestScore))
+    else
+        print(">>> No ability chosen")
+    end
+    print("===================")
 
     if bestName then
         self:schedule(0, function() self:castAbility(bestName) end)
     end
 end
+
 
 -- ======== Update Loop ========
 
