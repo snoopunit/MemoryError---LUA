@@ -6,7 +6,7 @@ local engine = CombatEngine.new()
 
 -- optional: define priority targets (boss > adds)
 engine.priorityList = {
-    "Training dummy"
+    ["Training dummy"] = 1
 }
 
 API.Write_LoopyLoop(true)
