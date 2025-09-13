@@ -114,6 +114,8 @@ function CombatEngine.new()
                 local nec = engine.buffs.necrosis
                 local stacks = (nec and nec.stacks) or 0
 
+                API.logDebug("FOD #Stacks: "..tostring(stacks))
+
                 if stacks >= 6 then
                     return 10.0   -- spender: fire only at cap
                 else
@@ -136,7 +138,6 @@ function CombatEngine.new()
                 end
             end
         },
-
 
         ["Bloat"] = {
             adrenaline = -20,
