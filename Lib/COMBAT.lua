@@ -425,16 +425,11 @@ function CombatEngine.new()
             lastUsed = -1e12, 
             expectedValue = function()
                 local hp = API.GetHPrecent() or 100
-                if hp > 100 then hp = 100 end
-                if hp < 0 then hp = 0 end
 
-                if hp >= 50 then
-                    -- Scale linearly from 0.0 at 100% to 10.0 at 50%
-                    local ev = (100 - hp) / 5.0
-                    return ev
+                if hp >= 70 then
+                    return 0.0
                 else
-                    -- At or below 50%, force max priority
-                    return 10.0
+                    return 7.5
                 end
             end 
         },
