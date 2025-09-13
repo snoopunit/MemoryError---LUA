@@ -73,13 +73,14 @@ function CombatEngine.new()
             cd = 14400, -- 14.4s cooldown
             lastUsed = -1e12,
             expectedValue = function(_, engine)
-                local adren = API.GetAddreline_() or 0
-                if adren >= 100 then return 0.0 end
+                if API.GetAddreline_() == 100 then return 0.0 end
 
+                engine:pollBuffsIfNeeded()
                 local nec = engine.buffs.necrosis
                 local stacks = (nec and nec.stacks) or 0
 
                 if stacks < 6 then
+                    API.logDebug("ToD #Stacks: "..tostring(stacks))
                     return 7.5   -- slightly higher than Soul Sap
                 else
                     return 0.5
@@ -92,13 +93,14 @@ function CombatEngine.new()
             cd = 5400, -- 5.4s cooldown
             lastUsed = -1e12,
             expectedValue = function(_, engine)
-                local adren = API.GetAddreline_() or 0
-                if adren >= 100 then return 0.0 end
+                if API.GetAddreline_() == 100 then return 0.0 end
 
+                engine:pollBuffsIfNeeded()
                 local rs = engine.buffs.residualSouls
                 local stacks = (rs and rs.stacks) or 0
 
                 if stacks < 3 then
+                    API.logDebug("Soul Sap #Stacks: "..tostring(stacks))
                     return 6.0  -- lower than ToD, still good filler
                 else
                     return 0.0
@@ -114,9 +116,8 @@ function CombatEngine.new()
                 local nec = engine.buffs.necrosis
                 local stacks = (nec and nec.stacks) or 0
 
-                API.logDebug("FOD #Stacks: "..tostring(stacks))
-
                 if stacks >= 6 then
+                    API.logDebug("FOD #Stacks: "..tostring(stacks))
                     return 10.0   -- spender: fire only at cap
                 else
                     return 0.0
@@ -128,10 +129,12 @@ function CombatEngine.new()
             adrenaline = 0,
             lastUsed = -1e12,
             expectedValue = function(_, engine)
+                engine:pollBuffsIfNeeded()
                 local rs = engine.buffs.residualSouls
                 local stacks = (rs and rs.stacks) or 0
 
                 if stacks == 3 then
+                    API.logDebug("Volley #Stacks: "..tostring(stacks))
                     return 9.0   -- spender: high priority when capped
                 else
                     return 0.0
@@ -167,6 +170,7 @@ function CombatEngine.new()
                     return 0.0 
                 end
 
+                engine:pollBuffsIfNeeded()
                 -- Require at least 1 Residual Souls stack
                 local rs = engine.buffs.residualSouls
                 local stacks = (rs and rs.stacks) or 0
@@ -498,7 +502,6 @@ function CombatEngine:isSkillQueued(skill)
     return skillbar.slot == slot
 end
 
-
 -- ======== Buffs ========
 
 function CombatEngine:parseBbar(bbar)
@@ -534,6 +537,7 @@ end
 --- Check if any conjure buff is active
 --- @return boolean
 function CombatEngine:hasAnyConjure()
+    self:pollBuffsIfNeeded()
     return (self.buffs.skeletonWarrior and self.buffs.skeletonWarrior.found)
         or (self.buffs.vengefulGhost and self.buffs.vengefulGhost.found)
         or (self.buffs.putridZombie and self.buffs.putridZombie.found)
@@ -544,6 +548,7 @@ end
 --- @param name string One of: "skeletonWarrior","vengefulGhost","putridZombie","phantomGuardian"
 --- @return boolean
 function CombatEngine:hasConjure(name)
+    self:pollBuffsIfNeeded()
     local b = self.buffs[name]
     return b and b.found or false
 end
@@ -688,7 +693,6 @@ function CombatEngine:castAbility(name)
         end
     end
 end
-
 
 function CombatEngine:planAndQueue()
     if not API.IsTargeting() then return end
