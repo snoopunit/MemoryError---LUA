@@ -214,7 +214,7 @@ function CombatEngine:acquireTargetIfNeeded()
     end
 
     -- try to attack
-    if closestNPC and closestNPC.Life > 0 then
+    if closestNPC then
 
         local ok = API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, closestNPC)
         local elapsed = nowMs() - startTime
