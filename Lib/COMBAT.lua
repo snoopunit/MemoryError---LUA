@@ -309,7 +309,7 @@ function CombatEngine:castAbility(name)
         local t = nowMs()
         desc.lastUsed = t
         self.lastGcdEnd = t + math.floor(self.gcd * 1000)
-        API.logDebug("Casting: "..name)
+        API.logInfo("Casting: "..name)
     end
 end
 
