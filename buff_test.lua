@@ -62,13 +62,11 @@ function dumpTargetDebuffs()
     for i, buff in ipairs(tInfo.Buff_stack) do
         if type(buff) == "number" then
             -- skip numeric -1 sentinels
-            API.logDebug("it's a number")
             if buff ~= -1 then
                 API.logDebug(string.format("[%d] ID=%d", i, buff))
             end
 
         elseif type(buff) == "table" then
-            API.logDebug("it's a table")
             -- read possible id fields
             local raw_id = buff.id or buff.ID
             local num_id = tonumber(raw_id)
