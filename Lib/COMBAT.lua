@@ -33,7 +33,7 @@ function CombatEngine.new()
     self.primaryTargetName = nil      -- we keep the name; Interact finds the nearest
     self.scanInterval = 2400          -- ms between acquisition attempts
     self.lastScanTime = 0
-    self.useAoE = true
+    self.useAoE = false
 
     -- priorities: lower number = higher priority
     self.priorityList = {
