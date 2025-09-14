@@ -788,7 +788,7 @@ do------------------------------------------------------------------------------
     local metrics = {
         {"Script","All-In-One Combat - by Klamor"},
         {"Kills:", engine.kills},
-        {"Kills/H:", tostring(engine.KillsPerHour())},
+        {"Kills/H:", tostring(engine:KillsPerHour())},
     }
     API.DrawTable(metrics)
     ----METRICS----
