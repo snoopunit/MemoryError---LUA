@@ -602,62 +602,63 @@ function CombatEngine:acquireTargetIfNeeded()
     if API.IsTargeting() then return end
 
     local t = nowMs()
-    -- Cooldown check: only scan every scanInterval ms
     if t - (self.lastScanTime or 0) < (self.scanInterval or 2000) then
         return
     end
     self.lastScanTime = t
 
     local startTime = t
-    local closestNPC
-    local closestDist = 9999
     local chosenName
 
-    -- priorityList is a map { ["Name"] = weight }
-    -- we’ll sort names by weight first
+    -- build sorted priority list
     local prios = {}
     for name, weight in pairs(self.priorityList) do
         table.insert(prios, { name = name, weight = weight })
     end
     table.sort(prios, function(a, b) return a.weight < b.weight end)
 
-    -- check each name in priority order
     for _, entry in ipairs(prios) do
         local npcs = API.ReadAllObjectsArray({1}, {-1}, {entry.name})
-        if npcs and #npcs > 0 then
+
+        if type(npcs) ~= "table" then
+            API.logWarn("[Targeting] ReadAllObjectsArray returned " .. tostring(npcs) .. " for " .. entry.name)
+        elseif #npcs == 0 then
+            API.logDebug("[Targeting] No NPCs found for " .. entry.name)
+        else
+            local bestNpc, bestDist
             for _, npc in ipairs(npcs) do
-                if npc.Life and npc.Life == 8500 then
+                if npc and npc.Life and npc.Life > 0 then
                     local d = npc.Distance or 999
-                    if d < closestDist then
-                        closestNPC = npc
-                        closestDist = d
-                        chosenName = entry.name
+                    if not bestDist or d < bestDist then
+                        bestNpc, bestDist = npc, d
                     end
                 end
             end
-        end
-        if closestNPC then
-            break -- ✅ stop after first priority with a living NPC
-        end
-    end
 
-    -- try to attack
-    if closestNPC then
-        local ok = API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, closestNPC)
-        local elapsed = nowMs() - startTime
-        if ok then
-            API.logDebug("Engaging: " .. chosenName .. " took " .. elapsed .. "ms")
-            self.primaryTargetName = chosenName
-            if self.isFirstTarget then 
-                self.isFirstTarget = false
-            else
-                self.kills = (self.kills + 1)
+            if bestNpc then
+                chosenName = entry.name
+                local ok, actErr = pcall(function()
+                    return API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, bestNpc)
+                end)
+
+                local elapsed = nowMs() - startTime
+                if ok and actErr then
+                    API.logDebug("Engaging: " .. chosenName .. " took " .. elapsed .. "ms")
+                    self.primaryTargetName = chosenName
+                    if self.isFirstTarget then
+                        self.isFirstTarget = false
+                    else
+                        self.kills = self.kills + 1
+                    end
+                else
+                    API.logWarn("Attack failed on: " .. tostring(chosenName) .. " | time " .. elapsed .. "ms | err=" .. tostring(actErr))
+                end
+                return -- ✅ done; don’t hold NPC refs
             end
-        else
-            API.logDebug("Attack failed on: " .. chosenName .. " | time " .. elapsed .. "ms")
         end
     end
 end
+
 
 -- ======== Ability Casting ========
 function CombatEngine:getAbilityBar(name)
