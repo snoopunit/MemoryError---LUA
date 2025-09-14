@@ -547,7 +547,9 @@ function CombatEngine:parseBbar(bbar)
 end
 
 function CombatEngine:getBuff(name)
+    API.logDebug("Getting buff: "..tostring(name))
     local id = self.trackedBuffIDs[name]
+    API.logDebug("Buff ID: "..tostring(id))
     if not id then return nil end
     local ok, b = pcall(function()
         return API.Buffbar_GetIDstatus(id, false)
