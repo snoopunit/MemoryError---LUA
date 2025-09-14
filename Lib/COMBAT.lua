@@ -917,18 +917,31 @@ function CombatEngine:start()
     self.running = true
 
     local function safeUpdate()
-        local ok, err = xpcall(function() self:update() end, debug.traceback)
-        if not ok then
-            local msg = "[ENGINE CRASH] (" .. type(err) .. ") "
-            if err then
-                msg = msg .. tostring(err)
+        local ok, err = xpcall(function()
+            self:update()
+        end, function(e)
+            local msg = "[ENGINE CRASH] (" .. type(e) .. ") "
+            if type(e) == "userdata" then
+                local s = tostring(e)
+                if s:find("AllObject") then
+                    msg = msg .. "[AllObject?] " .. s
+                else
+                    msg = msg .. s
+                end
+            elseif type(e) == "string" then
+                msg = msg .. e
             else
                 msg = msg .. "Unknown error"
             end
-            API.logWarn(msg)
+            return msg
+        end)
+
+        if not ok then
+            API.logWarn(err)
             self.running = false
         end
     end
+
 
     TickEvent.Register(safeUpdate)
 end
