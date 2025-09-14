@@ -521,7 +521,7 @@ end
 
 local function buffCheck()
        
-    if API.InvItemcount_String("Ancient elven ritual shard") > 0 then
+    if Inventory:GetItemAmount("Ancient elven ritual shard") > 0 then
         if not hasDeBuff(DEBUFFS.Elven_Shard) and (API.GetPrayPrecent() <= 63) then
             --API.DoAction_Interface(0x2e,0xa95e,1,1670,110,-1,API.OFF_ACT_GeneralInterface_route)
             activateAbility("Ancient elven ritual shard")
@@ -529,14 +529,14 @@ local function buffCheck()
         end 
     end
 
-    if API.InvItemcount_String("Enhanced Excalibur") > 0 then
+    if Inventory:GetItemAmount("Enhanced Excalibur") > 0 then
         if not hasDeBuff(DEBUFFS.Enh_Excalibur) and (API.GetHPrecent() <= 80) then
             activateAbility("Enhanced Excalibur")
             API.RandomSleep2(600, 50, 300)
         end 
     end
     
-    if API.InvItemcount_String("Super antifire") > 0 then
+    if Inventory:GetItemAmount("Super antifire") > 0 then
         if not hasBuff(BUFFS.Super_Antifire) then
             API.logDebug("Using super antifire")
             activateAbility("Super antifire potion")
@@ -549,7 +549,7 @@ local function buffCheck()
         end
     end
 
-    if API.InvItemcount_String("Overload") > 0 then
+    if Inventory:GetItemAmount("Overload") > 0 then
         if not hasBuff(BUFFS.Overload) then
             API.logDebug("Using Overloads")
             activateAbility("Overload potion")
