@@ -172,6 +172,7 @@ local noteItems = true
 local useSpecial = true
 local waitForDeath = false
 local useAoE = false
+local runLoop = false
 
 ----GUI----
 local imguiBackground = API.CreateIG_answer()
@@ -377,6 +378,7 @@ local function drawGUI()
                 engine.priorityList = { [imguicombo.string_value] = 1 }
             end
             engine:start()
+            runLoop = true
             API.logDebug("Combat Engine: STARTED")
         else
             engine:stop()
@@ -774,25 +776,25 @@ API.SetMaxIdleTime(4)
 while(API.Read_LoopyLoop())
 do-----------------------------------------------------------------------------------
 
-    drawGUI()
+    if runloop then 
 
-    if engine.running then
+        if engine.running then
 
-        if API.IsTargeting() then
+            if API.IsTargeting() then
 
-            --setupPrayers()
-            --chargePackCheck()
-            buffCheck()
-            --prayerCheck()
-            healthCheck()
-            fd_reflection_check()
-            noteStuff()
-            --porterCheck()
+                buffCheck()
+                healthCheck()
+                fd_reflection_check()
+                noteStuff()
+                
 
-            API.RandomSleep2(600, 0, 600)
+                API.RandomSleep2(600, 0, 600)
 
-        end     
+            end     
 
+        end
+    else
+        drawGUI()
     end
 
     API.RandomSleep2(600,0,0)
