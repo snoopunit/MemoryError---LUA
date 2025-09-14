@@ -773,7 +773,7 @@ function CombatEngine:update()
     -- Run scheduled jobs (casts, delayed stuff)
     t1 = nowMs()
     self:processScheduler()
-    --API.logDebug("Scheduler took " .. (nowMs()-t1) .. "ms")
+    API.logDebug("Scheduler size: " .. tostring(#self.scheduler))
 
     --API.logDebug("Engine update total " .. (nowMs()-t0) .. "ms")
 end
