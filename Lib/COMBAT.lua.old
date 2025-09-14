@@ -6,39 +6,17 @@ CombatEngine.__index = CombatEngine
 -- ========= Helpers =========
 
 local function parseDuration(text)
-    if type(text) ~= "string" then return 0 end
+    if not text then return 0 end
     local m, s = text:match("(%d+):(%d+)")
-    if m and s then
-        local mm = tonumber(m) or 0
-        local ss = tonumber(s) or 0
-        return mm * 60 + ss
-    end
+    if m and s then return tonumber(m) * 60 + tonumber(s) end
     local n = text:match("(%d+)%s*s")
-    if n then return tonumber(n) or 0 end
+    if n then return tonumber(n) end
     return 0
 end
 
 local function nowMs()
     -- Your logs show millisecond values; treat SystemTime() as ms.
-    local ok, t = pcall(API.SystemTime)
-    if ok and type(t) == "number" then return t end
-    return 0
-end
-
-local function isTable(x) return type(x) == "table" end
-local function safeStr(x) return type(x) == "string" and x or "" end
-local function safeNumber(x) return type(x) == "number" and x or 0 end
-
-local function safeCall(label, fn)
-    local ok, res = xpcall(fn, function(e)
-        local msg = "[" .. (label or "safe") .. "] " .. tostring(e)
-        return msg
-    end)
-    if not ok then
-        API.logWarn(res)
-        return nil, res
-    end
-    return res, nil
+    return API.SystemTime()
 end
 
 -- ========= Engine =========
@@ -50,7 +28,7 @@ function CombatEngine.new()
     self.running = false
     self.lastGcdEnd = 0
     self.scheduler = {}
-    self.startTime = nowMs()
+    self.startTime = API.SystemTime()
     self.kills = 0
 
     -- targeting
@@ -82,7 +60,7 @@ function CombatEngine.new()
         bloated = 30098
     }
     self._lastBuffPoll = 0
-    self._buffsInterval = 750 -- ms (raised from 300ms for stability)
+    self._buffsInterval = 300 -- ms
 
     -- gcd seconds (engine side pacing; bar cooldowns still gate real readiness)
     self.gcd = 1.8
@@ -93,12 +71,47 @@ function CombatEngine.new()
     self._targetSettledAt = 0
     self._settleDelayMs = 120
 
-    -- feature flags
-    self.enableDebuffReads = true       -- flip to false if target debuff reads are unstable
-    self.enableTargetScan  = true
 
     -- abilities (keep cd=0; rely on bar cooldowns to avoid bad assumptions)
     self.abilities = {
+        --[[["Touch of Death"] = {
+            adrenaline = 9,
+            cd = 14400, -- 14.4s cooldown
+            lastUsed = -1e12,
+            expectedValue = function(_, engine)
+                if API.GetAddreline_() == 100 then return 0.0 end
+
+                engine:pollBuffsIfNeeded()
+                local nec = engine.buffs.necrosis
+                local stacks = (nec and nec.stacks) or 0
+
+                if stacks < 6 then
+                    API.logDebug("ToD #Stacks: "..tostring(stacks))
+                    return 7.5   -- slightly higher than Soul Sap
+                else
+                    return 0.5
+                end
+            end
+        },
+        ["Soul Sap"] = { 
+            adrenaline = 9,
+            cd = 5400, -- 5.4s cooldown
+            lastUsed = -1e12,
+            expectedValue = function(_, engine)
+                if API.GetAddreline_() == 100 then return 0.0 end
+
+                engine:pollBuffsIfNeeded()
+                local rs = engine.buffs.residualSouls
+                local stacks = (rs and rs.stacks) or 0
+
+                if stacks < 3 then
+                    API.logDebug("Soul Sap #Stacks: "..tostring(stacks))
+                    return 6.0  -- lower than ToD, still good filler
+                else
+                    return 0.0
+                end
+            end 
+        },]]
 
         ["Finger of Death"] = {
             adrenaline = -60,
@@ -106,8 +119,9 @@ function CombatEngine.new()
             expectedValue = function(engine)
                 local nec = engine.buffs.necrosis
                 local stacks = (nec and nec.stacks) or 0
+
                 if stacks >= 6 then
-                    return 10.0
+                    return 10.0   
                 else
                     return 0.0
                 end
@@ -120,8 +134,9 @@ function CombatEngine.new()
             expectedValue = function(engine)
                 local rs = engine.buffs.residualSouls
                 local stacks = (rs and rs.stacks) or 0
+
                 if stacks == 3 then
-                    return 9.0
+                    return 9.0   -- spender: high priority when capped
                 else
                     return 0.0
                 end
@@ -134,90 +149,119 @@ function CombatEngine.new()
             lastUsed = -1e12,
             expectedValue = function(engine)
                 if not engine.useAoE then return 0.0 end
+                -- If the target has the "bloated" debuff, deprioritize it
                 if engine:targetHasDebuff(engine.enemyDebuffIDs.bloated) then
                     return 0.0
                 else
-                    return 9.5
+                    return 9.5 -- strong priority if target is not bloated
                 end
             end
         },
 
-        ["Soul Strike"] = {
-            adrenaline = 0,
-            lastUsed = -1e12,
+        ["Soul Strike"] = { 
+            adrenaline = 0,   
+            lastUsed = -1e12, 
             expectedValue = function(engine)
-                if engine:targetHasDebuff(engine.enemyDebuffIDs.immune_stun) then
-                    return 0.0
+                
+                -- Don’t cast if target has immune_stun debuff
+                if engine:targetHasDebuff(engine.enemyDebuffIDs.immune_stun) then 
+                    return 0.0 
                 end
-                if not engine.useAoE then
-                    return 0.0
+                
+                -- Only cast when AoE mode is active
+                if not engine.useAoE then 
+                    return 0.0 
                 end
+
+                -- Require at least 1 Residual Souls stack
                 local rs = engine.buffs.residualSouls
                 local stacks = (rs and rs.stacks) or 0
-                if stacks < 1 then
-                    return 0.0
+                if stacks < 1 then 
+                    return 0.0 
                 end
-                return 2.5
-            end
+
+                return 2.5 
+            end 
         },
 
         ["Death Skulls"] = {
             adrenaline = -100,
-            cd = 60000,
+            cd = 60000, -- 60 seconds (ms)
             lastUsed = -1e12,
             expectedValue = function(engine)
+                -- Must have AoE mode enabled
                 if not engine.useAoE then return 0.0 end
-                local ok, ad = pcall(API.GetAddreline_)
-                if not ok or safeNumber(ad) < 100 then return 0.0 end
 
-                local t = nowMs()
+                -- Must be at 100% adrenaline
+                if API.GetAddreline_() < 100 then return 0.0 end
+
+                -- Respect cooldown
+                local t = API.SystemTime()
                 local desc = engine.abilities["Death Skulls"]
                 if desc and (t - desc.lastUsed < (desc.cd or 0)) then
                     return 0.0
                 end
+
                 return 10.0
             end
         },
 
         ["Living Death"] = {
             adrenaline = -100,
-            cd = 90000,
+            cd = 90000, -- 1m30s
             lastUsed = -1e12,
             expectedValue = function(engine)
-                local ok, ad = pcall(API.GetAddreline_)
-                if not ok or safeNumber(ad) < 100 then return 0.0 end
+                -- Require 100% adrenaline
+                if API.GetAddreline_() < 100 then return 0.0 end
 
-                local t = nowMs()
+                -- Respect Living Death’s own cooldown
+                local t = API.SystemTime()
                 local desc = engine.abilities["Living Death"]
                 if desc and (t - desc.lastUsed < (desc.cd or 0)) then
                     return 0.0
                 end
+
+                -- Check if Death Skulls is available
                 if engine:isAbilityReady("Death Skulls") and engine.useAoE then
                     return 0.0
                 end
-                return 9.0
+
+                return 9.0 -- high priority when eligible
             end,
             onCast = function(engine)
-                local t = nowMs()
+                local t = API.SystemTime()
+
+                -- Reset Death Skulls & Touch of Death immediately
                 if engine.abilities["Death Skulls"] then
                     engine.abilities["Death Skulls"].lastUsed = -1e12
-                    engine.abilities["Death Skulls"].cd = 12000
+                    engine.abilities["Death Skulls"].cd = 12000 -- 12s during LD
                 end
                 if engine.abilities["Touch of Death"] then
                     engine.abilities["Touch of Death"].lastUsed = -1e12
                 end
+
+                -- After 30s, restore Death Skulls’ normal cooldown
                 engine:schedule(30000, function()
                     if engine.abilities["Death Skulls"] then
-                        engine.abilities["Death Skulls"].cd = 60000
+                        engine.abilities["Death Skulls"].cd = 60000 -- back to 1m
                     end
                 end)
+
                 API.logDebug("Living Death cast: DS/ToD reset, DS cd reduced to 12s for 30s")
             end
         },
 
+        --[[["Conjure Skeleton Warrior"] = {
+            adrenaline = 0,
+            lastUsed = -1e12,
+            expectedValue = function(_, engine)
+                return engine:hasConjure("skeletonWarrior") and 0.0 or 1.8
+            end
+        },]]
+
         ["Command Skeleton Warrior"] = {
             adrenaline = 0,
-            cd = 15000,
+            cd = 15000,  -- cooldown in ms (15s)
             lastUsed = -1e12,
             expectedValue = function(engine)
                 if engine:hasConjure("skeletonWarrior") and engine:isAbilityReady("Command Skeleton Warrior") then
@@ -227,17 +271,64 @@ function CombatEngine.new()
             end
         },
 
+        --[[["Conjure Putrid Zombie"] = {
+            adrenaline = 0,
+            lastUsed = -1e12,
+            expectedValue = function(_, engine)
+                return engine:hasConjure("putridZombie") and 0.0 or 1.8
+            end
+        },]]
+
+        --[[["Command Putrid Zombie"] = {
+            adrenaline = 0,
+            cd = 15000, -- ms
+            lastUsed = -1e12,
+            expectedValue = function(_, engine)
+                if engine:hasConjure("putridZombie") and engine:isAbilityReady("Command Putrid Zombie") then
+                    return 1.5
+                end
+                return 0.0
+            end
+        },]]
+
+        --[[["Conjure Vengeful Ghost"] = {
+            adrenaline = 0,
+            lastUsed = -1e12,
+            expectedValue = function(_, engine)
+                return engine:hasConjure("vengefulGhost") and 0.0 or 1.8
+            end
+        },]]
+
         ["Command Vengeful Ghost"] = {
             adrenaline = 0,
-            cd = 15000,
+            cd = 15000, -- ms
             lastUsed = -1e12,
             expectedValue = function(engine)
                 if engine:hasConjure("vengefulGhost") and engine:isAbilityReady("Command Vengeful Ghost") then
                     if engine:targetHasDebuff(engine.enemyDebuffIDs.haunted) then return 0.0 else return 4.0 end
                 end
-                return 0.0
             end
         },
+
+        --[[["Conjure Phantom Guardian"] = {
+            adrenaline = 0,
+            lastUsed = -1e12,
+            expectedValue = function(_, engine)
+                return engine:hasConjure("phantomGuardian") and 0.0 or 1.8
+            end
+        },]]
+
+        --[[["Command Phantom Guardian"] = {
+            adrenaline = 0,
+            cd = 15000, -- ms
+            lastUsed = -1e12,
+            expectedValue = function(_, engine)
+                if engine:hasConjure("phantomGuardian") and engine:isAbilityReady("Command Phantom Guardian") then
+                    return 3.0
+                end
+                return 0.0
+            end
+        },]]
 
         ["Spectral Scythe"] = {
             adrenaline = -10,
@@ -248,16 +339,19 @@ function CombatEngine.new()
 
             expectedValue = function(engine)
                 local desc = engine.abilities["Spectral Scythe"]
+
                 if not engine.useAoE then return 0.0 end
 
                 local rs = engine.buffs.residualSouls
                 local stacks = (rs and rs.stacks) or 0
                 if stacks >= 3 then return 0.0 end
 
-                if nowMs() > (desc.stageExpire or 0) then
+                -- Check if stage window expired
+                if nowMs() > desc.stageExpire then
                     desc.stage = 0
                 end
 
+                -- EV by stage
                 if desc.stage == 0 then
                     return 2.5
                 elseif desc.stage == 1 then
@@ -265,19 +359,25 @@ function CombatEngine.new()
                 elseif desc.stage == 2 then
                     return 3.5
                 end
+
                 return 0.0
             end,
 
             onCast = function(engine)
                 local desc = engine.abilities["Spectral Scythe"]
                 local t = nowMs()
-                if t > (desc.stageExpire or 0) then
+
+                -- If chain expired, reset to stage 0 before advancing
+                if t > desc.stageExpire then
                     desc.stage = 0
                 end
+
+                -- Advance stage
                 if desc.stage < 2 then
                     desc.stage = desc.stage + 1
                     desc.stageExpire = t + 15000
                 else
+                    -- Stage 3 cast -> reset to 0 and trigger full cooldown
                     desc.stage = 0
                     desc.lastUsed = t
                     desc.stageExpire = 0
@@ -295,13 +395,12 @@ function CombatEngine.new()
             end
         },
 
-        ["Blood Siphon"] = {
+        ["Blood Siphon"] = { 
             adrenaline = 0,
-            cd = 45000,
-            lastUsed = -1e12,
+            cd = 45000, 
+            lastUsed = -1e12, 
             expectedValue = function(engine)
-                local ok, hp = pcall(API.GetHPrecent)
-                hp = safeNumber(hp)
+                local hp = API.GetHPrecent()
                 if hp >= 70 then
                     return 0.0
                 else
@@ -310,6 +409,7 @@ function CombatEngine.new()
             end,
             onCast = function(self, engine)
                 local t = nowMs()
+                -- Mark as pending for 6 seconds to simulate channel
                 engine.pendingCast  = "Blood Siphon"
                 engine.pendingUntil = t + 6000
                 API.logDebug("[Blood Siphon] Channeling for 6000ms")
@@ -317,63 +417,62 @@ function CombatEngine.new()
         },
 
         ["Death Grasp"] = {
-            adrenaline = -25,
-            cd = 30000,
+            adrenaline = -25,        -- Costs 25% adrenaline
+            cd = 30000,              -- 30 sec cooldown (ms)
             lastUsed = -1e12,
             expectedValue = function(engine)
+                -- Don’t cast if target has immune_stun debuff
                 if engine:targetHasDebuff(engine.enemyDebuffIDs.immune_stun) then
                     return 0.0
                 end
+
+                -- Get necrosis stacks from buff data
                 local nec = engine.buffs.necrosis
                 local stacks = (nec and nec.stacks) or 0
+
+                -- Only valid between 2 and 5 stacks
                 if stacks >= 2 and stacks <= 5 then
-                    return 9.0
+                    return 9.0 -- strong priority
                 elseif stacks >= 6 then
-                    return 0.0
+                    return 0.0 -- never cast at 6 or more
                 end
+
+                -- Default case (not in range)
                 return 0.0
             end
         },
 
-        ["Eat Food"] = {
+        ["Eat Food"] = { 
             adrenaline = 0,
-            lastUsed = -1e12,
+            lastUsed = -1e12, 
             expectedValue = function(engine)
-                local ok, hp = pcall(API.GetHPrecent)
-                hp = safeNumber(hp)
+                local hp = API.GetHPrecent()
                 if hp >= 40 then
                     return 0.0
                 else
                     return 11.0
                 end
-            end
+            end 
         },
 
     }
 
-    -- cache ability-bar entries once (guarded)
+    -- cache ability-bar entries once
     self.abilityBars = {}
     for name, _ in pairs(self.abilities) do
-        local ok, ab = pcall(function() return API.GetABs_name(name, true) end)
-        if ok and isTable(ab) then
-            self.abilityBars[name] = ab
-        else
-            self.abilityBars[name] = nil
-        end
+        self.abilityBars[name] = API.GetABs_name(name, true)
     end
 
     return self
 end
 
-function CombatEngine:KillsPerHour()
-    local elapsed = nowMs() - self.startTime
-    if elapsed <= 0 then return 0 end
-    return math.floor((self.kills*60)/((elapsed)/60000))
+function CombatEngine:KillsPerHour()   
+    return math.floor((self.kills*60)/((API.SystemTime() - self.startTime)/60000))
 end
 
 -- call this whenever you change priorityList externally
 function CombatEngine:_rebuildPriosIfNeeded()
-    if self._priosSorted and type(self._priosSorted) == "table" then return end
+    if self._priosSorted then return end
     local prios = {}
     for name, weight in pairs(self.priorityList) do
         prios[#prios+1] = { name = name, weight = weight }
@@ -385,48 +484,56 @@ end
 -- ======== Queued Ability Helpers ========
 -- Credits to DEAD.UTILS
 
+---Find which bar currently has a queued skill.
+---@return number|nil
 function CombatEngine:findBarWithQueuedSkill()
-    local ok, state = pcall(function() return API.VB_FindPSettinOrder(5861, 0).state end)
-    if not ok or type(state) ~= "number" then return nil end
-    if state == 0 then return nil end
-    if state == 1003 then return 0 end
-    if state == 1032 then return 1 end
-    if state == 1033 then return 2 end
-    if state == 1034 then return 3 end
-    if state == 1035 then return 4 end
+    local queuedBar = API.VB_FindPSettinOrder(5861, 0).state
+    if queuedBar == 0 then return nil end
+    if queuedBar == 1003 then return 0 end
+    if queuedBar == 1032 then return 1 end
+    if queuedBar == 1033 then return 2 end
+    if queuedBar == 1034 then return 3 end
+    if queuedBar == 1035 then return 4 end
     return nil
 end
 
+---Is any ability queued?
+---@return boolean
 function CombatEngine:isAbilityQueued()
-    local ok, state = pcall(function() return API.VB_FindPSettinOrder(5861, 0).state end)
-    return ok and type(state) == "number" and state ~= 0
+    return API.VB_FindPSettinOrder(5861, 0).state ~= 0
 end
 
+---Get the slot index of the queued ability.
+---@return number
 function CombatEngine:getSlotOfQueuedSkill()
-    local ok, slot = pcall(function() return API.VB_FindPSettinOrder(4164, 0).state end)
-    if ok and type(slot) == "number" then return slot end
-    return 0
+    return API.VB_FindPSettinOrder(4164, 0).state
 end
 
+---Check if a specific skill is queued.
+---@param skill string
+---@return boolean
 function CombatEngine:isSkillQueued(skill)
-    if type(skill) ~= "string" then return false end
     if not self:isAbilityQueued() then return false end
     local barNumber = self:findBarWithQueuedSkill()
-    if barNumber == nil then return false end
-    local ok, skillbar = pcall(function() return API.GetAB_name(barNumber, skill) end)
-    if not ok or not isTable(skillbar) then return false end
+    if not barNumber then return false end
+
+    local skillbar = API.GetAB_name(barNumber, skill)
+    if not skillbar then return false end
+
     local slot = self:getSlotOfQueuedSkill()
     if slot == 0 then return false end
+
     return skillbar.slot == slot
 end
 
 -- ======== Buffs ========
 
 function CombatEngine:parseBbar(bbar)
-    if not isTable(bbar) or not bbar.found then
+    if not bbar or not bbar.found then
         return { found=false, stacks=0, raw=nil, duration=0 }
     end
-    local raw = safeStr(bbar.text)
+    local raw = bbar.text or ""
+    -- conv_text is unreliable; stacks often displayed in text, but we’ll keep stacks=0 default.
     local duration = parseDuration(raw)
     return { found=true, stacks=0, raw=raw, duration=duration }
 end
@@ -442,21 +549,17 @@ function CombatEngine:refreshBuffs(force)
         local ok, b = pcall(function()
             return API.Buffbar_GetIDstatus(id, false)
         end)
-        if ok and isTable(b) then
+        if ok and b then
             self.buffs[name] = self:parseBbar(b)
         else
-            if not ok then
-                API.logWarn("[Buffs] Crash while fetching buff id " .. tostring(id) .. " (" .. tostring(name) .. ")")
-            else
-                API.logWarn("[Buffs] Invalid buff data for id " .. tostring(id) .. " (" .. tostring(name) .. ")")
-            end
+            API.logWarn("[Buffs] Failed to fetch buff id " .. tostring(id) .. " (" .. tostring(name) .. ")")
             self.buffs[name] = { found=false, stacks=0, raw=nil, duration=0 }
         end
     end
 
     -- heuristic stack parse
     local function inferStacks(entry)
-        if not entry or type(entry.raw) ~= "string" then return end
+        if not entry or not entry.raw then return end
         local n = entry.raw:match("x%s*(%d+)") or entry.raw:match("(%d+)%s*st") or entry.raw:match("(%d+)")
         if n then entry.stacks = tonumber(n) or entry.stacks end
     end
@@ -468,6 +571,8 @@ function CombatEngine:pollBuffsIfNeeded()
     self:refreshBuffs(false)
 end
 
+--- Check if any conjure buff is active
+--- @return boolean
 function CombatEngine:hasAnyConjure()
     self:refreshBuffs(true)
     return (self.buffs.skeletonWarrior and self.buffs.skeletonWarrior.found)
@@ -476,29 +581,25 @@ function CombatEngine:hasAnyConjure()
         or (self.buffs.phantomGuardian and self.buffs.phantomGuardian.found)
 end
 
+--- Check if a specific conjure is active
+--- @param name string One of: "skeletonWarrior","vengefulGhost","putridZombie","phantomGuardian"
+--- @return boolean
 function CombatEngine:hasConjure(name)
-    if type(name) ~= "string" then return false end
     self:refreshBuffs(true)
     local b = self.buffs[name]
     return b and b.found or false
 end
 
+---Check if targetInfo has debuff id
+---@param number id of enemy debuff
+---@return boolean
 function CombatEngine:targetHasDebuff(id)
-    if not self.enableDebuffReads then return false end
-    if type(id) ~= "number" then return false end
-
-    local ok, tInfo = pcall(function() return API.ReadTargetInfo(true) end)
-    if not ok or not isTable(tInfo) then
+    local tInfo = API.ReadTargetInfo(true)
+    if not tInfo or not tInfo.Buff_stack then
         return false
     end
-    local stack = tInfo.Buff_stack
-    if not isTable(stack) then
-        return false
-    end
-    -- iterate defensively
-    for i = 1, #stack do
-        local buffId = stack[i]
-        if type(buffId) == "number" and buffId == id then
+    for _, buffId in ipairs(tInfo.Buff_stack) do
+        if buffId == id then
             return true
         end
     end
@@ -508,7 +609,6 @@ end
 -- ======== Scheduler ========
 
 function CombatEngine:schedule(delayMs, job)
-    if type(job) ~= "function" then return end
     table.insert(self.scheduler, { time = nowMs() + (delayMs or 0), job = job })
 end
 
@@ -518,9 +618,7 @@ function CombatEngine:processScheduler()
         local item = self.scheduler[i]
         if t >= item.time then
             local ok, err = pcall(item.job)
-            if not ok then
-                API.logWarn("[Scheduler] job error: " .. tostring(err))
-            end
+            -- (optional) log err
             table.remove(self.scheduler, i)
         end
     end
@@ -529,70 +627,78 @@ end
 -- ======== Targeting (scheduled) ========
 
 function CombatEngine:acquireTargetIfNeeded()
-    if not self.enableTargetScan then return end
-    local okTargeting, targeting = pcall(API.IsTargeting)
-    if okTargeting and targeting then return end
+    if API.IsTargeting() then return end
 
     local t = nowMs()
     if t - (self.lastScanTime or 0) < (self.scanInterval or 2000) then
         return
     end
+    -- non-blocking "settle": just wait a little before scanning again
     if t < (self._targetSettledAt or 0) then
         return
     end
 
     self.lastScanTime = t
+    --self:_rebuildPriosIfNeeded() -- we shouldn't need this here
 
+    local startTime = t
     local bestNpc, bestName, bestDist = nil, nil, 1e9
 
-    if not self._priosSorted or type(self._priosSorted) ~= "table" then
-        self:_rebuildPriosIfNeeded()
-    end
-
-    for _, entry in ipairs(self._priosSorted or {}) do
-        local ok, npcs = pcall(function()
-            return API.ReadAllObjectsArray({1}, {-1}, {entry.name})
-        end)
-        if ok and isTable(npcs) and #npcs > 0 then
-            local count = math.min(#npcs, 50)
-            for i = 1, count do
+    -- find the nearest viable NPC across priorities, early-exiting on a hit
+    for _, entry in ipairs(self._priosSorted) do
+        local npcs = API.ReadAllObjectsArray({1}, {-1}, {entry.name})
+        if npcs and #npcs > 0 then
+            for i = 1, math.min(#npcs, 50) do  -- cap work per scan
                 local npc = npcs[i]
-                if isTable(npc) and safeNumber(npc.Life) > 0 then
-                    local d = safeNumber(npc.Distance)
-                    if d == 0 then d = 999 end
+                if npc and npc.Life and npc.Life > 0 then
+                    local d = npc.Distance or 999
                     if d < 30 and d < bestDist then
                         bestNpc, bestName, bestDist = npc, entry.name, d
-                        if d < 6 then break end
+                        if d < 6 then break end  -- good enough; stop digging
                     end
                 end
             end
             if bestNpc then break end
         end
+        -- no logs here to avoid spam; keep logs at higher level if needed
     end
 
     if not bestNpc then
+        -- light debug only; remove if chatty maps cause churn
+        -- API.logDebug("[Targeting] No valid NPCs this pass")
         return
     end
 
-    local attackedOk, attacked = pcall(function()
+    -- guard only the risky native call, not the whole loop
+    local ok, attacked = pcall(function()
         return API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, bestNpc)
     end)
 
-    if attackedOk and attacked then
-        API.logDebug(("Engaging: %s @%.1fm"):format(tostring(bestName), safeNumber(bestDist)))
+    local elapsed = nowMs() - startTime
+    if ok and attacked then
+        API.logDebug(("Engaging: %s @%.1fm took %dms"):format(bestName, bestDist, elapsed))
         self.primaryTargetName = bestName
         if self.isFirstTarget then
             self.isFirstTarget = false
         else
             self.kills = self.kills + 1
         end
+        -- set a non-blocking settle window instead of sleeping
         self._targetSettledAt = nowMs() + self._settleDelayMs
-    elseif not attackedOk then
+    elseif not ok then
         API.logWarn("[Targeting ERROR] C++ crash during targeting of: " .. tostring(bestName))
+    else
+        API.logDebug("Attack failed on: " .. tostring(bestName) .. " | time " .. elapsed .. "ms")
     end
 end
 
 -- ======== Ability Casting ========
+--[[function CombatEngine:getAbilityBar(name)
+    -- Always fetch fresh so cooldown/enabled reflect current UI state
+    local ab = API.GetABs_name(name, true)
+    self.abilityBars[name] = ab -- optional: keep latest for inspections
+    return ab
+end]]     
 
 function CombatEngine:getAbilityBar(name)
     if not name or type(name) ~= "string" then
@@ -604,18 +710,15 @@ function CombatEngine:getAbilityBar(name)
         return API.GetABs_name(name, true)
     end)
 
-    if not ok or not isTable(ab) then
-        API.logWarn("[getAbilityBar] Failed to fetch ability bar for: " .. tostring(name))
+    if not ok or not ab then
+        API.logWarn("[getAbilityBar] Failed to fetch ability bar for: " .. name)
         return nil
     end
 
-    -- Normalize fields we rely on
-    if type(ab.enabled) ~= "boolean" then ab.enabled = true end
-    if type(ab.cooldown_timer) ~= "number" then ab.cooldown_timer = 0 end
-
-    self.abilityBars[name] = ab
+    self.abilityBars[name] = ab -- Optional: cache it for GUI/debug
     return ab
 end
+
 
 function CombatEngine:isAbilityReady(name)
     local ab   = self:getAbilityBar(name)
@@ -624,10 +727,44 @@ function CombatEngine:isAbilityReady(name)
     if ab.enabled == false then return false end
     if ab.cooldown_timer and ab.cooldown_timer > 0 then return false end
     local t = nowMs()
-    if t - (desc.lastUsed or 0) < (desc.cd or 0) then return false end
-    if t < (self.lastGcdEnd or 0) then return false end
+    if t - desc.lastUsed < (desc.cd or 0) then return false end
+    if t < self.lastGcdEnd then return false end
     return true
 end
+
+--[[function CombatEngine:castAbility(name)
+    local ab   = self:getAbilityBar(name)
+    local desc = self.abilities[name]
+    if not ab or not desc then return end
+
+    -- Don’t cast if ability is already queued
+    if self:isSkillQueued(name) then
+        return
+    end
+
+    -- Don’t double-cast while pending
+    local t = nowMs()
+    if self.pendingCast == name and t < self.pendingUntil then
+        return
+    end
+
+    if not self:isAbilityReady(name) then return end
+
+    if API.DoAction_Ability_Direct(ab, 1, API.OFF_ACT_GeneralInterface_route) then
+        -- Mark as pending
+        self.pendingCast = name
+        self.pendingUntil = t + 600
+
+        -- Record use
+        desc.lastUsed = t
+        self.lastGcdEnd = t + math.floor(self.gcd * 1000)
+
+        API.logInfo("Casting: "..name)
+        if desc.onCast then
+            desc.onCast(self)
+        end
+    end
+end]]
 
 function CombatEngine:castAbility(name)
     if not name then
@@ -643,13 +780,15 @@ function CombatEngine:castAbility(name)
         return
     end
 
+    -- Don't cast if ability is already queued
     if self:isSkillQueued(name) then
         API.logDebug("[castAbility] Skipping " .. name .. " (already queued)")
         return
     end
 
+    -- Don't double-cast while pending
     local t = nowMs()
-    if self.pendingCast == name and t < (self.pendingUntil or 0) then
+    if self.pendingCast == name and t < self.pendingUntil then
         API.logDebug("[castAbility] Skipping " .. name .. " (pending)")
         return
     end
@@ -676,6 +815,7 @@ function CombatEngine:castAbility(name)
 
         API.logInfo("Casting: " .. name)
         if desc.onCast then
+            -- run onCast in a protected block
             local ok, err = pcall(function()
                 desc.onCast(self)
             end)
@@ -688,78 +828,135 @@ function CombatEngine:castAbility(name)
     end
 end
 
+
 function CombatEngine:planAndQueue()
-    local okTargeting, targeting = pcall(API.IsTargeting)
-    if not (okTargeting and targeting) then return end
-    if self.pendingCast and nowMs() < (self.pendingUntil or 0) then return end
+    if not API.IsTargeting() then return end
+    if self.pendingCast and nowMs() < self.pendingUntil then return end
 
     local bestName, bestScore = nil, -math.huge
+    local evReady, evSkipped = {}, {}
 
     for name, desc in pairs(self.abilities) do
         local ab = self:getAbilityBar(name)
-        if ab then
-            local ready = self:isAbilityReady(name)
+        if not ab then
+            evSkipped[#evSkipped+1] = {name=name, reason="no bar entry"}
+        else
+            local ready, reason = self:isAbilityReady(name), nil
             if ready then
-                local score = 0
-                if desc.expectedValue then
-                    local ok, val = pcall(desc.expectedValue, self)
-                    if ok and type(val) == "number" then score = val end
-                end
+                local score = (desc.expectedValue and desc.expectedValue(self)) or 0
+                evReady[#evReady+1] = { name = name, score = score }
                 if score > bestScore then bestScore, bestName = score, name end
+            else
+                -- mirror isAbilityReady logic for reason
+                if ab.enabled == false then reason = "disabled"
+                elseif ab.cooldown_timer and ab.cooldown_timer > 0 then reason = "cd "..tostring(ab.cooldown_timer)
+                elseif nowMs() - (desc.lastUsed or 0) < (desc.cd or 0) then reason = "engine cd"
+                elseif nowMs() < self.lastGcdEnd then reason = "gcd"
+                else reason = "unknown" end
+                evSkipped[#evSkipped+1] = { name=name, reason=reason }
             end
         end
     end
 
     if bestName and bestScore > 0 then
         self:schedule(0, function() self:castAbility(bestName) end)
+    else
+        -- no positive-EV choice; do nothing this tick
     end
 end
+
+--[[function CombatEngine:planAndQueue()
+    if not API.IsTargeting() then return end
+    if self.pendingCast and nowMs() < self.pendingUntil then return end
+
+    local bestName, bestScore = nil, -math.huge
+    local t0 = nowMs()
+
+    for name, desc in pairs(self.abilities) do
+        local ok, result = pcall(function()
+            local ab = self:getAbilityBar(name)
+            if ab and self:isAbilityReady(name) and desc.expectedValue then
+                local score = desc:expectedValue(self)
+                if score > bestScore then
+                    bestName, bestScore = name, score
+                end
+            end
+        end)
+        if not ok then
+            API.logWarn("[planAndQueue] Error evaluating ability: " .. name .. " | " .. tostring(result))
+        end
+    end
+
+    if bestName then
+        local ok, result = pcall(function()
+            self:castAbility(bestName)
+        end)
+        if not ok then
+            API.logWarn("[planAndQueue] Error casting: " .. bestName .. " | " .. tostring(result))
+        end
+    end
+end]]
+
 
 -- ======== Update Loop ========
 
 function CombatEngine:update()
     if not self.running then return end
 
+    local t0 = nowMs()
+
     -- Reset pending if ability shows cooldown now
     if self.pendingCast then
         local ab = self.abilityBars[self.pendingCast]
-        if isTable(ab) and type(ab.cooldown_timer) == "number" and ab.cooldown_timer > 0 then
+        if ab and ab.cooldown_timer and ab.cooldown_timer > 0 then
             self.pendingCast = nil
             self.pendingUntil = 0
-        elseif nowMs() > (self.pendingUntil or 0) then
+        elseif nowMs() > self.pendingUntil then
+            -- safety reset if too long
             self.pendingCast = nil
             self.pendingUntil = 0
         end
     end
 
-    -- Buff polling (guarded)
-    local ok = pcall(function() self:pollBuffsIfNeeded() end)
+    -- Buff polling
+    local t1 = nowMs()
+
+    local ok, err = pcall(function() self:pollBuffsIfNeeded() end)
     if not ok then
-        API.logWarn("[update] pollBuffs error")
+        API.logWarn("[update] pollBuffs error: " .. tostring(err or "nil"))
         return
     end
+    --API.logDebug("Buff poll took " .. (nowMs()-t1) .. "ms")
 
-    -- Either cast or target
-    if (pcall(API.IsTargeting)) then
-        local ok2 = pcall(function() self:planAndQueue() end)
-        if not ok2 then
-            API.logWarn("[update] Ability error")
+    -- Ability planning
+    t1 = nowMs()
+
+    if API.IsTargeting() then
+        -- Ability casting
+        ok, err = pcall(function() self:planAndQueue() end)
+        if not ok then
+            API.logWarn("[update] Ability error: " .. tostring(err or "nil"))
             return
         end
+        --API.logDebug("PlanAndQueue took " .. (nowMs()-t1) .. "ms")
     else
-        local ok3 = pcall(function() self:acquireTargetIfNeeded() end)
-        if not ok3 then
-            API.logWarn("[update] Targeting error")
+        ok, err = pcall(function() self:acquireTargetIfNeeded() end)
+        if not ok then
+            API.logWarn("[update] Targeting error: " .. tostring(err or "nil"))
             return
         end
     end
+    
 
-    -- Scheduled jobs
-    local ok4 = pcall(function() self:processScheduler() end)
-    if not ok4 then
-        API.logWarn("[update] Scheduler error")
+    -- Run scheduled jobs (casts, delayed stuff)
+    t1 = nowMs()
+    ok, err = pcall(function() self:processScheduler() end)
+    if not ok then
+        API.logWarn("[update] Scheduler error: " .. tostring(err or "nil"))
         return
     end
+
+    --API.logDebug("Engine update total " .. (nowMs()-t0) .. "ms")
 end
 
 function CombatEngine:start()
@@ -792,11 +989,13 @@ function CombatEngine:start()
         end
     end
 
+
     TickEvent.Register(safeUpdate)
 end
 
 function CombatEngine:stop()
     self.running = false
+    -- (optional) API.logDebug("Combat engine stopped")
 end
 
 return CombatEngine
