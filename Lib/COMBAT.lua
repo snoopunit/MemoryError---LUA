@@ -28,12 +28,15 @@ function CombatEngine.new()
     self.running = false
     self.lastGcdEnd = 0
     self.scheduler = {}
+    self.startTime = nowMS()
+    self.kills = 0
 
     -- targeting
     self.primaryTargetName = nil      -- we keep the name; Interact finds the nearest
     self.scanInterval = 2400          -- ms between acquisition attempts
     self.lastScanTime = 0
     self.useAoE = false
+    self.isFirstTarget = true
 
     -- priorities: lower number = higher priority
     self.priorityList = {
@@ -445,6 +448,10 @@ function CombatEngine.new()
     return self
 end
 
+function CombatEngine:KillsPerHour()   
+    return math.floor((self.kills*60)/((API.SystemTime() - self.startTime)/60000))
+end
+
 -- ======== Queued Ability Helpers ========
 -- Credits to DEAD.UTILS
 
@@ -628,6 +635,11 @@ function CombatEngine:acquireTargetIfNeeded()
         if ok then
             API.logDebug("Engaging: " .. chosenName .. " took " .. elapsed .. "ms")
             self.primaryTargetName = chosenName
+            if self.isFirstTarget then 
+                self.isFirstTarget = false
+            else
+                self.kills = (self.kills + 1)
+            end
         else
             API.logDebug("Attack failed on: " .. chosenName .. " | time " .. elapsed .. "ms")
         end

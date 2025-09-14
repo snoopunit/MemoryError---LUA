@@ -784,6 +784,15 @@ API.SetMaxIdleTime(4)
 while(API.Read_LoopyLoop())
 do-----------------------------------------------------------------------------------
 
+    ----METRICS----
+    local metrics = {
+        {"Script","All-In-One Combat - by Klamor"},,
+        {"Kills:", engine.kills},
+        {"Kills/H:", tostring(engine.KillsPerHour())},
+    }
+    API.DrawTable(metrics)
+    ----METRICS----
+
     if runLoop then 
 
         if engine.running then
