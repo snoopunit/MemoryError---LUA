@@ -803,16 +803,17 @@ function CombatEngine:start()
     self.running = true
 
     local function safeUpdate()
-    local ok, err = xpcall(function() self:update() end, debug.traceback)
-    if not ok then
-        local msg = "[ENGINE CRASH] (" .. type(err) .. ") "
-        if err then
-            msg = msg .. tostring(err)
-        else
-            msg = msg .. "Unknown error"
+        local ok, err = xpcall(function() self:update() end, debug.traceback)
+        if not ok then
+            local msg = "[ENGINE CRASH] (" .. type(err) .. ") "
+            if err then
+                msg = msg .. tostring(err)
+            else
+                msg = msg .. "Unknown error"
+            end
+            API.logWarn(msg)
+            self.running = false
         end
-        API.logWarn(msg)
-        self.running = false
     end
 
     TickEvent.Register(safeUpdate)
