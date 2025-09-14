@@ -771,6 +771,9 @@ API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(4)
 
+setupPrayers()
+chargePackCheck()
+
 while(API.Read_LoopyLoop())
 do-----------------------------------------------------------------------------------
 
@@ -784,24 +787,15 @@ do------------------------------------------------------------------------------
             prayerCheck()
             healthCheck()
             fd_reflection_check()
-            aggressionCheck()
-            specialAttack()  
-            essenceOfFinality()
             noteStuff()
-            openLoot()
+            porterCheck()
 
             API.RandomSleep2(600, 0, 600)
-            
-        else
-
-            setupPrayers()
-            chargePackCheck()
-            porterCheck()
 
         end     
 
     end
 
-    API.RandomSleep2(250,0,0)
+    API.RandomSleep2(600,0,0)
 
 end----------------------------------------------------------------------------------
