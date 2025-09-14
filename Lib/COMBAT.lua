@@ -4,6 +4,16 @@ local CombatEngine = {}
 CombatEngine.__index = CombatEngine
 
 -- ========= Helpers =========
+-- Safely stringify error objects for logging
+local function safeErr(e)
+    if type(e) == "string" then
+        return e
+    elseif type(e) == "table" and e.message then
+        return tostring(e.message)
+    else
+        return tostring(e)
+    end
+end
 
 local function parseDuration(text)
     if not text then return 0 end
