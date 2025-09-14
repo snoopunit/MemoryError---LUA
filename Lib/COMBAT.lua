@@ -421,6 +421,7 @@ function CombatEngine.new()
                     return 0.0
                 end
 
+                engine:pollBuffsIfNeeded()
                 -- Get necrosis stacks from buff data
                 local nec = engine.buffs.necrosis
                 local stacks = (nec and nec.stacks) or 0
@@ -435,6 +436,19 @@ function CombatEngine.new()
                 -- Default case (not in range)
                 return 0.0
             end
+        },
+
+        ["Eat Food"] = { 
+            adrenaline = 0,
+            lastUsed = -1e12, 
+            expectedValue = function()
+                local hp = API.GetHPrecent()
+                if hp >= 40 then
+                    return 0.0
+                else
+                    return 11.0
+                end
+            end 
         },
 
     }
@@ -773,7 +787,6 @@ function CombatEngine:update()
     -- Run scheduled jobs (casts, delayed stuff)
     t1 = nowMs()
     self:processScheduler()
-    API.logDebug("Scheduler size: " .. tostring(#self.scheduler))
 
     --API.logDebug("Engine update total " .. (nowMs()-t0) .. "ms")
 end

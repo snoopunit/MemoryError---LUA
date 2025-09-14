@@ -493,7 +493,7 @@ local function emergencyTele()
 end
 
 local function healthCheck()
-    if API.GetHPrecent() < Min_Eat_Percent then
+    --[[if API.GetHPrecent() < Min_Eat_Percent then
         if UTILS.canUseSkill("Eat Food") then
             API.logDebug("Low HP! Eating Food!")
             activateAbility("Eat Food")
@@ -504,7 +504,7 @@ local function healthCheck()
         else
             API.logDebug("Can't use 'Eat Food'. It's either not on the action bar or no food in inventory.")
         end
-    end
+    end]]
     --[[if not API.IsTargeting() and (API.GetAddreline_() > 55) and (API.GetHPrecent() < 80) then
         while API.GetAddreline_() > 0 do
             openLoot()
@@ -529,12 +529,12 @@ local function buffCheck()
         end 
     end
 
-    if Inventory:GetItemAmount("Enhanced Excalibur") > 0 then
+    --[[if Inventory:GetItemAmount("Enhanced Excalibur") > 0 then
         if not hasDeBuff(DEBUFFS.Enh_Excalibur) and (API.GetHPrecent() <= 80) then
             activateAbility("Enhanced Excalibur")
             API.RandomSleep2(600, 50, 300)
         end 
-    end
+    end]]
 
     if enemyToFight == "Frost dragon" then
         if not hasBuff(BUFFS.Super_Antifire) then
@@ -549,13 +549,13 @@ local function buffCheck()
         end
     end
 
-    if Inventory:GetItemAmount("Overload") > 0 then
+    --[[if Inventory:GetItemAmount("Overload") > 0 then
         if not hasBuff(BUFFS.Overload) then
             API.logDebug("Using Overloads")
             activateAbility("Overload potion")
             API.RandomSleep2(600, 50, 300)
         end
-    end
+    end]]
     
     --[[if (API.InvItemcount_String("Aggression flask") > 0) or (API.InvItemcount_String("Aggression potion") > 0) then
         API.logDebug("Using Aggression potion")
