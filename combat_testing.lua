@@ -6,7 +6,7 @@ local engine = CombatEngine.new()
 
 -- optional: define priority targets (boss > adds)
 engine.priorityList = {
-    "Training dummy"
+    ["Training dummy"] = 1
 }
 
 API.Write_LoopyLoop(true)
@@ -20,6 +20,7 @@ engine:start()
 -- main loop
 while API.Read_LoopyLoop() do
     -- engine:update() is called automatically on TickEvent.Register
+
     API.RandomSleep2(200, 50, 200)
 end
 
