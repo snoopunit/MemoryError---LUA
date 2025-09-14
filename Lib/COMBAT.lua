@@ -210,6 +210,7 @@ function CombatEngine.new()
             lastUsed = -1e12,
             expectedValue = function(_, engine)
                 -- Require 100% adrenaline
+                API.logDebug("Adren: "..tostring(API.GetAddreline_()))
                 if API.GetAddreline_() < 100 then return 0.0 end
 
                 -- Respect Living Death’s own cooldown
