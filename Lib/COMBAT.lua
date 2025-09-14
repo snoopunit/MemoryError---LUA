@@ -749,19 +749,15 @@ function CombatEngine:update()
     end
 
     -- Either cast or target
-    if (API.IsTargeting) then
+    local okT, targeting = pcall(API.IsTargeting)
+    if okT and targeting then
         local ok2 = pcall(function() self:planAndQueue() end)
-        if not ok2 then
-            API.logWarn("[update] Ability error")
-            return
-        end
+        if not ok2 then API.logWarn("[update] Ability error") end
     else
         local ok3 = pcall(function() self:acquireTargetIfNeeded() end)
-        if not ok3 then
-            API.logWarn("[update] Targeting error")
-            return
-        end
+        if not ok3 then API.logWarn("[update] Targeting error") end
     end
+
 
     -- Scheduled jobs
     local ok4 = pcall(function() self:processScheduler() end)
