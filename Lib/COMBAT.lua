@@ -67,6 +67,9 @@ function CombatEngine.new()
 
     self.pendingCast = nil
     self.pendingUntil = 600
+    self._priosSorted = nil
+    self._targetSettledAt = 0
+    self._settleDelayMs = 120
 
 
     -- abilities (keep cd=0; rely on bar cooldowns to avoid bad assumptions)
@@ -410,7 +413,11 @@ function CombatEngine.new()
                 end
             end,
             onCast = function(self, engine)
-                API.RandomSleep2(6000,0,0)
+                local t = nowMs()
+                -- Mark as pending for 6 seconds to simulate channel
+                engine.pendingCast  = "Blood Siphon"
+                engine.pendingUntil = t + 6000
+                API.logDebug("[Blood Siphon] Channeling for 6000ms")
             end
         },
 
@@ -467,6 +474,17 @@ end
 
 function CombatEngine:KillsPerHour()   
     return math.floor((self.kills*60)/((API.SystemTime() - self.startTime)/60000))
+end
+
+-- call this whenever you change priorityList externally
+function CombatEngine:_rebuildPriosIfNeeded()
+    if self._priosSorted then return end
+    local prios = {}
+    for name, weight in pairs(self.priorityList) do
+        prios[#prios+1] = { name = name, weight = weight }
+    end
+    table.sort(prios, function(a,b) return a.weight < b.weight end)
+    self._priosSorted = prios
 end
 
 -- ======== Queued Ability Helpers ========
@@ -673,58 +691,62 @@ function CombatEngine:acquireTargetIfNeeded()
     if t - (self.lastScanTime or 0) < (self.scanInterval or 2000) then
         return
     end
-    self.lastScanTime = t
+    -- non-blocking "settle": just wait a little before scanning again
+    if t < (self._targetSettledAt or 0) then
+        return
+    end
 
-    -- ⏳ Let the client settle after a target dies
-    API.RandomSleep2(100, 20, 30)
+    self.lastScanTime = t
+    --self:_rebuildPriosIfNeeded() -- we shouldn't need this here
 
     local startTime = t
-    local chosenName
+    local bestNpc, bestName, bestDist = nil, nil, 1e9
 
-    -- Build priority list: { name = string, weight = number }
-    local prios = {}
-    for name, weight in pairs(self.priorityList) do
-        table.insert(prios, { name = name, weight = weight })
-    end
-    table.sort(prios, function(a, b) return a.weight < b.weight end)
-
-    for _, entry in ipairs(prios) do
+    -- find the nearest viable NPC across priorities, early-exiting on a hit
+    for _, entry in ipairs(self._priosSorted) do
         local npcs = API.ReadAllObjectsArray({1}, {-1}, {entry.name})
-
         if npcs and #npcs > 0 then
-            for _, npc in ipairs(npcs) do
-                local safe, acted = pcall(function()
-                    -- Sanity checks before using the object
-                    if npc and npc.Life and npc.Life > 0 and npc.Distance and npc.Distance < 30 then
-                        -- 🧨 This is the most dangerous call — must be guarded
-                        local ok = API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, npc)
-                        local elapsed = nowMs() - startTime
-
-                        if ok then
-                            API.logDebug("Engaging: " .. entry.name .. " took " .. elapsed .. "ms")
-                            self.primaryTargetName = entry.name
-                            if self.isFirstTarget then
-                                self.isFirstTarget = false
-                            else
-                                self.kills = self.kills + 1
-                            end
-                            return true -- success
-                        else
-                            API.logDebug("Attack failed on: " .. entry.name .. " | time " .. elapsed .. "ms")
-                        end
+            for i = 1, math.min(#npcs, 50) do  -- cap work per scan
+                local npc = npcs[i]
+                if npc and npc.Life and npc.Life > 0 then
+                    local d = npc.Distance or 999
+                    if d < 30 and d < bestDist then
+                        bestNpc, bestName, bestDist = npc, entry.name, d
+                        if d < 6 then break end  -- good enough; stop digging
                     end
-                    return false
-                end)
-
-                if not safe then
-                    API.logWarn("[Targeting ERROR] C++ crash during targeting of: " .. tostring(entry.name))
-                elseif acted then
-                    return -- ✅ Target acquired and action taken
                 end
             end
-        else
-            API.logDebug("[Targeting] No valid NPCs found for: " .. entry.name)
+            if bestNpc then break end
         end
+        -- no logs here to avoid spam; keep logs at higher level if needed
+    end
+
+    if not bestNpc then
+        -- light debug only; remove if chatty maps cause churn
+        -- API.logDebug("[Targeting] No valid NPCs this pass")
+        return
+    end
+
+    -- guard only the risky native call, not the whole loop
+    local ok, attacked = pcall(function()
+        return API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, bestNpc)
+    end)
+
+    local elapsed = nowMs() - startTime
+    if ok and attacked then
+        API.logDebug(("Engaging: %s @%.1fm took %dms"):format(bestName, bestDist, elapsed))
+        self.primaryTargetName = bestName
+        if self.isFirstTarget then
+            self.isFirstTarget = false
+        else
+            self.kills = self.kills + 1
+        end
+        -- set a non-blocking settle window instead of sleeping
+        self._targetSettledAt = nowMs() + self._settleDelayMs
+    elseif not ok then
+        API.logWarn("[Targeting ERROR] C++ crash during targeting of: " .. tostring(bestName))
+    else
+        API.logDebug("Attack failed on: " .. tostring(bestName) .. " | time " .. elapsed .. "ms")
     end
 end
 

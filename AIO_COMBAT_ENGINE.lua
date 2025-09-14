@@ -349,6 +349,7 @@ local function drawGUI()
             if imguicombo.string_value and imguicombo.string_value ~= "None" then
                 engine.priorityList = { [imguicombo.string_value] = 1 }
             end
+            engine:_rebuildPriosIfNeeded()
             engine:start()
             runLoop = true
             clearGUI()
