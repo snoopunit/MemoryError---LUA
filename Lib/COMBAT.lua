@@ -694,7 +694,7 @@ function CombatEngine:acquireTargetIfNeeded()
         if npcs and #npcs > 0 then
             for _, npc in ipairs(npcs) do
                 local safe, ok = pcall(function()
-                    if npc and npc.Life and npc.Life > 0 and npc.Distance and npc.Distance < 30 then
+                    if npc and npc.Life and npc.Life > 0 and npc.Distance and npc.Distance < 40 then
                         local result = API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, npc)
                         if result then
                             local elapsed = nowMs() - startTime
