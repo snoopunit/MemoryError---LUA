@@ -781,7 +781,7 @@ function CombatEngine:castAbility(name)
     end
 end
 
-function CombatEngine:planAndQueue()
+--[[function CombatEngine:planAndQueue()
     if not API.IsTargeting() then return end
     if self.pendingCast and nowMs() < self.pendingUntil then return end
 
@@ -815,7 +815,40 @@ function CombatEngine:planAndQueue()
     else
         -- no positive-EV choice; do nothing this tick
     end
+end]]
+
+function CombatEngine:planAndQueue()
+    if not API.IsTargeting() then return end
+    if self.pendingCast and nowMs() < self.pendingUntil then return end
+
+    local bestName, bestScore = nil, -math.huge
+    local t0 = nowMs()
+
+    for name, desc in pairs(self.abilities) do
+        local ok, result = pcall(function()
+            local ab = self:getAbilityBar(name)
+            if ab and self:isAbilityReady(name) and desc.expectedValue then
+                local score = desc:expectedValue(self)
+                if score > bestScore then
+                    bestName, bestScore = name, score
+                end
+            end
+        end)
+        if not ok then
+            API.logWarn("[planAndQueue] Error evaluating ability: " .. name .. " | " .. tostring(result))
+        end
+    end
+
+    if bestName then
+        local ok, result = pcall(function()
+            self:castAbility(bestName)
+        end)
+        if not ok then
+            API.logWarn("[planAndQueue] Error casting: " .. bestName .. " | " .. tostring(result))
+        end
+    end
 end
+
 
 -- ======== Update Loop ========
 
@@ -839,22 +872,42 @@ function CombatEngine:update()
 
     -- Buff polling
     local t1 = nowMs()
-    self:pollBuffsIfNeeded()
+
+    local ok, err = pcall(function() self:pollBuffsIfNeeded() end)
+    if not ok then
+        API.logWarn("[update] pollBuffs error: " .. tostring(err or "nil"))
+        return
+    end
     --API.logDebug("Buff poll took " .. (nowMs()-t1) .. "ms")
 
     -- Ability planning
     t1 = nowMs()
+
     if API.IsTargeting() then
-        self:planAndQueue()
+        -- Ability casting
+        ok, err = pcall(function() self:planAndQueue() end)
+        if not ok then
+            API.logWarn("[update] Ability error: " .. tostring(err or "nil"))
+            return
+        end
         --API.logDebug("PlanAndQueue took " .. (nowMs()-t1) .. "ms")
     else
+        ok, err = pcall(function() self:acquireTargetIfNeeded() end)
+        if not ok then
+            API.logWarn("[update] Targeting error: " .. tostring(err or "nil"))
+            return
+        end
         self:acquireTargetIfNeeded()
     end
     
 
     -- Run scheduled jobs (casts, delayed stuff)
     t1 = nowMs()
-    self:processScheduler()
+    ok, err = pcall(function() self:processScheduler() end)
+    if not ok then
+        API.logWarn("[update] Scheduler error: " .. tostring(err or "nil"))
+        return
+    end
 
     --API.logDebug("Engine update total " .. (nowMs()-t0) .. "ms")
 end
