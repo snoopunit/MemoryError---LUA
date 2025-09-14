@@ -981,7 +981,6 @@ function CombatEngine:update()
             API.logWarn("[update] Targeting error: " .. tostring(err or "nil"))
             return
         end
-        self:acquireTargetIfNeeded()
     end
     
 
