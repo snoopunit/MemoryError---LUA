@@ -675,13 +675,13 @@ function CombatEngine:acquireTargetIfNeeded()
     end
     self.lastScanTime = t
 
-    -- ⏳ Wait to avoid targeting during cleanup
-    API.RandomSleep2(100, 25, 25)
+    -- ⏳ Let the client settle after a target dies
+    API.RandomSleep2(100, 20, 30)
 
     local startTime = t
     local chosenName
 
-    -- sort priority list
+    -- Build priority list: { name = string, weight = number }
     local prios = {}
     for name, weight in pairs(self.priorityList) do
         table.insert(prios, { name = name, weight = weight })
@@ -693,11 +693,14 @@ function CombatEngine:acquireTargetIfNeeded()
 
         if npcs and #npcs > 0 then
             for _, npc in ipairs(npcs) do
-                local safe, ok = pcall(function()
-                    if npc and npc.Life and npc.Life > 0 and npc.Distance and npc.Distance < 40 then
-                        local result = API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, npc)
-                        if result then
-                            local elapsed = nowMs() - startTime
+                local safe, acted = pcall(function()
+                    -- Sanity checks before using the object
+                    if npc and npc.Life and npc.Life > 0 and npc.Distance and npc.Distance < 30 then
+                        -- 🧨 This is the most dangerous call — must be guarded
+                        local ok = API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, npc)
+                        local elapsed = nowMs() - startTime
+
+                        if ok then
                             API.logDebug("Engaging: " .. entry.name .. " took " .. elapsed .. "ms")
                             self.primaryTargetName = entry.name
                             if self.isFirstTarget then
@@ -705,35 +708,55 @@ function CombatEngine:acquireTargetIfNeeded()
                             else
                                 self.kills = self.kills + 1
                             end
-                            return true
+                            return true -- success
                         else
-                            API.logDebug("Attack failed on: " .. entry.name)
+                            API.logDebug("Attack failed on: " .. entry.name .. " | time " .. elapsed .. "ms")
                         end
                     end
+                    return false
                 end)
 
-                -- If we got past pcall and returned true → we handled it
-                if safe and ok then
-                    return
-                end
-
-                -- If we caught a C++ crash
                 if not safe then
-                    API.logWarn("[Targeting ERROR] C++ crash on NPC: " .. tostring(entry.name))
+                    API.logWarn("[Targeting ERROR] C++ crash during targeting of: " .. tostring(entry.name))
+                elseif acted then
+                    return -- ✅ Target acquired and action taken
                 end
             end
+        else
+            API.logDebug("[Targeting] No valid NPCs found for: " .. entry.name)
         end
     end
 end
 
 
+
 -- ======== Ability Casting ========
-function CombatEngine:getAbilityBar(name)
+--[[function CombatEngine:getAbilityBar(name)
     -- Always fetch fresh so cooldown/enabled reflect current UI state
     local ab = API.GetABs_name(name, true)
     self.abilityBars[name] = ab -- optional: keep latest for inspections
     return ab
-end     
+end]]     
+
+function CombatEngine:getAbilityBar(name)
+    if not name or type(name) ~= "string" then
+        API.logWarn("[getAbilityBar] Invalid ability name: " .. tostring(name))
+        return nil
+    end
+
+    local ok, ab = pcall(function()
+        return API.GetABs_name(name, true)
+    end)
+
+    if not ok or not ab then
+        API.logWarn("[getAbilityBar] Failed to fetch ability bar for: " .. name)
+        return nil
+    end
+
+    self.abilityBars[name] = ab -- Optional: cache it for GUI/debug
+    return ab
+end
+
 
 function CombatEngine:isAbilityReady(name)
     local ab   = self:getAbilityBar(name)
@@ -747,7 +770,7 @@ function CombatEngine:isAbilityReady(name)
     return true
 end
 
-function CombatEngine:castAbility(name)
+--[[function CombatEngine:castAbility(name)
     local ab   = self:getAbilityBar(name)
     local desc = self.abilities[name]
     if not ab or not desc then return end
@@ -779,7 +802,70 @@ function CombatEngine:castAbility(name)
             desc.onCast(self)
         end
     end
+end]]
+
+function CombatEngine:castAbility(name)
+    if not name then
+        API.logWarn("[castAbility] Ability name is nil")
+        return
+    end
+
+    local ab = self:getAbilityBar(name)
+    local desc = self.abilities[name]
+
+    if not ab or not desc then
+        API.logWarn("[castAbility] Missing data for ability: " .. tostring(name))
+        return
+    end
+
+    -- Don't cast if ability is already queued
+    if self:isSkillQueued(name) then
+        API.logDebug("[castAbility] Skipping " .. name .. " (already queued)")
+        return
+    end
+
+    -- Don't double-cast while pending
+    local t = nowMs()
+    if self.pendingCast == name and t < self.pendingUntil then
+        API.logDebug("[castAbility] Skipping " .. name .. " (pending)")
+        return
+    end
+
+    if not self:isAbilityReady(name) then
+        API.logDebug("[castAbility] Skipping " .. name .. " (not ready)")
+        return
+    end
+
+    local success, result = pcall(function()
+        return API.DoAction_Ability_Direct(ab, 1, API.OFF_ACT_GeneralInterface_route)
+    end)
+
+    if not success then
+        API.logWarn("[castAbility] C++ crash in DoAction for: " .. name)
+        return
+    end
+
+    if result then
+        self.pendingCast = name
+        self.pendingUntil = t + 600
+        desc.lastUsed = t
+        self.lastGcdEnd = t + math.floor(self.gcd * 1000)
+
+        API.logInfo("Casting: " .. name)
+        if desc.onCast then
+            -- run onCast in a protected block
+            local ok, err = pcall(function()
+                desc.onCast(desc, self)
+            end)
+            if not ok then
+                API.logWarn("[castAbility] onCast error for " .. name .. ": " .. tostring(err))
+            end
+        end
+    else
+        API.logDebug("[castAbility] DoAction failed for: " .. name)
+    end
 end
+
 
 --[[function CombatEngine:planAndQueue()
     if not API.IsTargeting() then return end
