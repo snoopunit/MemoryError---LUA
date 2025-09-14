@@ -749,7 +749,7 @@ function CombatEngine:update()
     end
 
     -- Either cast or target
-    if (pcall(API.IsTargeting)) then
+    if (API.IsTargeting) then
         local ok2 = pcall(function() self:planAndQueue() end)
         if not ok2 then
             API.logWarn("[update] Ability error")
