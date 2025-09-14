@@ -574,7 +574,6 @@ end
 --- Check if any conjure buff is active
 --- @return boolean
 function CombatEngine:hasAnyConjure()
-    self:refreshBuffs(true)
     return (self.buffs.skeletonWarrior and self.buffs.skeletonWarrior.found)
         or (self.buffs.vengefulGhost and self.buffs.vengefulGhost.found)
         or (self.buffs.putridZombie and self.buffs.putridZombie.found)
@@ -585,7 +584,6 @@ end
 --- @param name string One of: "skeletonWarrior","vengefulGhost","putridZombie","phantomGuardian"
 --- @return boolean
 function CombatEngine:hasConjure(name)
-    self:refreshBuffs(true)
     local b = self.buffs[name]
     return b and b.found or false
 end
