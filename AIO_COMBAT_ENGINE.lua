@@ -369,6 +369,20 @@ local function openLoot()
 
 end
 
+local function clearGUI()
+    imguiBackground.remove = true
+    fightBtn.remove = true
+    getBtn.remove = true
+    imguicombo.remove = true
+    imguibox1.remove = true
+    imguibox2.remove = true
+    imguibox3.remove = true
+    imguibox4.remove = true
+    imguibox5.remove = true
+    imguiTargetLabel.remove = true
+    imguiTarget.remove = true
+end
+
 local function drawGUI()
 
     if fightBtn.return_click then
@@ -379,6 +393,7 @@ local function drawGUI()
             end
             engine:start()
             runLoop = true
+            clearGUI()
             API.logDebug("Combat Engine: STARTED")
         else
             engine:stop()
@@ -449,20 +464,6 @@ local function drawGUI()
     API.DrawCheckbox(imguibox3)
     API.DrawCheckbox(imguibox4)
     API.DrawCheckbox(imguibox5)
-end
-
-local function clearGUI()
-    imguiBackground.remove = true
-    fightBtn.remove = true
-    getBtn.remove = true
-    imguicombo.remove = true
-    imguibox1.remove = true
-    imguibox2.remove = true
-    imguibox3.remove = true
-    imguibox4.remove = true
-    imguibox5.remove = true
-    imguiTargetLabel.remove = true
-    imguiTarget.remove = true
 end
 
 local function activateAbility(name)
