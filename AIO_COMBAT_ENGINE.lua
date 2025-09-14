@@ -786,7 +786,7 @@ do------------------------------------------------------------------------------
 
     ----METRICS----
     local metrics = {
-        {"Script","All-In-One Combat - by Klamor"},,
+        {"Script","All-In-One Combat - by Klamor"},
         {"Kills:", engine.kills},
         {"Kills/H:", tostring(engine.KillsPerHour())},
     }
