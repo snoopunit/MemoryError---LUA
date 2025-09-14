@@ -684,7 +684,7 @@ end
     end
 end]]
 
-function CombatEngine:acquireTargetIfNeeded()
+--[[function CombatEngine:acquireTargetIfNeeded()
     if API.IsTargeting() then return end
 
     local t = nowMs()
@@ -748,7 +748,87 @@ function CombatEngine:acquireTargetIfNeeded()
     else
         API.logDebug("Attack failed on: " .. tostring(bestName) .. " | time " .. elapsed .. "ms")
     end
+end]]
+
+function CombatEngine:acquireTargetIfNeeded()
+    if API.IsTargeting() then 
+        API.logDebug("[Targeting] Already targeting, skipping acquire")
+        return 
+    end
+
+    local t = nowMs()
+    if t - (self.lastScanTime or 0) < (self.scanInterval or 2000) then
+        API.logDebug("[Targeting] Scan cooldown, skipping")
+        return
+    end
+    if t < (self._targetSettledAt or 0) then
+        API.logDebug("[Targeting] Settle delay not finished, skipping")
+        return
+    end
+
+    self.lastScanTime = t
+    local startTime = t
+    local bestNpc, bestName, bestDist = nil, nil, 1e9
+
+    API.logDebug("[Targeting] Starting scan of priorities")
+
+    -- find the nearest viable NPC across priorities
+    for _, entry in ipairs(self._priosSorted or {}) do
+        API.logDebug("[Targeting] Checking priority: " .. tostring(entry.name))
+
+        local npcs = API.ReadAllObjectsArray({1}, {-1}, {entry.name})
+        API.logDebug("[Targeting] ReadAllObjectsArray returned " .. tostring(npcs and #npcs or "nil"))
+
+        if npcs and #npcs > 0 then
+            for i = 1, math.min(#npcs, 50) do
+                local npc = npcs[i]
+                if npc and npc.Life and npc.Life > 0 then
+                    local d = npc.Distance or 999
+                    API.logDebug(("[Targeting] Candidate NPC %s @ %.1fm"):format(tostring(entry.name), d))
+                    if d < 30 and d < bestDist then
+                        bestNpc, bestName, bestDist = npc, entry.name, d
+                        if d < 6 then 
+                            API.logDebug("[Targeting] Found close NPC, breaking inner loop")
+                            break 
+                        end
+                    end
+                end
+            end
+            if bestNpc then 
+                API.logDebug("[Targeting] Found best NPC: " .. tostring(bestName))
+                break 
+            end
+        end
+    end
+
+    if not bestNpc then
+        API.logDebug("[Targeting] No valid NPCs found this pass")
+        return
+    end
+
+    API.logDebug("[Targeting] Attempting attack on " .. tostring(bestName))
+
+    local ok, attacked = pcall(function()
+        return API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, bestNpc)
+    end)
+
+    local elapsed = nowMs() - startTime
+    if ok and attacked then
+        API.logDebug(("Engaging: %s @%.1fm took %dms"):format(bestName, bestDist, elapsed))
+        self.primaryTargetName = bestName
+        if self.isFirstTarget then
+            self.isFirstTarget = false
+        else
+            self.kills = self.kills + 1
+        end
+        self._targetSettledAt = nowMs() + self._settleDelayMs
+    elseif not ok then
+        API.logWarn("[Targeting ERROR] C++ crash during targeting of: " .. tostring(bestName))
+    else
+        API.logDebug("Attack failed on: " .. tostring(bestName) .. " | time " .. elapsed .. "ms")
+    end
 end
+
 
 -- ======== Ability Casting ========
 --[[function CombatEngine:getAbilityBar(name)
