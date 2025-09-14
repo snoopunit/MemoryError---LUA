@@ -728,8 +728,6 @@ function CombatEngine:acquireTargetIfNeeded()
     end
 end
 
-
-
 -- ======== Ability Casting ========
 --[[function CombatEngine:getAbilityBar(name)
     -- Always fetch fresh so cooldown/enabled reflect current UI state
