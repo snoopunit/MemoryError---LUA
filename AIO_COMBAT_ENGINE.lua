@@ -535,17 +535,17 @@ local function buffCheck()
             API.RandomSleep2(600, 50, 300)
         end 
     end
-    
-    if Inventory:GetItemAmount("Super antifire") > 0 then
+
+    if enemyToFight == "Frost dragon" then
         if not hasBuff(BUFFS.Super_Antifire) then
-            API.logDebug("Using super antifire")
-            activateAbility("Super antifire potion")
-            API.RandomSleep2(600, 50, 300)
-        end
-    else
-        if currentTarget == "Frost dragon" then
-            emergencyTele()
-            terminate()
+            if Inventory:GetItemAmount("Super antifire") > 0 then
+                API.logDebug("Using super antifire")
+                activateAbility("Super antifire potion")
+                API.RandomSleep2(600, 50, 300)
+            else
+                emergencyTele()
+                terminate()
+            end
         end
     end
 
