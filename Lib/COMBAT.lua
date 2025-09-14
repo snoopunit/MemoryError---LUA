@@ -65,9 +65,9 @@ function CombatEngine.new()
     -- gcd seconds (engine side pacing; bar cooldowns still gate real readiness)
     self.gcd = 1.8
 
-    self.pendingCast = nil
+    self.pendingCast = false
     self.pendingUntil = 600
-    self._priosSorted = nil
+    self._priosSorted = false
     self._targetSettledAt = 0
     self._settleDelayMs = 120
 
