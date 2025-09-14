@@ -580,7 +580,14 @@ end
 function CombatEngine:acquireTargetIfNeeded()
     if API.IsTargeting() then return end
 
-    local startTime = nowMs()
+    local t = nowMs()
+    -- Cooldown check: only scan every scanInterval ms
+    if t - (self.lastScanTime or 0) < (self.scanInterval or 2000) then
+        return
+    end
+    self.lastScanTime = t
+
+    local startTime = t
     local closestNPC
     local closestDist = 9999
     local chosenName
