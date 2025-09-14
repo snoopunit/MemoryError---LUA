@@ -554,7 +554,7 @@ function CombatEngine:hasAnyConjure()
         or (self:getBuff("vengefulGhost") and self:getBuff("vengefulGhost").found)
         or (self:getBuff("putridZombie") and self:getBuff("putridZombie").found)
         or (self:getBuff("phantomGuardian") and self:getBuff("phantomGuardian").found)
-+end
+end
 
 --- Check if a specific conjure is active
 --- @param name string One of: "skeletonWarrior","vengefulGhost","putridZombie","phantomGuardian"
