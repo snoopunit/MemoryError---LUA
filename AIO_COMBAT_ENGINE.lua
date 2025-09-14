@@ -791,10 +791,12 @@ do------------------------------------------------------------------------------
             if API.IsTargeting() then
 
                 buffCheck()
+                API.RandomSleep2(600, 0, 600)
                 healthCheck()
+                API.RandomSleep2(600, 0, 600)
                 fd_reflection_check()
+                API.RandomSleep2(600, 0, 600)
                 noteStuff()
-
                 API.RandomSleep2(600, 0, 600)
 
             end     
@@ -804,6 +806,6 @@ do------------------------------------------------------------------------------
         drawGUI()
     end
 
-    API.RandomSleep2(600,0,0)
+    API.RandomSleep2(600, 0, 600)
 
 end----------------------------------------------------------------------------------
