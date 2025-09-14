@@ -618,7 +618,9 @@ function CombatEngine:processScheduler()
         local item = self.scheduler[i]
         if t >= item.time then
             local ok, err = pcall(item.job)
-            -- (optional) log err
+            if not ok then
+                API.logWarn("[Scheduler] Job error: " .. safeErr(err))
+            end
             table.remove(self.scheduler, i)
         end
     end
