@@ -408,7 +408,10 @@ function CombatEngine.new()
                 else
                     return 7.5
                 end
-            end 
+            end,
+            onCast = function(self, engine)
+                API.RandomSleep2(6000,0,0)
+            end
         },
 
         ["Death Grasp"] = {
