@@ -626,7 +626,7 @@ function CombatEngine:acquireTargetIfNeeded()
         local npcs = API.ReadAllObjectsArray({1}, {-1}, {entry.name})
         if npcs and #npcs > 0 then
             for _, npc in ipairs(npcs) do
-                if npc.Life and npc.Life > 0 then
+                if npc.Life and npc.Life = 8500 then
                     local d = npc.Distance or 999
                     if d < closestDist then
                         closestNPC = npc
