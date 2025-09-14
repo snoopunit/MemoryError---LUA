@@ -422,11 +422,19 @@ end
 
 -- ======== Buffs ========
 
+local function isBbar(x)
+    if not x then return false end
+    local t = type(x)
+    if t ~= "table" and t ~= "userdata" then return false end
+    -- must have the expected fields
+    return (type(x.found) == "boolean")
+end
+
 function CombatEngine:parseBbar(bbar)
-    if not isTable(bbar) or not bbar.found then
+    if not bbar or not bbar.found then
         return { found=false, stacks=0, raw=nil, duration=0 }
     end
-    local raw = safeStr(bbar.text)
+    local raw = (type(bbar.text) == "string") and bbar.text or ""
     local duration = parseDuration(raw)
     return { found=true, stacks=0, raw=raw, duration=duration }
 end
@@ -442,13 +450,14 @@ function CombatEngine:refreshBuffs(force)
         local ok, b = pcall(function()
             return API.Buffbar_GetIDstatus(id, false)
         end)
-        if ok and isTable(b) then
+        if ok and isBbar(b) then
             self.buffs[name] = self:parseBbar(b)
         else
-            if not ok then
-                API.logWarn("[Buffs] Crash while fetching buff id " .. tostring(id) .. " (" .. tostring(name) .. ")")
-            else
+            -- Only warn once per id to avoid log spam
+            self._buffWarned = self._buffWarned or {}
+            if not self._buffWarned[id] then
                 API.logWarn("[Buffs] Invalid buff data for id " .. tostring(id) .. " (" .. tostring(name) .. ")")
+                self._buffWarned[id] = true
             end
             self.buffs[name] = { found=false, stacks=0, raw=nil, duration=0 }
         end
