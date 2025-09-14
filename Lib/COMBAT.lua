@@ -745,6 +745,7 @@ function CombatEngine:update()
     -- Ability planning
     t1 = nowMs()
     if API.IsTargeting() then
+        if not API.ReadPlayerMovin() then self:acquireTargetIfNeeded() end
         self:planAndQueue()
         --API.logDebug("PlanAndQueue took " .. (nowMs()-t1) .. "ms")
     else
