@@ -715,7 +715,7 @@ function CombatEngine:getAbilityBar(name)
         return nil
     end
 
-    self.abilityBars[name] = ab -- Optional: cache it for GUI/debug
+    --self.abilityBars[name] = ab -- Optional: cache it for GUI/debug
     return ab
 end
 
