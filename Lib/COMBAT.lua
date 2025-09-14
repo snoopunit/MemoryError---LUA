@@ -529,9 +529,11 @@ function CombatEngine:parseBbar(bbar)
         return { found=false, stacks=0, raw=nil, duration=0 }
     end
     local raw = bbar.text or ""
-    -- conv_text is unreliable; stacks often displayed in text, but we’ll keep stacks=0 default.
     local duration = parseDuration(raw)
-    return { found=true, stacks=0, raw=raw, duration=duration }
+    -- Try to extract stack count from the raw text (matches xN, N st, or just a number)
+    local n = raw:match("x%s*(%d+)") or raw:match("(%d+)%s*st") or raw:match("(%d+)")
+    local stacks = n and tonumber(n) or 0
+    return { found=true, stacks=stacks, raw=raw, duration=duration }
 end
 
 function CombatEngine:getBuff(name)
