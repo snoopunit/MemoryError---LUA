@@ -629,7 +629,9 @@ function CombatEngine:acquireTargetIfNeeded()
 
     -- try to attack
     if closestNPC then
-
+        if closestNPC.Distance > 10 then
+            API.RandomSleep2(2400,0,2400)
+        end
         local ok = API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, closestNPC)
         local elapsed = nowMs() - startTime
         if ok then
