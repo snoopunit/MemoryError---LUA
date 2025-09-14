@@ -620,6 +620,8 @@ function CombatEngine:acquireTargetIfNeeded()
     end
     table.sort(prios, function(a, b) return a.weight < b.weight end)
 
+    API.RandomSleep2(60,0,30)
+
     for _, entry in ipairs(prios) do
         local npcs = API.ReadAllObjectsArray({1}, {-1}, {entry.name})
 
@@ -663,8 +665,6 @@ function CombatEngine:acquireTargetIfNeeded()
         end
     end
 end
-
-
 
 -- ======== Ability Casting ========
 function CombatEngine:getAbilityBar(name)
