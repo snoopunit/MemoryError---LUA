@@ -788,7 +788,7 @@ API.SetMaxIdleTime(4)
 while(API.Read_LoopyLoop())
 do-----------------------------------------------------------------------------------
 
-    if runloop then 
+    if runLoop then 
 
         clearGUI()
         if engine.running then
