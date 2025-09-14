@@ -601,7 +601,7 @@ end
 
 -- ======== Targeting (scheduled) ========
 
-function CombatEngine:acquireTargetIfNeeded()
+--[[function CombatEngine:acquireTargetIfNeeded()
     if API.IsTargeting() then return end
 
     local t = nowMs()
@@ -664,7 +664,68 @@ function CombatEngine:acquireTargetIfNeeded()
             end
         end
     end
+end]]
+
+function CombatEngine:acquireTargetIfNeeded()
+    if API.IsTargeting() then return end
+
+    local t = nowMs()
+    if t - (self.lastScanTime or 0) < (self.scanInterval or 2000) then
+        return
+    end
+    self.lastScanTime = t
+
+    -- ⏳ Wait to avoid targeting during cleanup
+    API.RandomSleep2(100, 25, 25)
+
+    local startTime = t
+    local chosenName
+
+    -- sort priority list
+    local prios = {}
+    for name, weight in pairs(self.priorityList) do
+        table.insert(prios, { name = name, weight = weight })
+    end
+    table.sort(prios, function(a, b) return a.weight < b.weight end)
+
+    for _, entry in ipairs(prios) do
+        local npcs = API.ReadAllObjectsArray({1}, {-1}, {entry.name})
+
+        if npcs and #npcs > 0 then
+            for _, npc in ipairs(npcs) do
+                local safe, ok = pcall(function()
+                    if npc and npc.Life and npc.Life > 0 and npc.Distance and npc.Distance < 30 then
+                        local result = API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, npc)
+                        if result then
+                            local elapsed = nowMs() - startTime
+                            API.logDebug("Engaging: " .. entry.name .. " took " .. elapsed .. "ms")
+                            self.primaryTargetName = entry.name
+                            if self.isFirstTarget then
+                                self.isFirstTarget = false
+                            else
+                                self.kills = self.kills + 1
+                            end
+                            return true
+                        else
+                            API.logDebug("Attack failed on: " .. entry.name)
+                        end
+                    end
+                end)
+
+                -- If we got past pcall and returned true → we handled it
+                if safe and ok then
+                    return
+                end
+
+                -- If we caught a C++ crash
+                if not safe then
+                    API.logWarn("[Targeting ERROR] C++ crash on NPC: " .. tostring(entry.name))
+                end
+            end
+        end
+    end
 end
+
 
 -- ======== Ability Casting ========
 function CombatEngine:getAbilityBar(name)
