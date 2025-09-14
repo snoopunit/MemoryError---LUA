@@ -451,7 +451,7 @@ local function drawGUI()
     API.DrawCheckbox(imguibox5)
 end
 
-function clearGUI()
+local function clearGUI()
     imguiBackground.remove = true
     fightBtn.remove = true
     getBtn.remove = true
@@ -790,7 +790,6 @@ do------------------------------------------------------------------------------
 
     if runLoop then 
 
-        clearGUI()
         if engine.running then
 
             if API.IsTargeting() then
