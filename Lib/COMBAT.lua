@@ -118,7 +118,7 @@ function CombatEngine.new()
             adrenaline = -60,
             lastUsed   = -1e12,
             expectedValue = function(selfDesc, engine)
-                engine:pollBuffsIfNeeded()
+                engine:refreshBuffs(true)
                 local nec = engine.buffs.necrosis
                 local stacks = (nec and nec.stacks) or 0
 
@@ -134,7 +134,7 @@ function CombatEngine.new()
             adrenaline = 0,
             lastUsed = -1e12,
             expectedValue = function(_, engine)
-                engine:pollBuffsIfNeeded()
+                engine:refreshBuffs(true)
                 local rs = engine.buffs.residualSouls
                 local stacks = (rs and rs.stacks) or 0
 
@@ -176,7 +176,7 @@ function CombatEngine.new()
                     return 0.0 
                 end
 
-                engine:pollBuffsIfNeeded()
+                engine:refreshBuffs(true)
                 -- Require at least 1 Residual Souls stack
                 local rs = engine.buffs.residualSouls
                 local stacks = (rs and rs.stacks) or 0
@@ -288,7 +288,7 @@ function CombatEngine.new()
             cd = 15000, -- ms
             lastUsed = -1e12,
             expectedValue = function(_, engine)
-                engine:pollBuffsIfNeeded()
+                engine:refreshBuffs(true)
                 if engine:hasConjure("putridZombie") and engine:isAbilityReady("Command Putrid Zombie") then
                     return 1.5
                 end
@@ -309,7 +309,7 @@ function CombatEngine.new()
             cd = 15000, -- ms
             lastUsed = -1e12,
             expectedValue = function(_, engine)
-                engine:pollBuffsIfNeeded()
+                engine:refreshBuffs(true)
                 if engine:hasConjure("vengefulGhost") and engine:isAbilityReady("Command Vengeful Ghost") then
                     if engine:targetHasDebuff(engine.enemyDebuffIDs.haunted) then return 0.0 else return 4.0 end
                 end
@@ -329,7 +329,7 @@ function CombatEngine.new()
             cd = 15000, -- ms
             lastUsed = -1e12,
             expectedValue = function(_, engine)
-                engine:pollBuffsIfNeeded()
+                engine:refreshBuffs(true)
                 if engine:hasConjure("phantomGuardian") and engine:isAbilityReady("Command Phantom Guardian") then
                     return 3.0
                 end
@@ -431,7 +431,7 @@ function CombatEngine.new()
                     return 0.0
                 end
 
-                engine:pollBuffsIfNeeded()
+                engine:refreshBuffs(true)
                 -- Get necrosis stacks from buff data
                 local nec = engine.buffs.necrosis
                 local stacks = (nec and nec.stacks) or 0
@@ -544,17 +544,26 @@ function CombatEngine:parseBbar(bbar)
     return { found=true, stacks=0, raw=raw, duration=duration }
 end
 
-function CombatEngine:pollBuffsIfNeeded()
+function CombatEngine:refreshBuffs(force)
     local t = nowMs()
-    if t - self._lastBuffPoll < self._buffsInterval then return end
+    if not force and (t - self._lastBuffPoll < self._buffsInterval) then
+        return
+    end
     self._lastBuffPoll = t
 
     for name, id in pairs(self.trackedBuffIDs) do
-        local b = API.Buffbar_GetIDstatus(id, false)
-        self.buffs[name] = self:parseBbar(b)
+        local ok, b = pcall(function()
+            return API.Buffbar_GetIDstatus(id, false)
+        end)
+        if ok and b then
+            self.buffs[name] = self:parseBbar(b)
+        else
+            API.logWarn("[Buffs] Failed to fetch buff id " .. tostring(id) .. " (" .. tostring(name) .. ")")
+            self.buffs[name] = { found=false, stacks=0, raw=nil, duration=0 }
+        end
     end
 
-    -- Heuristic: infer stacks from raw text if present like "x3" / "3 stacks"
+    -- heuristic stack parse
     local function inferStacks(entry)
         if not entry or not entry.raw then return end
         local n = entry.raw:match("x%s*(%d+)") or entry.raw:match("(%d+)%s*st") or entry.raw:match("(%d+)")
@@ -564,10 +573,14 @@ function CombatEngine:pollBuffsIfNeeded()
     inferStacks(self.buffs.residualSouls)
 end
 
+function CombatEngine:pollBuffsIfNeeded()
+    self:refreshBuffs(false)
+end
+
 --- Check if any conjure buff is active
 --- @return boolean
 function CombatEngine:hasAnyConjure()
-    self:pollBuffsIfNeeded()
+    engine:refreshBuffs(true)
     return (self.buffs.skeletonWarrior and self.buffs.skeletonWarrior.found)
         or (self.buffs.vengefulGhost and self.buffs.vengefulGhost.found)
         or (self.buffs.putridZombie and self.buffs.putridZombie.found)
@@ -578,7 +591,7 @@ end
 --- @param name string One of: "skeletonWarrior","vengefulGhost","putridZombie","phantomGuardian"
 --- @return boolean
 function CombatEngine:hasConjure(name)
-    self:pollBuffsIfNeeded()
+    engine:refreshBuffs(true)
     local b = self.buffs[name]
     return b and b.found or false
 end
@@ -684,7 +697,7 @@ end
     end
 end]]
 
---[[function CombatEngine:acquireTargetIfNeeded()
+function CombatEngine:acquireTargetIfNeeded()
     if API.IsTargeting() then return end
 
     local t = nowMs()
@@ -748,87 +761,7 @@ end]]
     else
         API.logDebug("Attack failed on: " .. tostring(bestName) .. " | time " .. elapsed .. "ms")
     end
-end]]
-
-function CombatEngine:acquireTargetIfNeeded()
-    if API.IsTargeting() then 
-        API.logDebug("[Targeting] Already targeting, skipping acquire")
-        return 
-    end
-
-    local t = nowMs()
-    if t - (self.lastScanTime or 0) < (self.scanInterval or 2000) then
-        API.logDebug("[Targeting] Scan cooldown, skipping")
-        return
-    end
-    if t < (self._targetSettledAt or 0) then
-        API.logDebug("[Targeting] Settle delay not finished, skipping")
-        return
-    end
-
-    self.lastScanTime = t
-    local startTime = t
-    local bestNpc, bestName, bestDist = nil, nil, 1e9
-
-    API.logDebug("[Targeting] Starting scan of priorities")
-
-    -- find the nearest viable NPC across priorities
-    for _, entry in ipairs(self._priosSorted or {}) do
-        API.logDebug("[Targeting] Checking priority: " .. tostring(entry.name))
-
-        local npcs = API.ReadAllObjectsArray({1}, {-1}, {entry.name})
-        API.logDebug("[Targeting] ReadAllObjectsArray returned " .. tostring(npcs and #npcs or "nil"))
-
-        if npcs and #npcs > 0 then
-            for i = 1, math.min(#npcs, 50) do
-                local npc = npcs[i]
-                if npc and npc.Life and npc.Life > 0 then
-                    local d = npc.Distance or 999
-                    API.logDebug(("[Targeting] Candidate NPC %s @ %.1fm"):format(tostring(entry.name), d))
-                    if d < 30 and d < bestDist then
-                        bestNpc, bestName, bestDist = npc, entry.name, d
-                        if d < 6 then 
-                            API.logDebug("[Targeting] Found close NPC, breaking inner loop")
-                            break 
-                        end
-                    end
-                end
-            end
-            if bestNpc then 
-                API.logDebug("[Targeting] Found best NPC: " .. tostring(bestName))
-                break 
-            end
-        end
-    end
-
-    if not bestNpc then
-        API.logDebug("[Targeting] No valid NPCs found this pass")
-        return
-    end
-
-    API.logDebug("[Targeting] Attempting attack on " .. tostring(bestName))
-
-    local ok, attacked = pcall(function()
-        return API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, bestNpc)
-    end)
-
-    local elapsed = nowMs() - startTime
-    if ok and attacked then
-        API.logDebug(("Engaging: %s @%.1fm took %dms"):format(bestName, bestDist, elapsed))
-        self.primaryTargetName = bestName
-        if self.isFirstTarget then
-            self.isFirstTarget = false
-        else
-            self.kills = self.kills + 1
-        end
-        self._targetSettledAt = nowMs() + self._settleDelayMs
-    elseif not ok then
-        API.logWarn("[Targeting ERROR] C++ crash during targeting of: " .. tostring(bestName))
-    else
-        API.logDebug("Attack failed on: " .. tostring(bestName) .. " | time " .. elapsed .. "ms")
-    end
 end
-
 
 -- ======== Ability Casting ========
 --[[function CombatEngine:getAbilityBar(name)
