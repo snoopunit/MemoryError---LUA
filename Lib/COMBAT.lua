@@ -865,7 +865,7 @@ function CombatEngine:castAbility(name)
 end
 
 
---[[function CombatEngine:planAndQueue()
+function CombatEngine:planAndQueue()
     if not API.IsTargeting() then return end
     if self.pendingCast and nowMs() < self.pendingUntil then return end
 
@@ -899,9 +899,9 @@ end
     else
         -- no positive-EV choice; do nothing this tick
     end
-end]]
+end
 
-function CombatEngine:planAndQueue()
+--[[function CombatEngine:planAndQueue()
     if not API.IsTargeting() then return end
     if self.pendingCast and nowMs() < self.pendingUntil then return end
 
@@ -931,7 +931,7 @@ function CombatEngine:planAndQueue()
             API.logWarn("[planAndQueue] Error casting: " .. bestName .. " | " .. tostring(result))
         end
     end
-end
+end]]
 
 
 -- ======== Update Loop ========
