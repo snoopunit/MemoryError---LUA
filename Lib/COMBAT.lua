@@ -28,7 +28,7 @@ function CombatEngine.new()
     self.running = false
     self.lastGcdEnd = 0
     self.scheduler = {}
-    self.startTime = nowMS()
+    self.startTime = API.SystemTime()
     self.kills = 0
 
     -- targeting
