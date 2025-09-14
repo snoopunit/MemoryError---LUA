@@ -632,7 +632,7 @@ function CombatEngine:acquireTargetIfNeeded()
     if API.IsTargeting() then return end
 
     local t = nowMs()
-    if t - (self.lastScanTime or 0) < (self.scanInterval or 2000) then
+    if t - (self.lastScanTime or 0) < (self.scanInterval) then
         return
     end
     -- non-blocking "settle": just wait a little before scanning again
