@@ -795,11 +795,15 @@ function CombatEngine:start()
     if self.running then return end
     self.running = true
 
-    -- Main combat update (abilities, buffs, scheduler)
-    TickEvent.Register(function() self:update() end)
+    local function safeUpdate()
+        local ok, err = xpcall(function() self:update() end, debug.traceback)
+        if not ok then
+            API.logWarn("[ENGINE CRASH] "..tostring(err))
+            self.running = false
+        end
+    end
 
-
-    API.logDebug("Combat engine started")
+    TickEvent.Register(safeUpdate)
 end
 
 function CombatEngine:stop()
