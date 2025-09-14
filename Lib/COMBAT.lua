@@ -814,8 +814,6 @@ function CombatEngine:start()
         API.logWarn(msg)
         self.running = false
     end
-end
-
 
     TickEvent.Register(safeUpdate)
 end
