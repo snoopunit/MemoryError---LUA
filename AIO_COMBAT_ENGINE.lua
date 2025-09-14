@@ -768,13 +768,8 @@ local function fd_reflection_check()
     end
     if projectile() >= 1 then
         API.logWarn("Detected Frost Dragon reflection ability projectile!")
-        while projectile() >= 1 and API.Read_LoopyLoop() do
-            API.logDebug("CEASING until the projectile is gone!")
-            buffCheck()
-            healthCheck()
-            cease()
-            API.RandomSleep2(6000,0,600)
-        end
+        cease()
+        API.RandomSleep2(6000,0,600)
     end
 end
 
@@ -798,7 +793,6 @@ do------------------------------------------------------------------------------
                 healthCheck()
                 fd_reflection_check()
                 noteStuff()
-                
 
                 API.RandomSleep2(600, 0, 600)
 
