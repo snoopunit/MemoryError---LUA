@@ -117,7 +117,6 @@ function CombatEngine.new()
             adrenaline = -60,
             lastUsed   = -1e12,
             expectedValue = function(engine)
-                engine:refreshBuffs(true)
                 local nec = engine.buffs.necrosis
                 local stacks = (nec and nec.stacks) or 0
 
@@ -133,7 +132,6 @@ function CombatEngine.new()
             adrenaline = 0,
             lastUsed = -1e12,
             expectedValue = function(engine)
-                engine:refreshBuffs(true)
                 local rs = engine.buffs.residualSouls
                 local stacks = (rs and rs.stacks) or 0
 
@@ -175,7 +173,6 @@ function CombatEngine.new()
                     return 0.0 
                 end
 
-                engine:refreshBuffs(true)
                 -- Require at least 1 Residual Souls stack
                 local rs = engine.buffs.residualSouls
                 local stacks = (rs and rs.stacks) or 0
@@ -287,7 +284,6 @@ function CombatEngine.new()
             cd = 15000, -- ms
             lastUsed = -1e12,
             expectedValue = function(_, engine)
-                engine:refreshBuffs(true)
                 if engine:hasConjure("putridZombie") and engine:isAbilityReady("Command Putrid Zombie") then
                     return 1.5
                 end
@@ -308,7 +304,6 @@ function CombatEngine.new()
             cd = 15000, -- ms
             lastUsed = -1e12,
             expectedValue = function(engine)
-                engine:refreshBuffs(true)
                 if engine:hasConjure("vengefulGhost") and engine:isAbilityReady("Command Vengeful Ghost") then
                     if engine:targetHasDebuff(engine.enemyDebuffIDs.haunted) then return 0.0 else return 4.0 end
                 end
@@ -328,7 +323,6 @@ function CombatEngine.new()
             cd = 15000, -- ms
             lastUsed = -1e12,
             expectedValue = function(_, engine)
-                engine:refreshBuffs(true)
                 if engine:hasConjure("phantomGuardian") and engine:isAbilityReady("Command Phantom Guardian") then
                     return 3.0
                 end
@@ -432,7 +426,6 @@ function CombatEngine.new()
                     return 0.0
                 end
 
-                engine:refreshBuffs(true)
                 -- Get necrosis stacks from buff data
                 local nec = engine.buffs.necrosis
                 local stacks = (nec and nec.stacks) or 0
