@@ -771,8 +771,7 @@ API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(4)
 
-setupPrayers()
-chargePackCheck()
+
 
 while(API.Read_LoopyLoop())
 do-----------------------------------------------------------------------------------
@@ -782,7 +781,9 @@ do------------------------------------------------------------------------------
     if engine.running then
 
         if API.IsTargeting() then
-        
+
+            setupPrayers()
+            chargePackCheck()
             buffCheck()
             prayerCheck()
             healthCheck()
