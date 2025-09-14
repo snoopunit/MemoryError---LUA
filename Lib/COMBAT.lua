@@ -43,8 +43,6 @@ function CombatEngine.new()
         -- fill per-encounter, e.g. ["Dangerous Add"]=1, ["Boss"]=2
     }
 
-    -- buffs (player)
-    self.buffs = {}
     self.trackedBuffIDs = {
         necrosis        = 30101,
         residualSouls   = 30123,
@@ -59,8 +57,6 @@ function CombatEngine.new()
         haunted = 30212,
         bloated = 30098
     }
-    self._lastBuffPoll = 0
-    self._buffsInterval = 300 -- ms
 
     -- gcd seconds (engine side pacing; bar cooldowns still gate real readiness)
     self.gcd = 1.8
@@ -82,7 +78,7 @@ function CombatEngine.new()
                 if API.GetAddreline_() == 100 then return 0.0 end
 
                 engine:pollBuffsIfNeeded()
-                local nec = engine.buffs.necrosis
+                local nec = engine:getBuff("necrosis")
                 local stacks = (nec and nec.stacks) or 0
 
                 if stacks < 6 then
@@ -101,7 +97,7 @@ function CombatEngine.new()
                 if API.GetAddreline_() == 100 then return 0.0 end
 
                 engine:pollBuffsIfNeeded()
-                local rs = engine.buffs.residualSouls
+                local rs = engine:getBuff("residualSouls")
                 local stacks = (rs and rs.stacks) or 0
 
                 if stacks < 3 then
@@ -117,7 +113,7 @@ function CombatEngine.new()
             adrenaline = -60,
             lastUsed   = -1e12,
             expectedValue = function(engine)
-                local nec = engine.buffs.necrosis
+                local nec = engine:getBuff("necrosis")
                 local stacks = (nec and nec.stacks) or 0
 
                 if stacks >= 6 then
@@ -132,7 +128,7 @@ function CombatEngine.new()
             adrenaline = 0,
             lastUsed = -1e12,
             expectedValue = function(engine)
-                local rs = engine.buffs.residualSouls
+                local rs = engine:getBuff("residualSouls")
                 local stacks = (rs and rs.stacks) or 0
 
                 if stacks == 3 then
@@ -174,7 +170,7 @@ function CombatEngine.new()
                 end
 
                 -- Require at least 1 Residual Souls stack
-                local rs = engine.buffs.residualSouls
+                local rs = engine:getBuff("residualSouls")
                 local stacks = (rs and rs.stacks) or 0
                 if stacks < 1 then 
                     return 0.0 
@@ -342,7 +338,7 @@ function CombatEngine.new()
 
                 if not engine.useAoE then return 0.0 end
 
-                local rs = engine.buffs.residualSouls
+                local rs = engine:getBuff("residualSouls")
                 local stacks = (rs and rs.stacks) or 0
                 if stacks >= 3 then return 0.0 end
 
@@ -427,7 +423,7 @@ function CombatEngine.new()
                 end
 
                 -- Get necrosis stacks from buff data
-                local nec = engine.buffs.necrosis
+                local nec = engine:getBuff("necrosis")
                 local stacks = (nec and nec.stacks) or 0
 
                 -- Only valid between 2 and 5 stacks
@@ -538,53 +534,33 @@ function CombatEngine:parseBbar(bbar)
     return { found=true, stacks=0, raw=raw, duration=duration }
 end
 
-function CombatEngine:refreshBuffs(force)
-    local t = nowMs()
-    if not force and (t - self._lastBuffPoll < self._buffsInterval) then
-        return
+function CombatEngine:getBuff(name)
+    local id = self.trackedBuffIDs[name]
+    if not id then return nil end
+    local ok, b = pcall(function()
+        return API.Buffbar_GetIDstatus(id, false)
+    end)
+    if ok and b then
+        return self:parseBbar(b)
+    else
+        return nil
     end
-    self._lastBuffPoll = t
-
-    for name, id in pairs(self.trackedBuffIDs) do
-        local ok, b = pcall(function()
-            return API.Buffbar_GetIDstatus(id, false)
-        end)
-        if ok and b then
-            self.buffs[name] = self:parseBbar(b)
-        else
-            API.logWarn("[Buffs] Failed to fetch buff id " .. tostring(id) .. " (" .. tostring(name) .. ")")
-            self.buffs[name] = { found=false, stacks=0, raw=nil, duration=0 }
-        end
-    end
-
-    -- heuristic stack parse
-    local function inferStacks(entry)
-        if not entry or not entry.raw then return end
-        local n = entry.raw:match("x%s*(%d+)") or entry.raw:match("(%d+)%s*st") or entry.raw:match("(%d+)")
-        if n then entry.stacks = tonumber(n) or entry.stacks end
-    end
-    inferStacks(self.buffs.necrosis)
-    inferStacks(self.buffs.residualSouls)
-end
-
-function CombatEngine:pollBuffsIfNeeded()
-    self:refreshBuffs(false)
 end
 
 --- Check if any conjure buff is active
 --- @return boolean
 function CombatEngine:hasAnyConjure()
-    return (self.buffs.skeletonWarrior and self.buffs.skeletonWarrior.found)
-        or (self.buffs.vengefulGhost and self.buffs.vengefulGhost.found)
-        or (self.buffs.putridZombie and self.buffs.putridZombie.found)
-        or (self.buffs.phantomGuardian and self.buffs.phantomGuardian.found)
-end
+    return (self:getBuff("skeletonWarrior") and self:getBuff("skeletonWarrior").found)
+        or (self:getBuff("vengefulGhost") and self:getBuff("vengefulGhost").found)
+        or (self:getBuff("putridZombie") and self:getBuff("putridZombie").found)
+        or (self:getBuff("phantomGuardian") and self:getBuff("phantomGuardian").found)
++end
 
 --- Check if a specific conjure is active
 --- @param name string One of: "skeletonWarrior","vengefulGhost","putridZombie","phantomGuardian"
 --- @return boolean
 function CombatEngine:hasConjure(name)
-    local b = self.buffs[name]
+    local b = self:getBuff(name)
     return b and b.found or false
 end
 
@@ -918,18 +894,8 @@ function CombatEngine:update()
         end
     end
 
-    -- Buff polling
-    local t1 = nowMs()
-
-    local ok, err = pcall(function() self:pollBuffsIfNeeded() end)
-    if not ok then
-        API.logWarn("[update] pollBuffs error: " .. safeErr(err))
-        return
-    end
-    --API.logDebug("Buff poll took " .. (nowMs()-t1) .. "ms")
-
     -- Ability planning
-    t1 = nowMs()
+    local t1 = nowMs()
 
     if API.IsTargeting() then
         -- Ability casting
