@@ -93,7 +93,6 @@ function CombatEngine.new()
                 end
             end
         },
-
         ["Soul Sap"] = { 
             adrenaline = 9,
             cd = 5400, -- 5.4s cooldown
@@ -117,7 +116,7 @@ function CombatEngine.new()
         ["Finger of Death"] = {
             adrenaline = -60,
             lastUsed   = -1e12,
-            expectedValue = function(selfDesc, engine)
+            expectedValue = function(engine)
                 engine:refreshBuffs(true)
                 local nec = engine.buffs.necrosis
                 local stacks = (nec and nec.stacks) or 0
@@ -133,7 +132,7 @@ function CombatEngine.new()
         ["Volley of Souls"] = {
             adrenaline = 0,
             lastUsed = -1e12,
-            expectedValue = function(_, engine)
+            expectedValue = function(engine)
                 engine:refreshBuffs(true)
                 local rs = engine.buffs.residualSouls
                 local stacks = (rs and rs.stacks) or 0
@@ -164,7 +163,7 @@ function CombatEngine.new()
         ["Soul Strike"] = { 
             adrenaline = 0,   
             lastUsed = -1e12, 
-            expectedValue = function(_, engine)
+            expectedValue = function(engine)
                 
                 -- Don’t cast if target has immune_stun debuff
                 if engine:targetHasDebuff(engine.enemyDebuffIDs.immune_stun) then 
@@ -192,7 +191,7 @@ function CombatEngine.new()
             adrenaline = -100,
             cd = 60000, -- 60 seconds (ms)
             lastUsed = -1e12,
-            expectedValue = function(_, engine)
+            expectedValue = function(engine)
                 -- Must have AoE mode enabled
                 if not engine.useAoE then return 0.0 end
 
@@ -214,7 +213,7 @@ function CombatEngine.new()
             adrenaline = -100,
             cd = 90000, -- 1m30s
             lastUsed = -1e12,
-            expectedValue = function(_, engine)
+            expectedValue = function(engine)
                 -- Require 100% adrenaline
                 if API.GetAddreline_() < 100 then return 0.0 end
 
@@ -267,7 +266,7 @@ function CombatEngine.new()
             adrenaline = 0,
             cd = 15000,  -- cooldown in ms (15s)
             lastUsed = -1e12,
-            expectedValue = function(_, engine)
+            expectedValue = function(engine)
                 if engine:hasConjure("skeletonWarrior") and engine:isAbilityReady("Command Skeleton Warrior") then
                     return 3.5
                 end
@@ -308,7 +307,7 @@ function CombatEngine.new()
             adrenaline = 0,
             cd = 15000, -- ms
             lastUsed = -1e12,
-            expectedValue = function(_, engine)
+            expectedValue = function(engine)
                 engine:refreshBuffs(true)
                 if engine:hasConjure("vengefulGhost") and engine:isAbilityReady("Command Vengeful Ghost") then
                     if engine:targetHasDebuff(engine.enemyDebuffIDs.haunted) then return 0.0 else return 4.0 end
@@ -339,12 +338,14 @@ function CombatEngine.new()
 
         ["Spectral Scythe"] = {
             adrenaline = -10,
-            cd = 15000, -- 15s full cooldown
+            cd = 15000,
             lastUsed = -1e12,
-            stage = 0,       -- 0 = fresh, 1 = after first cast, 2 = after second
-            stageExpire = 0, -- timestamp when the chain expires
+            stage = 0,
+            stageExpire = 0,
 
-            expectedValue = function(self, engine)
+            expectedValue = function(engine)
+                local desc = engine.abilities["Spectral Scythe"]
+
                 if not engine.useAoE then return 0.0 end
 
                 local rs = engine.buffs.residualSouls
@@ -352,40 +353,40 @@ function CombatEngine.new()
                 if stacks >= 3 then return 0.0 end
 
                 -- Check if stage window expired
-                if nowMs() > self.stageExpire then
-                    self.stage = 0
+                if nowMs() > desc.stageExpire then
+                    desc.stage = 0
                 end
 
                 -- EV by stage
-                if self.stage == 0 then
+                if desc.stage == 0 then
                     return 2.5
-                elseif self.stage == 1 then
+                elseif desc.stage == 1 then
                     return 3.0
-                elseif self.stage == 2 then
+                elseif desc.stage == 2 then
                     return 3.5
                 end
 
                 return 0.0
             end,
 
-            onCast = function(self, engine)
+            onCast = function(engine)
+                local desc = engine.abilities["Spectral Scythe"]
                 local t = nowMs()
 
                 -- If chain expired, reset to stage 0 before advancing
-                if t > self.stageExpire then
-                    self.stage = 0
+                if t > desc.stageExpire then
+                    desc.stage = 0
                 end
 
                 -- Advance stage
-                if self.stage < 2 then
-                    self.stage = self.stage + 1
-                    -- Reset chain expiry window (15s to use next stage)
-                    self.stageExpire = t + 15000
+                if desc.stage < 2 then
+                    desc.stage = desc.stage + 1
+                    desc.stageExpire = t + 15000
                 else
                     -- Stage 3 cast -> reset to 0 and trigger full cooldown
-                    self.stage = 0
-                    self.lastUsed = t
-                    self.stageExpire = 0
+                    desc.stage = 0
+                    desc.lastUsed = t
+                    desc.stageExpire = 0
                 end
             end
         },
@@ -394,7 +395,7 @@ function CombatEngine.new()
             adrenaline = 0,
             cd = 60000,
             lastUsed = -1e12,
-            expectedValue = function(_, engine)
+            expectedValue = function(engine)
                 if engine:isSkillQueued("Conjure Undead Army") then return 0.0 end
                 if engine:hasAnyConjure() then return 0.0 else return 11.0 end
             end
@@ -404,7 +405,7 @@ function CombatEngine.new()
             adrenaline = 0,
             cd = 45000, 
             lastUsed = -1e12, 
-            expectedValue = function()
+            expectedValue = function(engine)
                 local hp = API.GetHPrecent()
                 if hp >= 70 then
                     return 0.0
@@ -425,7 +426,7 @@ function CombatEngine.new()
             adrenaline = -25,        -- Costs 25% adrenaline
             cd = 30000,              -- 30 sec cooldown (ms)
             lastUsed = -1e12,
-            expectedValue = function(_, engine)
+            expectedValue = function(engine)
                 -- Don’t cast if target has immune_stun debuff
                 if engine:targetHasDebuff(engine.enemyDebuffIDs.immune_stun) then
                     return 0.0
@@ -451,7 +452,7 @@ function CombatEngine.new()
         ["Eat Food"] = { 
             adrenaline = 0,
             lastUsed = -1e12, 
-            expectedValue = function()
+            expectedValue = function(engine)
                 local hp = API.GetHPrecent()
                 if hp >= 40 then
                     return 0.0
@@ -888,7 +889,7 @@ function CombatEngine:castAbility(name)
         if desc.onCast then
             -- run onCast in a protected block
             local ok, err = pcall(function()
-                desc.onCast(desc, self)
+                desc.onCast(self)
             end)
             if not ok then
                 API.logWarn("[castAbility] onCast error for " .. name .. ": " .. tostring(err))
@@ -914,7 +915,7 @@ function CombatEngine:planAndQueue()
         else
             local ready, reason = self:isAbilityReady(name), nil
             if ready then
-                local score = (desc.expectedValue and desc.expectedValue(desc, self, nil)) or 0
+                local score = (desc.expectedValue and desc.expectedValue(self)) or 0
                 evReady[#evReady+1] = { name = name, score = score }
                 if score > bestScore then bestScore, bestName = score, name end
             else
