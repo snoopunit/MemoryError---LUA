@@ -167,11 +167,11 @@ table.insert(lootlist, ITEMS.MISC.black_dhide)
 --table.insert(lootlist, ITEMS.MISC.gs_shard3)
 
 local enemyToFight = nil
-local lootDrops = true
+local lootDrops = false
 local noteItems = true
-local useSpecial = true
+local useSpecial = false
 local waitForDeath = false
-local useAoE = false
+local useAoE = true
 local runLoop = false
 
 ----GUI----
