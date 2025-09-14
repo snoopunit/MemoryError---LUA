@@ -620,8 +620,9 @@ function CombatEngine:acquireTargetIfNeeded()
     for _, entry in ipairs(prios) do
         local npcs = API.ReadAllObjectsArray({1}, {-1}, {entry.name})
 
-        if type(npcs) ~= "table" then
-            API.logWarn("[Targeting] ReadAllObjectsArray returned " .. tostring(npcs) .. " for " .. entry.name)
+        -- only bail if it’s completely nil
+        if not npcs then
+            API.logWarn("[Targeting] ReadAllObjectsArray returned nil for " .. entry.name)
         elseif #npcs == 0 then
             API.logDebug("[Targeting] No NPCs found for " .. entry.name)
         else
@@ -637,12 +638,12 @@ function CombatEngine:acquireTargetIfNeeded()
 
             if bestNpc then
                 chosenName = entry.name
-                local ok, actErr = pcall(function()
+                local ok, result = pcall(function()
                     return API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, bestNpc)
                 end)
 
                 local elapsed = nowMs() - startTime
-                if ok and actErr then
+                if ok and result then
                     API.logDebug("Engaging: " .. chosenName .. " took " .. elapsed .. "ms")
                     self.primaryTargetName = chosenName
                     if self.isFirstTarget then
@@ -651,13 +652,15 @@ function CombatEngine:acquireTargetIfNeeded()
                         self.kills = self.kills + 1
                     end
                 else
-                    API.logWarn("Attack failed on: " .. tostring(chosenName) .. " | time " .. elapsed .. "ms | err=" .. tostring(actErr))
+                    API.logWarn("Attack failed on: " .. tostring(chosenName) ..
+                                " | time " .. elapsed .. "ms | result=" .. tostring(result))
                 end
-                return -- ✅ done; don’t hold NPC refs
+                return -- ✅ done
             end
         end
     end
 end
+
 
 
 -- ======== Ability Casting ========
