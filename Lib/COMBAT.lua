@@ -820,7 +820,7 @@ function CombatEngine:castAbility(name)
                 desc.onCast(self)
             end)
             if not ok then
-                API.logWarn("[castAbility] onCast error for " .. name .. ": " .. tostring(err))
+                API.logWarn("[castAbility] onCast error for " .. name .. ": " .. safeErr(err))
             end
         end
     else
@@ -923,7 +923,7 @@ function CombatEngine:update()
 
     local ok, err = pcall(function() self:pollBuffsIfNeeded() end)
     if not ok then
-        API.logWarn("[update] pollBuffs error: " .. tostring(err or "nil"))
+        API.logWarn("[update] pollBuffs error: " .. safeErr(err))
         return
     end
     --API.logDebug("Buff poll took " .. (nowMs()-t1) .. "ms")
@@ -935,14 +935,14 @@ function CombatEngine:update()
         -- Ability casting
         ok, err = pcall(function() self:planAndQueue() end)
         if not ok then
-            API.logWarn("[update] Ability error: " .. tostring(err or "nil"))
+            API.logWarn("[update] Ability error: " .. safeErr(err))
             return
         end
         --API.logDebug("PlanAndQueue took " .. (nowMs()-t1) .. "ms")
     else
         ok, err = pcall(function() self:acquireTargetIfNeeded() end)
         if not ok then
-            API.logWarn("[update] Targeting error: " .. tostring(err or "nil"))
+            API.logWarn("[update] Targeting error: " .. safeErr(err))
             return
         end
     end
@@ -952,7 +952,7 @@ function CombatEngine:update()
     t1 = nowMs()
     ok, err = pcall(function() self:processScheduler() end)
     if not ok then
-        API.logWarn("[update] Scheduler error: " .. tostring(err or "nil"))
+        API.logWarn("[update] Scheduler error: " .. safeErr(err))
         return
     end
 
