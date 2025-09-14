@@ -149,7 +149,7 @@ function CombatEngine.new()
             adrenaline = -20,
             cd = 60000,
             lastUsed = -1e12,
-            expectedValue = function(_, engine)
+            expectedValue = function(engine)
                 if not engine.useAoE then return 0.0 end
                 -- If the target has the "bloated" debuff, deprioritize it
                 if engine:targetHasDebuff(engine.enemyDebuffIDs.bloated) then
