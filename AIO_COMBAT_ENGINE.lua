@@ -354,9 +354,6 @@ local function drawGUI()
             runLoop = true
             clearGUI()
             API.logDebug("Combat Engine: STARTED")
-        else
-            engine:stop()
-            API.logDebug("Combat Engine: STOPPED")
         end
     end
 
@@ -779,3 +776,6 @@ do------------------------------------------------------------------------------
     API.RandomSleep2(600, 0, 600)
 
 end----------------------------------------------------------------------------------
+
+engine:stop()
+API.logDebug("Combat Engine: STOPPED")

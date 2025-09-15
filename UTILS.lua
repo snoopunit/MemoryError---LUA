@@ -581,7 +581,8 @@ end
 ---@return boolean
 function UTILS.canUseSkill(skill)
   local skillFound = API.GetABs_name1(skill)
-  if skillFound.id == 0 then return false end
+  if not skillFound then return false end
+  if not skillFound.id or skillFound.id == 0 then return false end
   if not skillFound.enabled then return false end
   return true
 end

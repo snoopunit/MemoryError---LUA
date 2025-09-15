@@ -35,7 +35,6 @@ function CombatEngine.new()
     local self = setmetatable({}, CombatEngine)
 
     -- run-state
-    self.lastStep = "init"  -- crash tracing
     self.running = false
     self.lastGcdEnd = 0
     self.scheduler = {}
@@ -77,6 +76,7 @@ function CombatEngine.new()
     self._priosSorted = false
     self._targetSettledAt = 0
     self._settleDelayMs = 120
+
 
     -- abilities (keep cd=0; rely on bar cooldowns to avoid bad assumptions)
     self.abilities = {
@@ -270,7 +270,7 @@ function CombatEngine.new()
             cd = 15000,  -- cooldown in ms (15s)
             lastUsed = -1e12,
             expectedValue = function(engine)
-                if engine:isAbilityReady("Command Skeleton Warrior") then
+                if engine:hasConjure("skeletonWarrior") and engine:isAbilityReady("Command Skeleton Warrior") then
                     return 3.5
                 end
                 return 0.0
@@ -310,10 +310,8 @@ function CombatEngine.new()
             cd = 15000, -- ms
             lastUsed = -1e12,
             expectedValue = function(engine)
-                if engine:isAbilityReady("Command Vengeful Ghost") then
-                    return 4.0
-                else    
-                    return 0.0
+                if engine:hasConjure("vengefulGhost") and engine:isAbilityReady("Command Vengeful Ghost") then
+                    if engine:targetHasDebuff(engine.enemyDebuffIDs.haunted) then return 0.0 else return 4.0 end
                 end
             end
         },
@@ -415,7 +413,7 @@ function CombatEngine.new()
                     return 7.5
                 end
             end,
-            onCast = function(engine)
+            onCast = function(self, engine)
                 local t = nowMs()
                 -- Mark as pending for 6 seconds to simulate channel
                 engine.pendingCast  = "Blood Siphon"
@@ -465,8 +463,7 @@ function CombatEngine.new()
 
     }
 
-    -- cache for ability bar data
-    self.abilityBarCache = {}
+
 
     return self
 end
@@ -480,11 +477,7 @@ function CombatEngine:_rebuildPriosIfNeeded()
     if self._priosSorted then return end
     local prios = {}
     for name, weight in pairs(self.priorityList) do
-        if type(weight) == "number" then
-            prios[#prios+1] = { name = name, weight = weight }
-        else
-            API.logWarn("[_rebuildPriosIfNeeded] Priority for '"..tostring(name).."' is not a number! ("..type(weight)..")")
-        end
+        prios[#prios+1] = { name = name, weight = weight }
     end
     table.sort(prios, function(a,b) return a.weight < b.weight end)
     self._priosSorted = prios
@@ -583,9 +576,8 @@ end
 ---@param number id of enemy debuff
 ---@return boolean
 function CombatEngine:targetHasDebuff(id)
-    if not API.IsTargeting() then return false end
     local tInfo = API.ReadTargetInfo(true)
-    if not tInfo or type(tInfo.Buff_stack) ~= "table" then
+    if not tInfo or not tInfo.Buff_stack then
         return false
     end
     for _, buffId in ipairs(tInfo.Buff_stack) do
@@ -619,7 +611,6 @@ end
 -- ======== Targeting (scheduled) ========
 
 function CombatEngine:acquireTargetIfNeeded()
-    self.lastStep = "targeting_or_planning"
     if API.IsTargeting() then return end
 
     local t = nowMs()
@@ -644,7 +635,7 @@ function CombatEngine:acquireTargetIfNeeded()
             for i = 1, math.min(#npcs, 50) do  -- cap work per scan
                 local npc = npcs[i]
                 if npc and npc.Life and npc.Life > 0 then
-                    local d = npc.Distance
+                    local d = npc.Distance or 999
                     if d < 50 and d < bestDist then
                         bestNpc, bestName, bestDist = npc, entry.name, d
                         if d < 6 then break end  -- good enough; stop digging
@@ -669,7 +660,7 @@ function CombatEngine:acquireTargetIfNeeded()
 
     local elapsed = nowMs() - startTime
     if ok and attacked then
-        API.logInfo(("[ENGINE] Engaging: %s @%.1fm took %dms"):format(bestName, bestDist, elapsed))
+        API.logDebug(("Engaging: %s @%.1fm took %dms"):format(bestName, bestDist, elapsed))
         self.primaryTargetName = bestName
         if self.isFirstTarget then
             self.isFirstTarget = false
@@ -678,9 +669,6 @@ function CombatEngine:acquireTargetIfNeeded()
         end
         -- set a non-blocking settle window instead of sleeping
         self._targetSettledAt = nowMs() + self._settleDelayMs
-
-        -- Schedule a sleep to prevent actions for 2 seconds after targeting
-        self._postTargetSleepUntil = nowMs() + 2000
     elseif not ok then
         API.logWarn("[Targeting ERROR] C++ crash during targeting of: " .. tostring(bestName))
     else
@@ -690,44 +678,15 @@ end
 
 -- ======== Ability Casting ========
 function CombatEngine:getAbilityBar(name)
-    -- Use cached ability bar data only (never refresh)
-    local ab = self.abilityBarCache[name]
-    if not ab then
-        API.logWarn("[getAbilityBar] No cached bar data for '" .. tostring(name) .. "'")
-        return nil
-    end
-    local abType = type(ab)
-    if abType ~= "table" and abType ~= "userdata" then
-        API.logWarn("[getAbilityBar] For ability '" .. tostring(name) .. "', got invalid type: " .. abType .. ", value: " .. tostring(ab))
-        return nil
-    end
-    local hasSlot = ab.slot ~= nil
-    local hasId = ab.id ~= nil
-    local hasName = ab.name ~= nil
-    if not (hasSlot and hasId and hasName) then
-        API.logWarn("[getAbilityBar] For ability '" .. tostring(name) .. "', got type '" .. abType .. "' but missing Abilitybar fields")
-        return nil
-    end
+    -- Always fetch fresh so cooldown/enabled reflect current UI state
+    local ab = API.GetABs_name(name, true)
     return ab
-    
 end
 
 function CombatEngine:isAbilityReady(name)
     local ab   = self:getAbilityBar(name)
     local desc = self.abilities[name]
     if not ab or not desc then return false end
-        local abType = type(ab)
-        if abType ~= "table" and abType ~= "userdata" then
-            API.logWarn("[isAbilityReady] For ability '" .. tostring(name) .. "', got invalid type: " .. abType)
-            return false
-        end
-        local hasSlot = ab.slot ~= nil
-        local hasId = ab.id ~= nil
-        local hasName = ab.name ~= nil
-        if not (hasSlot and hasId and hasName) then
-            API.logWarn("[isAbilityReady] For ability '" .. tostring(name) .. "', got type '" .. abType .. "' but missing Abilitybar fields")
-            return false
-        end
     if ab.enabled == false then return false end
     if ab.cooldown_timer and ab.cooldown_timer > 0 then return false end
     local t = nowMs()
@@ -735,6 +694,40 @@ function CombatEngine:isAbilityReady(name)
     if t < self.lastGcdEnd then return false end
     return true
 end
+
+--[[function CombatEngine:castAbility(name)
+    local ab   = self:getAbilityBar(name)
+    local desc = self.abilities[name]
+    if not ab or not desc then return end
+
+    -- Don’t cast if ability is already queued
+    if self:isSkillQueued(name) then
+        return
+    end
+
+    -- Don’t double-cast while pending
+    local t = nowMs()
+    if self.pendingCast == name and t < self.pendingUntil then
+        return
+    end
+
+    if not self:isAbilityReady(name) then return end
+
+    if API.DoAction_Ability_Direct(ab, 1, API.OFF_ACT_GeneralInterface_route) then
+        -- Mark as pending
+        self.pendingCast = name
+        self.pendingUntil = t + 600
+
+        -- Record use
+        desc.lastUsed = t
+        self.lastGcdEnd = t + math.floor(self.gcd * 1000)
+
+        API.logInfo("Casting: "..name)
+        if desc.onCast then
+            desc.onCast(self)
+        end
+    end
+end]]
 
 function CombatEngine:castAbility(name)
     if not name then
@@ -749,31 +742,22 @@ function CombatEngine:castAbility(name)
         API.logWarn("[castAbility] Missing data for ability: " .. tostring(name))
         return
     end
-        local abType = type(ab)
-        if abType ~= "table" and abType ~= "userdata" then
-            API.logWarn("[castAbility] For ability '" .. tostring(name) .. "', got invalid type: " .. abType)
-            return
-        end
-        local hasSlot = ab.slot ~= nil
-        local hasId = ab.id ~= nil
-        local hasName = ab.name ~= nil
-        if not (hasSlot and hasId and hasName) then
-            API.logWarn("[castAbility] For ability '" .. tostring(name) .. "', got type '" .. abType .. "' but missing Abilitybar fields")
-            return
-        end
 
     -- Don't cast if ability is already queued
     if self:isSkillQueued(name) then
+        API.logDebug("[castAbility] Skipping " .. name .. " (already queued)")
         return
     end
 
     -- Don't double-cast while pending
     local t = nowMs()
     if self.pendingCast == name and t < self.pendingUntil then
+        API.logDebug("[castAbility] Skipping " .. name .. " (pending)")
         return
     end
 
     if not self:isAbilityReady(name) then
+        API.logDebug("[castAbility] Skipping " .. name .. " (not ready)")
         return
     end
 
@@ -792,6 +776,7 @@ function CombatEngine:castAbility(name)
         desc.lastUsed = t
         self.lastGcdEnd = t + math.floor(self.gcd * 1000)
 
+        API.logInfo("Casting: " .. name)
         if desc.onCast then
             -- run onCast in a protected block
             local ok, err = pcall(function()
@@ -802,9 +787,10 @@ function CombatEngine:castAbility(name)
             end
         end
     else
-        API.logWarn("[ENGINE] DoAction failed for: " .. name)
+        API.logDebug("[castAbility] DoAction failed for: " .. name)
     end
 end
+
 
 function CombatEngine:planAndQueue()
     if not API.IsTargeting() then return end
@@ -821,7 +807,6 @@ function CombatEngine:planAndQueue()
             local ready, reason = self:isAbilityReady(name), nil
             if ready then
                 local score = (desc.expectedValue and desc.expectedValue(self)) or 0
-                API.logDebug("[ENGINE] Ability ready: " .. name .. " | score: " .. tostring(score))
                 evReady[#evReady+1] = { name = name, score = score }
                 if score > bestScore then bestScore, bestName = score, name end
             else
@@ -837,20 +822,53 @@ function CombatEngine:planAndQueue()
     end
 
     if bestName and bestScore > 0 then
-        API.logInfo("[ENGINE] Scheduling cast: " .. bestName .. " | score: " .. tostring(bestScore))
         self:schedule(0, function() self:castAbility(bestName) end)
     else
-        API.logDebug("[ENGINE] No positive-EV ability to cast this tick.")
+        -- no positive-EV choice; do nothing this tick
     end
 end
+
+--[[function CombatEngine:planAndQueue()
+    if not API.IsTargeting() then return end
+    if self.pendingCast and nowMs() < self.pendingUntil then return end
+
+    local bestName, bestScore = nil, -math.huge
+    local t0 = nowMs()
+
+    for name, desc in pairs(self.abilities) do
+        local ok, result = pcall(function()
+            local ab = self:getAbilityBar(name)
+            if ab and self:isAbilityReady(name) and desc.expectedValue then
+                local score = desc:expectedValue(self)
+                if score > bestScore then
+                    bestName, bestScore = name, score
+                end
+            end
+        end)
+        if not ok then
+            API.logWarn("[planAndQueue] Error evaluating ability: " .. name .. " | " .. tostring(result))
+        end
+    end
+
+    if bestName then
+        local ok, result = pcall(function()
+            self:castAbility(bestName)
+        end)
+        if not ok then
+            API.logWarn("[planAndQueue] Error casting: " .. bestName .. " | " .. tostring(result))
+        end
+    end
+end]]
+
 
 -- ======== Update Loop ========
 
 function CombatEngine:update()
     if not self.running then return end
 
+    local t0 = nowMs()
+
     -- Reset pending if ability shows cooldown now
-    self.lastStep = "check_pending_cast"
     if self.pendingCast then
         local ab = self:getAbilityBar(self.pendingCast)
         if ab and ab.cooldown_timer and ab.cooldown_timer > 0 then
@@ -863,54 +881,35 @@ function CombatEngine:update()
         end
     end
 
-
-    -- Prevent actions for a couple seconds after targeting
-    if self._postTargetSleepUntil and nowMs() < self._postTargetSleepUntil then
-        return
-    end
-
     -- Ability planning
-    self.lastStep = "targeting_or_planning"
+    local t1 = nowMs()
+
     if API.IsTargeting() then
         -- Ability casting
-        ok, err = xpcall(function() self:planAndQueue() end, function(e)
-            local msg = "[update] Ability error: " .. safeErr(e)
-            msg = msg .. "\n[ENGINE STATE] lastStep: " .. tostring(self.lastStep)
-            msg = msg .. "\n[ENGINE STATE] pendingCast: " .. tostring(self.pendingCast)
-            msg = msg .. "\n[ENGINE STATE] primaryTargetName: " .. tostring(self.primaryTargetName)
-            msg = msg .. "\n[ENGINE STATE] kills: " .. tostring(self.kills)
-            msg = msg .. "\n[ENGINE STATE] running: " .. tostring(self.running)
-            msg = msg .. "\nTraceback:\n" .. debug.traceback()
-            return msg
-        end)
+        ok, err = pcall(function() self:planAndQueue() end)
         if not ok then
             API.logWarn("[update] Ability error: " .. safeErr(err))
             return
         end
+        --API.logDebug("PlanAndQueue took " .. (nowMs()-t1) .. "ms")
     else
-        ok, err = xpcall(function() self:acquireTargetIfNeeded() end, function(e)
-            local msg = "[update] Targeting error: " .. safeErr(e)
-            msg = msg .. "\n[ENGINE STATE] lastStep: " .. tostring(self.lastStep)
-            msg = msg .. "\n[ENGINE STATE] pendingCast: " .. tostring(self.pendingCast)
-            msg = msg .. "\n[ENGINE STATE] primaryTargetName: " .. tostring(self.primaryTargetName)
-            msg = msg .. "\n[ENGINE STATE] kills: " .. tostring(self.kills)
-            msg = msg .. "\n[ENGINE STATE] running: " .. tostring(self.running)
-            msg = msg .. "\nTraceback:\n" .. debug.traceback()
-            return msg
-        end)
+        ok, err = pcall(function() self:acquireTargetIfNeeded() end)
         if not ok then
             API.logWarn("[update] Targeting error: " .. safeErr(err))
             return
         end
     end
+    
 
     -- Run scheduled jobs (casts, delayed stuff)
+    t1 = nowMs()
     ok, err = pcall(function() self:processScheduler() end)
     if not ok then
         API.logWarn("[update] Scheduler error: " .. safeErr(err))
         return
     end
 
+    --API.logDebug("Engine update total " .. (nowMs()-t0) .. "ms")
 end
 
 function CombatEngine:start()
@@ -921,7 +920,7 @@ function CombatEngine:start()
         local ok, err = xpcall(function()
             self:update()
         end, function(e)
-            local msg = "[ENGINE CRASH] Step: " .. tostring(self.lastStep) .. " | Type: " .. type(e) .. " | "
+            local msg = "[ENGINE CRASH] (" .. type(e) .. ") "
             if type(e) == "userdata" then
                 local s = tostring(e)
                 if s:find("AllObject") then
@@ -934,7 +933,6 @@ function CombatEngine:start()
             else
                 msg = msg .. "Unknown error"
             end
-            msg = msg .. "\nTraceback:\n" .. debug.traceback()
             return msg
         end)
 
@@ -944,30 +942,13 @@ function CombatEngine:start()
         end
     end
 
-    -- Build ability bar cache once at engine creation, validating each entry
-    for name, _ in pairs(self.abilities) do
-        local ab = API.GetABs_name(name, true)
-        local abType = type(ab)
-        if abType == "table" or abType == "userdata" then
-            local hasSlot = ab.slot ~= nil
-            local hasId = ab.id ~= nil
-            local hasName = ab.name ~= nil
-            if hasSlot and hasId and hasName then
-                self.abilityBarCache[name] = ab
-            else
-                API.logWarn("[AbilityBarCache] For ability '" .. tostring(name) .. "', got type '" .. abType .. "' but missing Abilitybar fields")
-            end
-        else
-            API.logWarn("[AbilityBarCache] For ability '" .. tostring(name) .. "', got invalid type: " .. abType .. ", value: " .. tostring(ab))
-        end
-    end
 
     TickEvent.Register(safeUpdate)
 end
 
 function CombatEngine:stop()
     self.running = false
-    API.logInfo("[ENGINE] Stopped.")
+    -- (optional) API.logDebug("Combat engine stopped")
 end
 
 return CombatEngine
