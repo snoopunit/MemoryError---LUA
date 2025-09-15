@@ -77,7 +77,6 @@ function CombatEngine.new()
     self._targetSettledAt = 0
     self._settleDelayMs = 120
 
-
     -- abilities (keep cd=0; rely on bar cooldowns to avoid bad assumptions)
     self.abilities = {
         --[[["Touch of Death"] = {
@@ -463,8 +462,6 @@ function CombatEngine.new()
 
     }
 
-
-
     return self
 end
 
@@ -695,40 +692,6 @@ function CombatEngine:isAbilityReady(name)
     return true
 end
 
---[[function CombatEngine:castAbility(name)
-    local ab   = self:getAbilityBar(name)
-    local desc = self.abilities[name]
-    if not ab or not desc then return end
-
-    -- Don’t cast if ability is already queued
-    if self:isSkillQueued(name) then
-        return
-    end
-
-    -- Don’t double-cast while pending
-    local t = nowMs()
-    if self.pendingCast == name and t < self.pendingUntil then
-        return
-    end
-
-    if not self:isAbilityReady(name) then return end
-
-    if API.DoAction_Ability_Direct(ab, 1, API.OFF_ACT_GeneralInterface_route) then
-        -- Mark as pending
-        self.pendingCast = name
-        self.pendingUntil = t + 600
-
-        -- Record use
-        desc.lastUsed = t
-        self.lastGcdEnd = t + math.floor(self.gcd * 1000)
-
-        API.logInfo("Casting: "..name)
-        if desc.onCast then
-            desc.onCast(self)
-        end
-    end
-end]]
-
 function CombatEngine:castAbility(name)
     if not name then
         API.logWarn("[castAbility] Ability name is nil")
@@ -791,7 +754,6 @@ function CombatEngine:castAbility(name)
     end
 end
 
-
 function CombatEngine:planAndQueue()
     if not API.IsTargeting() then return end
     if self.pendingCast and nowMs() < self.pendingUntil then return end
@@ -827,39 +789,6 @@ function CombatEngine:planAndQueue()
         -- no positive-EV choice; do nothing this tick
     end
 end
-
---[[function CombatEngine:planAndQueue()
-    if not API.IsTargeting() then return end
-    if self.pendingCast and nowMs() < self.pendingUntil then return end
-
-    local bestName, bestScore = nil, -math.huge
-    local t0 = nowMs()
-
-    for name, desc in pairs(self.abilities) do
-        local ok, result = pcall(function()
-            local ab = self:getAbilityBar(name)
-            if ab and self:isAbilityReady(name) and desc.expectedValue then
-                local score = desc:expectedValue(self)
-                if score > bestScore then
-                    bestName, bestScore = name, score
-                end
-            end
-        end)
-        if not ok then
-            API.logWarn("[planAndQueue] Error evaluating ability: " .. name .. " | " .. tostring(result))
-        end
-    end
-
-    if bestName then
-        local ok, result = pcall(function()
-            self:castAbility(bestName)
-        end)
-        if not ok then
-            API.logWarn("[planAndQueue] Error casting: " .. bestName .. " | " .. tostring(result))
-        end
-    end
-end]]
-
 
 -- ======== Update Loop ========
 
