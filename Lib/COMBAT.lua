@@ -518,21 +518,18 @@ function CombatEngine:getSlotOfQueuedSkill()
     return API.VB_FindPSettinOrder(4164, 0).state
 end
 
----Check if a specific skill is queued.
----@param skill string
+--- Is a skill queued.
+---@param skill string -- skillName
 ---@return boolean
 function CombatEngine:isSkillQueued(skill)
     if not self:isAbilityQueued() then return false end
     local barNumber = self:findBarWithQueuedSkill()
-    if not barNumber then return false end
-
+    if barNumber == nil then return false end
     local skillbar = API.GetAB_name(barNumber, skill)
-    if not skillbar then return false end
-
     local slot = self:getSlotOfQueuedSkill()
     if slot == 0 then return false end
-
-    return skillbar.slot == slot
+    if skillbar.slot == slot then return true end
+    return false
 end
 
 -- ======== Buffs ========
@@ -565,10 +562,10 @@ end
 --- Check if any conjure buff is active
 --- @return boolean
 function CombatEngine:hasAnyConjure()
-    return (self:getBuff("skeletonWarrior") and self:getBuff("skeletonWarrior").found)
-        or (self:getBuff("vengefulGhost") and self:getBuff("vengefulGhost").found)
-        or (self:getBuff("putridZombie") and self:getBuff("putridZombie").found)
-        or (self:getBuff("phantomGuardian") and self:getBuff("phantomGuardian").found)
+    return (self:getBuff("skeletonWarrior").found)
+        or (self:getBuff("vengefulGhost").found)
+        or (self:getBuff("putridZombie").found)
+        or (self:getBuff("phantomGuardian").found)
 end
 
 --- Check if a specific conjure is active
@@ -622,6 +619,11 @@ function CombatEngine:acquireTargetIfNeeded()
     self.lastStep = "targeting_or_planning"
     if API.IsTargeting() then return end
 
+    if not self._priosSorted or #self._priosSorted == 0 then
+        API.logWarn("[Targeting] Priority list is empty! No targets will be acquired.")
+        return
+    end
+
     local t = nowMs()
     if t - (self.lastScanTime or 0) < (self.scanInterval) then
         return
@@ -657,8 +659,7 @@ function CombatEngine:acquireTargetIfNeeded()
     end
 
     if not bestNpc then
-        -- light debug only; remove if chatty maps cause churn
-        -- API.logDebug("[Targeting] No valid NPCs this pass")
+        API.logDebug("[Targeting] No valid NPCs found. Check priority list and NPC names.")
         return
     end
 
@@ -816,6 +817,7 @@ function CombatEngine:planAndQueue()
     for name, desc in pairs(self.abilities) do
         local ab = self:getAbilityBar(name)
         if not ab then
+            API.logDebug("[ENGINE] Skipping ability '" .. name .. "': no bar entry in cache.")
             evSkipped[#evSkipped+1] = {name=name, reason="no bar entry"}
         else
             local ready, reason = self:isAbilityReady(name), nil
@@ -831,6 +833,7 @@ function CombatEngine:planAndQueue()
                 elseif nowMs() - (desc.lastUsed or 0) < (desc.cd or 0) then reason = "engine cd"
                 elseif nowMs() < self.lastGcdEnd then reason = "gcd"
                 else reason = "unknown" end
+                API.logDebug("[ENGINE] Skipping ability '" .. name .. "': " .. reason)
                 evSkipped[#evSkipped+1] = { name=name, reason=reason }
             end
         end
@@ -950,9 +953,9 @@ function CombatEngine:start()
         local abType = type(ab)
         if abType == "table" or abType == "userdata" then
             local hasSlot = ab.slot ~= nil
-            local hasId = ab.id ~= nil
+            --local hasId = ab.id ~= nil
             local hasName = ab.name ~= nil
-            if hasSlot and hasId and hasName then
+            if hasSlot and hasName then
                 self.abilityBarCache[name] = ab
             else
                 API.logWarn("[AbilityBarCache] For ability '" .. tostring(name) .. "', got type '" .. abType .. "' but missing Abilitybar fields")
