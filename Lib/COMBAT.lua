@@ -463,11 +463,7 @@ function CombatEngine.new()
 
     }
 
-    -- cache ability-bar entries once
-    self.abilityBars = {}
-    for name, _ in pairs(self.abilities) do
-        self.abilityBars[name] = API.GetABs_name(name, true)
-    end
+
 
     return self
 end
@@ -547,9 +543,7 @@ function CombatEngine:parseBbar(bbar)
 end
 
 function CombatEngine:getBuff(name)
-    API.logDebug("Getting buff: "..tostring(name))
     local id = self.trackedBuffIDs[name]
-    API.logDebug("Buff ID: "..tostring(id))
     if not id then return nil end
     local ok, b = pcall(function()
         return API.Buffbar_GetIDstatus(id, false)
@@ -683,32 +677,11 @@ function CombatEngine:acquireTargetIfNeeded()
 end
 
 -- ======== Ability Casting ========
---[[function CombatEngine:getAbilityBar(name)
+function CombatEngine:getAbilityBar(name)
     -- Always fetch fresh so cooldown/enabled reflect current UI state
     local ab = API.GetABs_name(name, true)
-    self.abilityBars[name] = ab -- optional: keep latest for inspections
-    return ab
-end]]     
-
-function CombatEngine:getAbilityBar(name)
-    if not name or type(name) ~= "string" then
-        API.logWarn("[getAbilityBar] Invalid ability name: " .. tostring(name))
-        return nil
-    end
-
-    local ok, ab = pcall(function()
-        return API.GetABs_name(name, true)
-    end)
-
-    if not ok or not ab then
-        API.logWarn("[getAbilityBar] Failed to fetch ability bar for: " .. name)
-        return nil
-    end
-
-    --self.abilityBars[name] = ab -- Optional: cache it for GUI/debug
     return ab
 end
-
 
 function CombatEngine:isAbilityReady(name)
     local ab   = self:getAbilityBar(name)
@@ -897,7 +870,7 @@ function CombatEngine:update()
 
     -- Reset pending if ability shows cooldown now
     if self.pendingCast then
-        local ab = self.abilityBars[self.pendingCast]
+        local ab = self:getAbilityBar(self.pendingCast)
         if ab and ab.cooldown_timer and ab.cooldown_timer > 0 then
             self.pendingCast = nil
             self.pendingUntil = 0
