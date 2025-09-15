@@ -562,10 +562,17 @@ end
 --- Check if any conjure buff is active
 --- @return boolean
 function CombatEngine:hasAnyConjure()
+<<<<<<< HEAD
     return (self:getBuff("skeletonWarrior").found)
         or (self:getBuff("vengefulGhost").found)
         or (self:getBuff("putridZombie").found)
         or (self:getBuff("phantomGuardian").found)
+=======
+    return self:getBuff("skeletonWarrior").found
+        or self:getBuff("vengefulGhost").found
+        or self:getBuff("putridZombie").found
+        or self:getBuff("phantomGuardian").found
+>>>>>>> cad2aac20e795dff7b0e91d63e64af6c762d19de
 end
 
 --- Check if a specific conjure is active
