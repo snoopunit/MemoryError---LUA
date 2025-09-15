@@ -636,7 +636,7 @@ function CombatEngine:acquireTargetIfNeeded()
                 local npc = npcs[i]
                 if npc and npc.Life and npc.Life > 0 then
                     local d = npc.Distance or 999
-                    if d < 30 and d < bestDist then
+                    if d < 50 and d < bestDist then
                         bestNpc, bestName, bestDist = npc, entry.name, d
                         if d < 6 then break end  -- good enough; stop digging
                     end
