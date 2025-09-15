@@ -534,7 +534,7 @@ function CombatEngine:parseBbar(bbar)
     if not bbar or not bbar.found then
         return { found=false, stacks=0, raw=nil, duration=0 }
     end
-    local raw = bbar.text or ""
+    local raw = (type(bbar.text) == "string") and bbar.text or ""
     local duration = parseDuration(raw)
     -- Try to extract stack count from the raw text (matches xN, N st, or just a number)
     local n = raw:match("x%s*(%d+)") or raw:match("(%d+)%s*st") or raw:match("(%d+)")
