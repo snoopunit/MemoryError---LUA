@@ -29,6 +29,10 @@ local function nowMs()
     return API.SystemTime()
 end
 
+local function areWefighting()
+    return API.IsTargeting() and API.CheckAnim(25)
+end
+
 -- ========= Engine =========
 
 function CombatEngine.new()
@@ -77,6 +81,7 @@ function CombatEngine.new()
     self._priosSorted = false
     self._targetSettledAt = 0
     self._settleDelayMs = 120
+    self._postTargetSleepUntil = 1800
 
     -- abilities (keep cd=0; rely on bar cooldowns to avoid bad assumptions)
     self.abilities = {
@@ -465,9 +470,6 @@ function CombatEngine.new()
 
     }
 
-    -- cache for ability bar data
-    self.abilityBarCache = {}
-
     return self
 end
 
@@ -562,17 +564,10 @@ end
 --- Check if any conjure buff is active
 --- @return boolean
 function CombatEngine:hasAnyConjure()
-<<<<<<< HEAD
     return (self:getBuff("skeletonWarrior").found)
         or (self:getBuff("vengefulGhost").found)
         or (self:getBuff("putridZombie").found)
         or (self:getBuff("phantomGuardian").found)
-=======
-    return self:getBuff("skeletonWarrior").found
-        or self:getBuff("vengefulGhost").found
-        or self:getBuff("putridZombie").found
-        or self:getBuff("phantomGuardian").found
->>>>>>> cad2aac20e795dff7b0e91d63e64af6c762d19de
 end
 
 --- Check if a specific conjure is active
@@ -698,10 +693,9 @@ end
 
 -- ======== Ability Casting ========
 function CombatEngine:getAbilityBar(name)
-    -- Use cached ability bar data only (never refresh)
-    local ab = self.abilityBarCache[name]
+    local ab = API.GetABs_name(name, true)
     if not ab then
-        API.logWarn("[getAbilityBar] No cached bar data for '" .. tostring(name) .. "'")
+        API.logWarn("[getAbilityBar] No bar data for '" .. tostring(name) .. "'")
         return nil
     end
     local abType = type(ab)
@@ -717,7 +711,6 @@ function CombatEngine:getAbilityBar(name)
         return nil
     end
     return ab
-    
 end
 
 function CombatEngine:isAbilityReady(name)
@@ -840,7 +833,7 @@ function CombatEngine:planAndQueue()
                 elseif nowMs() - (desc.lastUsed or 0) < (desc.cd or 0) then reason = "engine cd"
                 elseif nowMs() < self.lastGcdEnd then reason = "gcd"
                 else reason = "unknown" end
-                API.logDebug("[ENGINE] Skipping ability '" .. name .. "': " .. reason)
+                --API.logDebug("[ENGINE] Skipping ability '" .. name .. "': " .. reason)
                 evSkipped[#evSkipped+1] = { name=name, reason=reason }
             end
         end
@@ -881,10 +874,10 @@ function CombatEngine:update()
 
     -- Ability planning
     self.lastStep = "targeting_or_planning"
-    if API.IsTargeting() then
+    if areWefighting() then
         -- Ability casting
-        ok, err = xpcall(function() self:planAndQueue() end, function(e)
-            local msg = "[update] Ability error: " .. safeErr(e)
+        local ok, err = xpcall(function() self:planAndQueue() end, function(e)
+            local msg = "[update] Ability error: Type: " .. type(e) .. " | Value: " .. tostring(e)
             msg = msg .. "\n[ENGINE STATE] lastStep: " .. tostring(self.lastStep)
             msg = msg .. "\n[ENGINE STATE] pendingCast: " .. tostring(self.pendingCast)
             msg = msg .. "\n[ENGINE STATE] primaryTargetName: " .. tostring(self.primaryTargetName)
@@ -894,12 +887,12 @@ function CombatEngine:update()
             return msg
         end)
         if not ok then
-            API.logWarn("[update] Ability error: " .. safeErr(err))
+            API.logWarn(err)
             return
         end
     else
-        ok, err = xpcall(function() self:acquireTargetIfNeeded() end, function(e)
-            local msg = "[update] Targeting error: " .. safeErr(e)
+        local ok, err = xpcall(function() self:acquireTargetIfNeeded() end, function(e)
+            local msg = "[update] Targeting error: Type: " .. type(e) .. " | Value: " .. tostring(e)
             msg = msg .. "\n[ENGINE STATE] lastStep: " .. tostring(self.lastStep)
             msg = msg .. "\n[ENGINE STATE] pendingCast: " .. tostring(self.pendingCast)
             msg = msg .. "\n[ENGINE STATE] primaryTargetName: " .. tostring(self.primaryTargetName)
@@ -909,7 +902,7 @@ function CombatEngine:update()
             return msg
         end)
         if not ok then
-            API.logWarn("[update] Targeting error: " .. safeErr(err))
+            API.logWarn(err)
             return
         end
     end
@@ -931,19 +924,7 @@ function CombatEngine:start()
         local ok, err = xpcall(function()
             self:update()
         end, function(e)
-            local msg = "[ENGINE CRASH] Step: " .. tostring(self.lastStep) .. " | Type: " .. type(e) .. " | "
-            if type(e) == "userdata" then
-                local s = tostring(e)
-                if s:find("AllObject") then
-                    msg = msg .. "[AllObject?] " .. s
-                else
-                    msg = msg .. s
-                end
-            elseif type(e) == "string" then
-                msg = msg .. e
-            else
-                msg = msg .. "Unknown error"
-            end
+            local msg = "[ENGINE CRASH] Step: " .. tostring(self.lastStep) .. " | Type: " .. type(e) .. " | Value: " .. tostring(e)
             msg = msg .. "\nTraceback:\n" .. debug.traceback()
             return msg
         end)
@@ -951,24 +932,6 @@ function CombatEngine:start()
         if not ok then
             API.logWarn(err)
             self.running = false
-        end
-    end
-
-    -- Build ability bar cache once at engine creation, validating each entry
-    for name, _ in pairs(self.abilities) do
-        local ab = API.GetABs_name(name, true)
-        local abType = type(ab)
-        if abType == "table" or abType == "userdata" then
-            local hasSlot = ab.slot ~= nil
-            --local hasId = ab.id ~= nil
-            local hasName = ab.name ~= nil
-            if hasSlot and hasName then
-                self.abilityBarCache[name] = ab
-            else
-                API.logWarn("[AbilityBarCache] For ability '" .. tostring(name) .. "', got type '" .. abType .. "' but missing Abilitybar fields")
-            end
-        else
-            API.logWarn("[AbilityBarCache] For ability '" .. tostring(name) .. "', got invalid type: " .. abType .. ", value: " .. tostring(ab))
         end
     end
 

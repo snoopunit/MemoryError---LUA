@@ -571,7 +571,7 @@ end
 function UTILS.canQueueSkill(skill)
   if UTILS.isSkillQueued(skill) then return false end
   if UTILS.canUseSkill(skill) then
-    local skillFound = API.GetABs_name1(skill)
+    local skillFound = API.GetABs_name(skill, true)
     if skillFound.cooldown_timer < 6 then return true end
   end
   return false
@@ -580,9 +580,9 @@ end
 ---@param skill string -- skillName
 ---@return boolean
 function UTILS.canUseSkill(skill)
-  local skillFound = API.GetABs_name1(skill)
+  local skillFound = API.GetABs_name(skill, true)
   if not skillFound then return false end
-  --if not skillFound.id or skillFound.id == 0 then return false end
+  if not skillFound.id or skillFound.id == 0 then return false end
   if not skillFound.enabled then return false end
   return true
 end
@@ -593,7 +593,7 @@ end
 ---@param skillName string
 ---@return Abilitybar | nil
 function UTILS.getSkillOnBar(skillName)
-  local skillOnAB = API.GetABs_name1(skillName)
+  local skillOnAB = API.GetABs_name(skillName, true)
   if UTILS.canUseSkill(skillName) then
     return skillOnAB
   else
