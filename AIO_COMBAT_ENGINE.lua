@@ -131,6 +131,7 @@ local useSpecial = false
 local waitForDeath = false
 local useAoE = true
 local runLoop = false
+local initialized = false
 
 ----GUI----
 local imguiBackground = API.CreateIG_answer()
@@ -327,6 +328,93 @@ local function openLoot()
 
 end
 
+local function activateAbility(name)
+
+    ---MUST BE ON ACTIONBARS
+
+    API.DoAction_Ability(name, 1, API.OFF_ACT_GeneralInterface_route)
+    API.RandomSleep2(600, 50, 300)
+end
+
+local function setupPrayers()
+
+    if enemyToFight == nil then
+        return false
+    else
+        if UTILS.canUseSkill(PROTECT_MAGIC.SPELL_NAME) then
+            for _, name in ipairs(PROTECT_MAGIC.names) do
+                if name == enemyToFight then
+                    PRAYER_TO_USE = PROTECT_MAGIC
+                    return true
+                end
+            end
+        else 
+            --API.logDebug(PROTECT_MAGIC.SPELL_NAME.." unavailable!")
+        end
+        if UTILS.canUseSkill(PROTECT_MELEE.SPELL_NAME) then
+            for _, name in ipairs(PROTECT_MELEE.names) do
+                if name == enemyToFight then
+                    PRAYER_TO_USE = PROTECT_MELEE
+                    return true
+                end
+            end
+        else
+            --API.logDebug(PROTECT_MELEE.SPELL_NAME.." unavailable!")    
+        end
+        if UTILS.canUseSkill(PROTECT_RANGED.SPELL_NAME) then
+            for _, name in ipairs(PROTECT_RANGED.names) do
+                if name == enemyToFight then
+                    PRAYER_TO_USE = PROTECT_RANGED
+                    return true
+                end
+            end
+        else
+            --API.logDebug(PROTECT_RANGED.SPELL_NAME.." unavailable!")
+        end
+        if UTILS.canUseSkill(PROTECT_NECRO.SPELL_NAME) then
+            for _, name in ipairs(PROTECT_NECRO.names) do
+                if name == enemyToFight then
+                    PRAYER_TO_USE = PROTECT_NECRO
+                    return true
+                end
+            end
+        else
+            --API.logDebug(PROTECT_NECRO.SPELL_NAME.." unavailable!")    
+        end
+        if UTILS.canUseSkill(SOUL_SPLIT.SPELL_NAME) then
+            PRAYER_TO_USE = SOUL_SPLIT
+            return true
+        else
+            --API.logDebug(SOUL_SPLIT.SPELL_NAME.." unavailable!")
+        end
+    end
+    return false
+end
+
+local function prayerCheck()
+
+    if PRAYER_TO_USE == nil then
+        API.logDebug(" PRAYER_TO_USE == nil !")
+        return
+    end
+
+    if API.IsTargeting() and not hasBuff(PRAYER_TO_USE.BUFF_ID) and (API.GetPrayPrecent() > Use_Prayers_Percent) then
+        API.logDebug("In combat! Enabling protection prayers")
+        activateAbility(PRAYER_TO_USE.SPELL_NAME)
+        API.RandomSleep2(800, 50, 300)
+        return
+    elseif (API.LocalPlayer_IsInCombat_() and  not API.IsTargeting()) and hasBuff(PRAYER_TO_USE.BUFF_ID) then
+        API.logDebug("In combat w/o target! Disabling protection prayers")
+        activateAbility(PRAYER_TO_USE.SPELL_NAME)
+        API.RandomSleep2(800, 50, 300)
+        return
+    elseif not API.LocalPlayer_IsInCombat_() and hasBuff(PRAYER_TO_USE.BUFF_ID) then
+        API.logDebug("Out of Combat! Disabling protection prayers")
+        activateAbility(PRAYER_TO_USE.SPELL_NAME)
+        API.RandomSleep2(800, 50, 300)    
+    end
+end
+
 local function clearGUI()
     imguiBackground.remove = true
     fightBtn.remove = true
@@ -362,6 +450,7 @@ local function drawGUI()
         if chosen and chosen ~= "Select an enemy" then
             enemyToFight = chosen
             engine.priorityList = { [chosen] = 1 }
+            setupPrayers()
             imguiTarget.string_value = chosen
             API.logDebug("Selected Target: " .. chosen)
         end
@@ -419,14 +508,6 @@ local function drawGUI()
     API.DrawCheckbox(imguibox3)
     API.DrawCheckbox(imguibox4)
     API.DrawCheckbox(imguibox5)
-end
-
-local function activateAbility(name)
-
-    ---MUST BE ON ACTIONBARS
-
-    API.DoAction_Ability(name, 1, API.OFF_ACT_GeneralInterface_route)
-    API.RandomSleep2(600, 50, 300)
 end
 
 local function emergencyTele()
@@ -531,85 +612,6 @@ local function porterCheck()
     
 end
 
-local function setupPrayers()
-
-    if enemyToFight == nil then
-        return false
-    else
-        if UTILS.canUseSkill(PROTECT_MAGIC.SPELL_NAME) then
-            for _, name in ipairs(PROTECT_MAGIC.names) do
-                if name == enemyToFight then
-                    PRAYER_TO_USE = PROTECT_MAGIC
-                    return true
-                end
-            end
-        else 
-            --API.logDebug(PROTECT_MAGIC.SPELL_NAME.." unavailable!")
-        end
-        if UTILS.canUseSkill(PROTECT_MELEE.SPELL_NAME) then
-            for _, name in ipairs(PROTECT_MELEE.names) do
-                if name == enemyToFight then
-                    PRAYER_TO_USE = PROTECT_MELEE
-                    return true
-                end
-            end
-        else
-            --API.logDebug(PROTECT_MELEE.SPELL_NAME.." unavailable!")    
-        end
-        if UTILS.canUseSkill(PROTECT_RANGED.SPELL_NAME) then
-            for _, name in ipairs(PROTECT_RANGED.names) do
-                if name == enemyToFight then
-                    PRAYER_TO_USE = PROTECT_RANGED
-                    return true
-                end
-            end
-        else
-            --API.logDebug(PROTECT_RANGED.SPELL_NAME.." unavailable!")
-        end
-        if UTILS.canUseSkill(PROTECT_NECRO.SPELL_NAME) then
-            for _, name in ipairs(PROTECT_NECRO.names) do
-                if name == enemyToFight then
-                    PRAYER_TO_USE = PROTECT_NECRO
-                    return true
-                end
-            end
-        else
-            --API.logDebug(PROTECT_NECRO.SPELL_NAME.." unavailable!")    
-        end
-        if UTILS.canUseSkill(SOUL_SPLIT.SPELL_NAME) then
-            PRAYER_TO_USE = SOUL_SPLIT
-            return true
-        else
-            --API.logDebug(SOUL_SPLIT.SPELL_NAME.." unavailable!")
-        end
-    end
-    return false
-end
-
-local function prayerCheck()
-
-    if PRAYER_TO_USE == nil then
-        API.logDebug(" PRAYER_TO_USE == nil !")
-        return
-    end
-
-    if API.IsTargeting() and not hasBuff(PRAYER_TO_USE.BUFF_ID) and (API.GetPrayPrecent() > Use_Prayers_Percent) then
-        API.logDebug("In combat! Enabling protection prayers")
-        activateAbility(PRAYER_TO_USE.SPELL_NAME)
-        API.RandomSleep2(800, 50, 300)
-        return
-    elseif (API.LocalPlayer_IsInCombat_() and  not API.IsTargeting()) and hasBuff(PRAYER_TO_USE.BUFF_ID) then
-        API.logDebug("In combat w/o target! Disabling protection prayers")
-        activateAbility(PRAYER_TO_USE.SPELL_NAME)
-        API.RandomSleep2(800, 50, 300)
-        return
-    elseif not API.LocalPlayer_IsInCombat_() and hasBuff(PRAYER_TO_USE.BUFF_ID) then
-        API.logDebug("Out of Combat! Disabling protection prayers")
-        activateAbility(PRAYER_TO_USE.SPELL_NAME)
-        API.RandomSleep2(800, 50, 300)    
-    end
-end
-
 local function noteStuff()
     if not noteItems then
         return
@@ -681,36 +683,6 @@ local function essenceOfFinality()
         end
 end
 
-local function rejuvenate()
-    if not hasItem("shield") then
-        return
-    end
-
-    if  (API.GetAddreline_() < 94) or (API.GetHPrecent() > 80) or hasDeBuff(DEBUFFS.Enh_Excalibur) then
-        return
-    end
-
-    local startHP = API.GetHPrecent()
-
-    API.KeyboardPress('1', 50, 250)
-    API.RandomSleep2(600, 0, 600)  
-
-    if UTILS.canUseSkill("Rejuvenate") then
-        activateAbility("Rejuvenate")
-        API.RandomSleep2(600, 0, 600)
-    end
-
-    local skillTimer = API.SystemTime()
-
-    while Check_Timer(skillTimer) < 10000 do
-        API.RandomSleep2(600, 0, 600)
-    end
-
-    API.KeyboardPress('2', 50, 250)
-    API.RandomSleep2(600, 0, 600)
-    
-end
-
 local function fd_reflection_check()
     local function projectile()
         return #API.ReadAllObjectsArray({5},{2875},{})
@@ -728,7 +700,6 @@ local function fd_reflection_check()
     end
 end
 
-
 --main loop
 API.Write_LoopyLoop(true)
 API.SetDrawLogs(true)
@@ -742,27 +713,31 @@ do------------------------------------------------------------------------------
     local metrics = {
         {"Script","All-In-One Combat - by Klamor"},
         {"Kills:", engine.kills},
-        {"Kills/H:", tostring(engine:KillsPerHour())},
+        {"Kills/H:", engine:KillsPerHour()},
+        {"TTK: ", ((engine.lastTTK) or 0) .. "ms"},
+        {"Avg TTK: ", engine:AverageTTK().."s"},
+        {"Est. Profit: ", (engine.kills * API.GetExchangePrice(ITEMS.BONES.frost_dbones)).."gp"},
+        {"Profit/H: ", math.floor((engine.kills*API.GetExchangePrice(ITEMS.BONES.frost_dbones))/((API.SystemTime() - engine.startTime)/60000)).."gp"}
     }
     API.DrawTable(metrics)
     ----METRICS----
 
     if runLoop then 
 
-        setupPrayers()
-
         if engine.running then
+
+            if not initialized then
+                setupPrayers()
+                initialized = true
+            end
+            engine:update()
 
             if API.IsTargeting() then
 
                 buffCheck()
-                API.RandomSleep2(600, 0, 600)
                 prayerCheck()
-                API.RandomSleep2(600, 0, 600)
                 fd_reflection_check()
-                API.RandomSleep2(600, 0, 600)
                 noteStuff()
-                API.RandomSleep2(600, 0, 600)
 
             end     
 
