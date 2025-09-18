@@ -45,13 +45,16 @@ function CombatEngine.new()
     self.scheduler = {}
     self.startTime = API.SystemTime()
     self.kills = 0
+    self.lastTTKStart = nil
+    self.lastTTK = nil
+    self.ttkHistory = {}
 
     -- targeting
     self.primaryTargetName = nil      -- we keep the name; Interact finds the nearest
+    self.isFirstTarget = true         -- for kill counting
     self.scanInterval = 1800          -- ms between acquisition attempts
     self.lastScanTime = 0
     self.useAoE = true
-    self.isFirstTarget = true
 
     -- priorities: lower number = higher priority
     self.priorityList = {
@@ -343,7 +346,7 @@ function CombatEngine.new()
             end
         },]]
 
-        ["Spectral Scythe"] = {
+        --[[["Spectral Scythe"] = {
             adrenaline = -10,
             cd = 15000,
             lastUsed = -1e12,
@@ -396,7 +399,7 @@ function CombatEngine.new()
                     desc.stageExpire = 0
                 end
             end
-        },
+        },]]
 
         ["Conjure Undead Army"] = {
             adrenaline = 0,
@@ -475,6 +478,16 @@ end
 
 function CombatEngine:KillsPerHour()   
     return math.floor((self.kills*60)/((API.SystemTime() - self.startTime)/60000))
+end
+
+-- Returns the average TTK in seconds (last 100 kills)
+function CombatEngine:AverageTTK()
+    if not self.ttkHistory or #self.ttkHistory == 0 then return 0 end
+    local sum = 0
+    for _, v in ipairs(self.ttkHistory) do
+        sum = sum + v
+    end
+    return (sum / #self.ttkHistory) / 1000
 end
 
 -- call this whenever you change priorityList externally
@@ -595,6 +608,12 @@ function CombatEngine:targetHasDebuff(id)
     return false
 end
 
+function CombatEngine:isTargetDead()
+    if not API.IsTargeting() then return true end
+    if API.ReadTargetInfo(true).Hitpoints == 0 then return true end
+    return false
+end
+
 -- ======== Scheduler ========
 
 function CombatEngine:schedule(delayMs, job)
@@ -674,11 +693,25 @@ function CombatEngine:acquireTargetIfNeeded()
     if ok and attacked then
         API.logInfo(("[ENGINE] Engaging: %s @%.1fm took %dms"):format(bestName, bestDist, elapsed))
         self.primaryTargetName = bestName
+        -- Increment kill counter on every acquisition except the very first
         if self.isFirstTarget then
             self.isFirstTarget = false
         else
             self.kills = self.kills + 1
+            -- TTK: calculate and log time-to-kill, store in history
+            if self.lastTTKStart then
+                self.lastTTK = nowMs() - self.lastTTKStart
+                table.insert(self.ttkHistory, self.lastTTK)
+                if #self.ttkHistory > 100 then
+                    table.remove(self.ttkHistory, 1)
+                end
+                API.logInfo(("[ENGINE] Target down! TTK: %.2fs | Total kills: %d | KPH: %d"):format(self.lastTTK/1000, self.kills, self:KillsPerHour()))
+            else
+                API.logInfo(("[ENGINE] Target down! Total kills: %d | KPH: %d"):format(self.kills, self:KillsPerHour()))
+            end
         end
+        -- TTK: reset timer when actively engaging a new target
+        self.lastTTKStart = nowMs()
         -- set a non-blocking settle window instead of sleeping
         self._targetSettledAt = nowMs() + self._settleDelayMs
 
@@ -919,23 +952,7 @@ end
 function CombatEngine:start()
     if self.running then return end
     self.running = true
-
-    local function safeUpdate()
-        local ok, err = xpcall(function()
-            self:update()
-        end, function(e)
-            local msg = "[ENGINE CRASH] Step: " .. tostring(self.lastStep) .. " | Type: " .. type(e) .. " | Value: " .. tostring(e)
-            msg = msg .. "\nTraceback:\n" .. debug.traceback()
-            return msg
-        end)
-
-        if not ok then
-            API.logWarn(err)
-            self.running = false
-        end
-    end
-
-    TickEvent.Register(safeUpdate)
+    API.logInfo("[ENGINE] Started.")
 end
 
 function CombatEngine:stop()

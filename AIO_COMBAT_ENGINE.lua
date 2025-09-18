@@ -353,7 +353,6 @@ local function drawGUI()
             engine:start()
             runLoop = true
             clearGUI()
-            API.logDebug("Combat Engine: STARTED")
         end
     end
 
@@ -492,18 +491,17 @@ local function buffCheck()
         end 
     end]]
 
-    if enemyToFight == "Frost dragon" then
-        if not hasBuff(BUFFS.Super_Antifire) then
-            if Inventory:GetItemAmount("Super antifire") > 0 then
-                API.logDebug("Using super antifire")
-                activateAbility("Super antifire potion")
-                API.RandomSleep2(600, 50, 300)
-            else
-                emergencyTele()
-                terminate()
-            end
+    if not hasBuff(BUFFS.Super_Antifire) then
+        if Inventory:GetItemAmount("Super antifire") > 0 then
+            API.logDebug("Using super antifire")
+            activateAbility("Super antifire potion")
+            API.RandomSleep2(600, 50, 300)
+        else
+            emergencyTele()
+            terminate()
         end
     end
+    
 
     --[[if Inventory:GetItemAmount("Overload") > 0 then
         if not hasBuff(BUFFS.Overload) then

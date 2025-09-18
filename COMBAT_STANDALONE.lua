@@ -25,10 +25,7 @@ local function areWefighting()
 end
 
 local function noteFrostDragonBones()
-    if not noteItems then
-        return
-    end
-    if API.Invfreecount_() < math.random(1,8) then
+    if Inventory:FreeSpaces() < math.random(1,8) then
         if not Inventory:Contains(30372) and not Inventory:Contains(43045) then
             API.logWarn("[Note] No notepaper.")
             return false
@@ -50,6 +47,42 @@ local function noteFrostDragonBones()
     end
 end
 
+local function activateAbility(name)
+
+    ---MUST BE ON ACTIONBARS
+
+    API.DoAction_Ability(name, 1, API.OFF_ACT_GeneralInterface_route)
+    API.RandomSleep2(600, 50, 300)
+end
+
+local function hasBuff(buff)
+    return API.Buffbar_GetIDstatus(buff, false).found
+end
+
+local function hasDeBuff(debuff)
+    return API.DeBuffbar_GetIDstatus(debuff, false).found
+end
+
+local function hasItem(item)
+    local invitems = API.InvItemcount_String(item)
+    if invitems > 0 then
+        return true
+    end
+    return false    
+end
+
+local BUFFS = {
+    Powder_Of_Burials = 52805,
+    Grace_Of_The_Elves = 51490,
+    Super_Antifire = 30093,
+    Overload = 26093
+}
+local DEBUFFS = {
+    Poison = 14691,
+    Elven_Shard = 43358,
+    Enh_Excalibur = 14632
+}
+
 -- ========= State =========
 local running = true
 local lastStep = "init"
@@ -62,7 +95,7 @@ local scanInterval = 1800
 local lastScanTime = 0
 local useAoE = true
 local isFirstTarget = true
-local priorityList = {["Frost Dragon"] = 1}
+local priorityList = {["Frost dragon"] = 1}
 local priosSorted = false
 local _targetSettledAt = 0
 local _settleDelayMs = 120
@@ -87,42 +120,10 @@ local enemyDebuffIDs = {
 }
 
 local abilities = {
-    --[["Touch of Death"]] = {
-        adrenaline = 9,
-        cd = 14400,
-        lastUsed = -1e12,
-        expectedValue = function()
-            if API.GetAddreline_() == 100 then return 0.0 end
-            local nec = getBuff("necrosis")
-            local stacks = (nec and nec.stacks) or 0
-            if stacks < 6 then
-                API.logDebug("ToD #Stacks: "..tostring(stacks))
-                return 7.5
-            else
-                return 0.5
-            end
-        end
-    },
-    --[["Soul Sap"]] = {
-        adrenaline = 9,
-        cd = 5400,
-        lastUsed = -1e12,
-        expectedValue = function()
-            if API.GetAddreline_() == 100 then return 0.0 end
-            local rs = getBuff("residualSouls")
-            local stacks = (rs and rs.stacks) or 0
-            if stacks < 3 then
-                API.logDebug("Soul Sap #Stacks: "..tostring(stacks))
-                return 6.0
-            else
-                return 0.0
-            end
-        end
-    },
     ["Finger of Death"] = {
         adrenaline = -60,
         lastUsed   = -1e12,
-        expectedValue = function()
+        expectedValue = function(desc)
             local nec = getBuff("necrosis")
             local stacks = (nec and nec.stacks) or 0
             if stacks >= 6 then return 10.0 else return 0.0 end
@@ -131,7 +132,7 @@ local abilities = {
     ["Volley of Souls"] = {
         adrenaline = 0,
         lastUsed = -1e12,
-        expectedValue = function()
+        expectedValue = function(desc)
             local rs = getBuff("residualSouls")
             local stacks = (rs and rs.stacks) or 0
             if stacks == 3 then return 9.0 else return 0.0 end
@@ -141,7 +142,7 @@ local abilities = {
         adrenaline = -20,
         cd = 60000,
         lastUsed = -1e12,
-        expectedValue = function()
+        expectedValue = function(desc)
             if not useAoE then return 0.0 end
             if targetHasDebuff(enemyDebuffIDs.bloated) then return 0.0 else return 9.5 end
         end
@@ -149,7 +150,7 @@ local abilities = {
     ["Soul Strike"] = {
         adrenaline = 0,
         lastUsed = -1e12,
-        expectedValue = function()
+        expectedValue = function(desc)
             if targetHasDebuff(enemyDebuffIDs.immune_stun) then return 0.0 end
             if not useAoE then return 0.0 end
             local rs = getBuff("residualSouls")
@@ -162,11 +163,10 @@ local abilities = {
         adrenaline = -100,
         cd = 60000,
         lastUsed = -1e12,
-        expectedValue = function()
+        expectedValue = function(desc)
             if not useAoE then return 0.0 end
             if API.GetAddreline_() < 100 then return 0.0 end
             local t = nowMs()
-            local desc = abilities["Death Skulls"]
             if desc and (t - desc.lastUsed < (desc.cd or 0)) then return 0.0 end
             return 10.0
         end
@@ -175,15 +175,14 @@ local abilities = {
         adrenaline = -100,
         cd = 90000,
         lastUsed = -1e12,
-        expectedValue = function()
+        expectedValue = function(desc)
             if API.GetAddreline_() < 100 then return 0.0 end
             local t = nowMs()
-            local desc = abilities["Living Death"]
             if desc and (t - desc.lastUsed < (desc.cd or 0)) then return 0.0 end
             if isAbilityReady("Death Skulls") and useAoE then return 0.0 end
             return 9.0
         end,
-        onCast = function()
+        onCast = function(desc, abilities)
             local t = nowMs()
             if abilities["Death Skulls"] then
                 abilities["Death Skulls"].lastUsed = -1e12
@@ -200,77 +199,33 @@ local abilities = {
             API.logDebug("Living Death cast: DS/ToD reset, DS cd reduced to 12s for 30s")
         end
     },
-    --[["Conjure Skeleton Warrior"]] = {
-        adrenaline = 0,
-        lastUsed = -1e12,
-        expectedValue = function()
-            return hasConjure("skeletonWarrior") and 0.0 or 1.8
-        end
-    },
+  
     ["Command Skeleton Warrior"] = {
         adrenaline = 0,
         cd = 15000,
         lastUsed = -1e12,
-        expectedValue = function()
+        expectedValue = function(desc)
             if isAbilityReady("Command Skeleton Warrior") then return 3.5 end
             return 0.0
         end
     },
-    --[["Conjure Putrid Zombie"]] = {
-        adrenaline = 0,
-        lastUsed = -1e12,
-        expectedValue = function()
-            return hasConjure("putridZombie") and 0.0 or 1.8
-        end
-    },
-    --[["Command Putrid Zombie"]] = {
-        adrenaline = 0,
-        cd = 15000,
-        lastUsed = -1e12,
-        expectedValue = function()
-            if hasConjure("putridZombie") and isAbilityReady("Command Putrid Zombie") then return 1.5 end
-            return 0.0
-        end
-    },
-    --[["Conjure Vengeful Ghost"]] = {
-        adrenaline = 0,
-        lastUsed = -1e12,
-        expectedValue = function()
-            return hasConjure("vengefulGhost") and 0.0 or 1.8
-        end
-    },
+    
     ["Command Vengeful Ghost"] = {
         adrenaline = 0,
         cd = 15000,
         lastUsed = -1e12,
-        expectedValue = function()
+        expectedValue = function(desc)
             if isAbilityReady("Command Vengeful Ghost") then return 4.0 else return 0.0 end
         end
     },
-    --[["Conjure Phantom Guardian"]] = {
-        adrenaline = 0,
-        lastUsed = -1e12,
-        expectedValue = function()
-            return hasConjure("phantomGuardian") and 0.0 or 1.8
-        end
-    },
-    --[["Command Phantom Guardian"]] = {
-        adrenaline = 0,
-        cd = 15000,
-        lastUsed = -1e12,
-        expectedValue = function()
-            if hasConjure("phantomGuardian") and isAbilityReady("Command Phantom Guardian") then return 3.0 end
-            return 0.0
-        end
-    },
+   
     ["Spectral Scythe"] = {
         adrenaline = -10,
         cd = 15000,
         lastUsed = -1e12,
         stage = 0,
         stageExpire = 0,
-        expectedValue = function()
-            local desc = abilities["Spectral Scythe"]
+        expectedValue = function(desc)
             if not useAoE then return 0.0 end
             local rs = getBuff("residualSouls")
             local stacks = (rs and rs.stacks) or 0
@@ -279,8 +234,7 @@ local abilities = {
             if desc.stage == 0 then return 2.5 elseif desc.stage == 1 then return 3.0 elseif desc.stage == 2 then return 3.5 end
             return 0.0
         end,
-        onCast = function()
-            local desc = abilities["Spectral Scythe"]
+        onCast = function(desc)
             local t = nowMs()
             if t > desc.stageExpire then desc.stage = 0 end
             if desc.stage < 2 then
@@ -297,7 +251,7 @@ local abilities = {
         adrenaline = 0,
         cd = 60000,
         lastUsed = -1e12,
-        expectedValue = function()
+        expectedValue = function(desc)
             if isSkillQueued("Conjure Undead Army") then return 0.0 end
             if hasAnyConjure() then return 0.0 else return 11.0 end
         end
@@ -306,11 +260,11 @@ local abilities = {
         adrenaline = 0,
         cd = 45000,
         lastUsed = -1e12,
-        expectedValue = function()
+        expectedValue = function(desc)
             local hp = API.GetHPrecent()
             if hp >= 70 then return 0.0 else return 7.5 end
         end,
-        onCast = function()
+        onCast = function(desc)
             local t = nowMs()
             pendingCast  = "Blood Siphon"
             pendingUntil = t + 6000
@@ -321,7 +275,7 @@ local abilities = {
         adrenaline = -25,
         cd = 30000,
         lastUsed = -1e12,
-        expectedValue = function()
+        expectedValue = function(desc)
             if targetHasDebuff(enemyDebuffIDs.immune_stun) then return 0.0 end
             local nec = getBuff("necrosis")
             local stacks = (nec and nec.stacks) or 0
@@ -332,7 +286,7 @@ local abilities = {
     ["Eat Food"] = {
         adrenaline = 0,
         lastUsed = -1e12,
-        expectedValue = function()
+        expectedValue = function(desc)
             local hp = API.GetHPrecent()
             if hp >= 40 then return 0.0 else return 11.0 end
         end
@@ -461,6 +415,48 @@ function acquireTargetIfNeeded()
     end
 end
 
+-- ======== Queued Ability Helpers ========
+-- Credits to DEAD.UTILS
+
+---Find which bar currently has a queued skill.
+---@return number|nil
+function findBarWithQueuedSkill()
+    local queuedBar = API.VB_FindPSettinOrder(5861, 0).state
+    if queuedBar == 0 then return nil end
+    if queuedBar == 1003 then return 0 end
+    if queuedBar == 1032 then return 1 end
+    if queuedBar == 1033 then return 2 end
+    if queuedBar == 1034 then return 3 end
+    if queuedBar == 1035 then return 4 end
+    return nil
+end
+
+---Is any ability queued?
+---@return boolean
+function isAbilityQueued()
+    return API.VB_FindPSettinOrder(5861, 0).state ~= 0
+end
+
+---Get the slot index of the queued ability.
+---@return number
+function getSlotOfQueuedSkill()
+    return API.VB_FindPSettinOrder(4164, 0).state
+end
+
+--- Is a skill queued.
+---@param skill string -- skillName
+---@return boolean
+function isSkillQueued(skill)
+    if not isAbilityQueued() then return false end
+    local barNumber = findBarWithQueuedSkill()
+    if barNumber == nil then return false end
+    local skillbar = API.GetAB_name(barNumber, skill)
+    local slot = getSlotOfQueuedSkill()
+    if slot == 0 then return false end
+    if skillbar.slot == slot then return true end
+    return false
+end
+
 -- ========= Ability Casting =========
 function getAbilityBar(name)
     local ab = API.GetABs_name(name, true)
@@ -514,7 +510,7 @@ function castAbility(name)
         desc.lastUsed = t
         lastGcdEnd = t + math.floor(gcd * 1000)
         if desc.onCast then
-            local ok, err = pcall(function() desc.onCast() end)
+            local ok, err = pcall(function() desc.onCast(desc, abilities) end)
             if not ok then API.logWarn("[castAbility] onCast error for " .. name .. ": " .. safeErr(err)) end
         end
     else
@@ -529,7 +525,7 @@ function planAndQueue()
     for name, desc in pairs(abilities) do
         local ab = getAbilityBar(name)
         if ab and isAbilityReady(name) then
-            local score = (desc.expectedValue and desc.expectedValue()) or 0
+            local score = (desc.expectedValue and desc.expectedValue(desc)) or 0
             if score > bestScore then bestScore, bestName = score, name end
         end
     end
@@ -541,11 +537,100 @@ function planAndQueue()
     end
 end
 
+local function terminate()
+    API.logDebug("Shutting down...")
+    runLoop = false
+    API.Write_LoopyLoop(false)
+end
+
+local function emergencyTele()
+    if UTILS.canUseSkill("War's Retreat Teleport") then
+        API.logDebug("Teleport: War's Retreat")
+        activateAbility("War's Retreat Teleport")  
+    elseif UTILS.canUseSkill("Ring of Fortune") then
+        API.logDebug("Teleport: Ring of Fortune")
+        activateAbility("Ring of Fortune", 2)
+    elseif UTILS.canUseSkill("Wilderness Sword") then
+        API.logDebug("Teleport: Wilderness Sword")
+        API.DoAction_Interface(0xffffffff,0x9410,2,1670,136,-1,API.OFF_ACT_GeneralInterface_route)
+            API.RandomSleep2(600, 50, 300)
+            API.KeyboardPress('1', 50, 250)
+            API.RandomSleep2(600, 50, 300)
+            API.KeyboardPress('1', 50, 250) 
+    end  
+    terminate()
+end
+
+local function buffCheck()
+       
+    if API.InvItemcount_String("Ancient elven ritual shard") > 0 then
+        if not hasDeBuff(DEBUFFS.Elven_Shard) and (API.GetPrayPrecent() <= 63) then
+            --API.DoAction_Interface(0x2e,0xa95e,1,1670,110,-1,API.OFF_ACT_GeneralInterface_route)
+            activateAbility("Ancient elven ritual shard")
+            API.RandomSleep2(600, 50, 300)
+        end 
+    end
+
+    if API.InvItemcount_String("Enhanced Excalibur") > 0 then
+        if not hasDeBuff(DEBUFFS.Enh_Excalibur) and (API.GetHPrecent() <= 80) then
+            activateAbility("Enhanced Excalibur")
+            API.RandomSleep2(600, 50, 300)
+        end 
+    end
+    
+    if API.InvItemcount_String("Super antifire") > 0 then
+        if not hasBuff(BUFFS.Super_Antifire) then
+            API.logDebug("Using super antifire")
+            activateAbility("Super antifire potion")
+            API.RandomSleep2(600, 50, 300)
+        end
+    else
+        if currentTarget == "Frost dragon" then
+            emergencyTele()
+            terminate()
+        end
+    end
+
+    if API.InvItemcount_String("Overload") > 0 then
+        if not hasBuff(BUFFS.Overload) then
+            API.logDebug("Using Overloads")
+            activateAbility("Overload potion")
+            API.RandomSleep2(600, 50, 300)
+        end
+    end
+    
+    
+    
+end
+
+local function fd_reflection_check()
+    local function projectile()
+        return #API.ReadAllObjectsArray({5},{2875},{})
+    end
+    local function cease()
+        local ceaseAB = API.GetABs_name("Cease")
+        if ceaseAB and ceaseAB.enabled then
+            API.DoAction_Ability_Direct(ceaseAB, 1, API.OFF_ACT_GeneralInterface_route)
+        end
+    end
+    if projectile() >= 1 then
+        API.logWarn("Detected Frost Dragon reflection ability projectile!")
+        while projectile() >= 1 and API.Read_LoopyLoop() do
+            API.logDebug("CEASING until the projectile is gone!")
+            buffCheck()
+            cease()
+            API.RandomSleep2(2400,0,600)
+        end
+    end
+end
+
 -- ========= Main Loop =========
-local tickCount = 0
-local maxTicks = 1000 -- or set to desired number of iterations
-while running and tickCount < maxTicks do
-    tickCount = tickCount + 1
+API.Write_LoopyLoop(true)
+API.SetDrawLogs(true)
+API.SetDrawTrackedSkills(true)
+rebuildPriosIfNeeded()
+
+while(API.Read_LoopyLoop()) do
     -- Reset pending if ability shows cooldown now
     lastStep = "check_pending_cast"
     if pendingCast then
@@ -561,15 +646,18 @@ while running and tickCount < maxTicks do
     if _postTargetSleepUntil and nowMs() < _postTargetSleepUntil then goto continue end
     lastStep = "targeting_or_planning"
     if areWefighting() then
+        fd_reflection_check()
+        buffCheck()
         local ok, err = pcall(function() planAndQueue() end)
-        if not ok then API.logWarn(err) running = false end
+        if not ok then API.logWarn(err) break end
     else
         local ok, err = pcall(function() acquireTargetIfNeeded() end)
-        if not ok then API.logWarn(err) running = false end
+        if not ok then API.logWarn(err) break end
     end
-    local ok, err = pcall(function() processScheduler() end)
-    if not ok then API.logWarn("[update] Scheduler error: " .. safeErr(err)) running = false end
     noteFrostDragonBones()
+    local ok, err = pcall(function() processScheduler() end)
+    if not ok then API.logWarn("[update] Scheduler error: " .. safeErr(err)) break end
+    API.RandomSleep2(600, 20, 100)
     ::continue::
 end
 
