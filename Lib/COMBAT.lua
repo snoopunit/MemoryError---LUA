@@ -486,7 +486,7 @@ function CombatEngine:AverageTTK()
     for _, v in ipairs(self.ttkHistory) do
         sum = sum + v
     end
-    return (sum / #self.ttkHistory) / 1000
+    return math.floor((sum / #self.ttkHistory) / 1000)
 end
 
 -- call this whenever you change priorityList externally
