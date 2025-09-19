@@ -38,11 +38,15 @@ function bank()
     
     while (API.SystemTime() - bankTimer) < 15000 do
 
-        Interact:NPC("Banker", "Load Last Preset from", 10)
-
+        if not Interact:NPC("Banker", "Load Last Preset from", 10) then
+            if not Interact:Object("Bank chest", "Load Last Preset from", 10) then
+                API.logWarn("Failed to open bank!")
+                return false
+            end
+        end
         API.RandomSleep2(1200,0,0)
 
-        while API.Read_LoopyLoop() and API.ReadPlayerMovin() do
+        while API.ReadPlayerMovin() and API.Read_LoopyLoop() do
             API.RandomSleep2(50,0,50)
         end
 
@@ -73,6 +77,7 @@ function makeUrns()
     API.logDebug("makeUrns()")
     if Inventory:IsFull() then
         while (Inventory:GetItemAmount("Soft clay") >= 2) and API.Read_LoopyLoop() do
+            API.logDebug("Found soft clay, forming urns")
             usePortableCrafter()
             API.RandomSleep2(1200,0,0)
             waitForDialog()
@@ -81,6 +86,7 @@ function makeUrns()
             MISC.doCrafting()
         end
         while hasUnfiredPots() and API.Read_LoopyLoop() do
+            API.logDebug("Found unfired pots, firing urns")
             usePortableCrafter()
             API.RandomSleep2(1200,0,0)
             waitForDialog()
@@ -89,8 +95,7 @@ function makeUrns()
             MISC.doCrafting()
         end
     else
-        Interact:NPC("Banker", "Load Last Preset from", 10)
-        API.RandomSleep2(2400,0,600)
+        bank()
     end
 end
 

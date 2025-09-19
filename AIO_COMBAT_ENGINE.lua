@@ -717,7 +717,16 @@ do------------------------------------------------------------------------------
         {"TTK: ", ((engine.lastTTK) or 0) .. "ms"},
         {"Avg TTK: ", engine:AverageTTK().."s"},
         {"Est. Profit: ", (engine.kills * API.GetExchangePrice(ITEMS.BONES.frost_dbones)).."gp"},
-        {"Profit/H: ", math.floor((engine.kills*API.GetExchangePrice(ITEMS.BONES.frost_dbones))/((API.SystemTime() - engine.startTime)/60000)).."gp"}
+        {"Profit/H: ", 
+            (function()
+                local elapsed = (API.SystemTime() - engine.startTime) / 3600000 -- convert ms to hours
+                if elapsed > 0 then
+                    return math.floor((engine.kills * API.GetExchangePrice(ITEMS.BONES.frost_dbones)) / elapsed) .. "gp"
+                else
+                    return "0gp"
+                end
+            end)()
+        }
     }
     API.DrawTable(metrics)
     ----METRICS----

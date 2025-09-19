@@ -625,10 +625,7 @@ function CombatEngine:processScheduler()
     for i = #self.scheduler, 1, -1 do
         local item = self.scheduler[i]
         if t >= item.time then
-            local ok, err = pcall(item.job)
-            if not ok then
-                API.logWarn("[Scheduler] Job error: " .. safeErr(err))
-            end
+            item.job()
             table.remove(self.scheduler, i)
         end
     end
@@ -684,16 +681,11 @@ function CombatEngine:acquireTargetIfNeeded()
         return
     end
 
-    -- guard only the risky native call, not the whole loop
-    local ok, attacked = pcall(function()
-        return API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, bestNpc)
-    end)
-
+    local attacked = API.DoAction_NPC__Direct(0x2a, API.OFF_ACT_AttackNPC_route, bestNpc)
     local elapsed = nowMs() - startTime
-    if ok and attacked then
+    if attacked then
         API.logInfo(("[ENGINE] Engaging: %s @%.1fm took %dms"):format(bestName, bestDist, elapsed))
         self.primaryTargetName = bestName
-        -- Increment kill counter on every acquisition except the very first
         if self.isFirstTarget then
             self.isFirstTarget = false
         else
@@ -717,10 +709,6 @@ function CombatEngine:acquireTargetIfNeeded()
 
         -- Schedule a sleep to prevent actions for 2 seconds after targeting
         self._postTargetSleepUntil = nowMs() + 2000
-    elseif not ok then
-        API.logWarn("[Targeting ERROR] C++ crash during targeting of: " .. tostring(bestName))
-    else
-        API.logDebug("Attack failed on: " .. tostring(bestName) .. " | time " .. elapsed .. "ms")
     end
 end
 
@@ -811,32 +799,15 @@ function CombatEngine:castAbility(name)
         return
     end
 
-    local success, result = pcall(function()
-        return API.DoAction_Ability_Direct(ab, 1, API.OFF_ACT_GeneralInterface_route)
-    end)
-
-    if not success then
-        API.logWarn("[castAbility] C++ crash in DoAction for: " .. name)
-        return
-    end
-
+    local result = API.DoAction_Ability_Direct(ab, 1, API.OFF_ACT_GeneralInterface_route)
     if result then
         self.pendingCast = name
         self.pendingUntil = t + 600
         desc.lastUsed = t
         self.lastGcdEnd = t + math.floor(self.gcd * 1000)
-
         if desc.onCast then
-            -- run onCast in a protected block
-            local ok, err = pcall(function()
-                desc.onCast(self)
-            end)
-            if not ok then
-                API.logWarn("[castAbility] onCast error for " .. name .. ": " .. safeErr(err))
-            end
+            desc.onCast(self)
         end
-    else
-        API.logWarn("[ENGINE] DoAction failed for: " .. name)
     end
 end
 
@@ -908,44 +879,46 @@ function CombatEngine:update()
     -- Ability planning
     self.lastStep = "targeting_or_planning"
     if areWefighting() then
-        -- Ability casting
-        local ok, err = xpcall(function() self:planAndQueue() end, function(e)
-            local msg = "[update] Ability error: Type: " .. type(e) .. " | Value: " .. tostring(e)
-            msg = msg .. "\n[ENGINE STATE] lastStep: " .. tostring(self.lastStep)
-            msg = msg .. "\n[ENGINE STATE] pendingCast: " .. tostring(self.pendingCast)
-            msg = msg .. "\n[ENGINE STATE] primaryTargetName: " .. tostring(self.primaryTargetName)
-            msg = msg .. "\n[ENGINE STATE] kills: " .. tostring(self.kills)
-            msg = msg .. "\n[ENGINE STATE] running: " .. tostring(self.running)
-            msg = msg .. "\nTraceback:\n" .. debug.traceback()
-            return msg
-        end)
-        if not ok then
-            API.logWarn(err)
-            return
+        if self._priosSorted and #self._priosSorted > 1 and self.primaryTargetName then
+            local currentPrio = nil
+            for _, entry in ipairs(self._priosSorted) do
+                if entry.name == self.primaryTargetName then
+                    currentPrio = entry.weight
+                    break
+                end
+            end
+            local bestPrio = math.huge
+            local bestName = nil
+            for _, entry in ipairs(self._priosSorted) do
+                local npcs = API.ReadAllObjectsArray({1}, {-1}, {entry.name})
+                if npcs and #npcs > 0 then
+                    for i = 1, math.min(#npcs, 50) do
+                        local npc = npcs[i]
+                        if npc and npc.Life and npc.Life > 0 then
+                            if entry.weight < bestPrio then
+                                bestPrio = entry.weight
+                                bestName = entry.name
+                            end
+                        end
+                    end
+                end
+            end
+            if bestPrio < (currentPrio or math.huge) and bestName ~= self.primaryTargetName then
+                API.logInfo("[ENGINE] Switching to higher priority target: " .. tostring(bestName))
+                API.ClearTarget()
+                self.primaryTargetName = nil
+                self.lastTTKStart = nowMs()
+                self._targetSettledAt = nowMs() + self._settleDelayMs
+                self._postTargetSleepUntil = nowMs() + 2000
+                self:acquireTargetIfNeeded()
+                return
+            end
         end
+        self:planAndQueue()
     else
-        local ok, err = xpcall(function() self:acquireTargetIfNeeded() end, function(e)
-            local msg = "[update] Targeting error: Type: " .. type(e) .. " | Value: " .. tostring(e)
-            msg = msg .. "\n[ENGINE STATE] lastStep: " .. tostring(self.lastStep)
-            msg = msg .. "\n[ENGINE STATE] pendingCast: " .. tostring(self.pendingCast)
-            msg = msg .. "\n[ENGINE STATE] primaryTargetName: " .. tostring(self.primaryTargetName)
-            msg = msg .. "\n[ENGINE STATE] kills: " .. tostring(self.kills)
-            msg = msg .. "\n[ENGINE STATE] running: " .. tostring(self.running)
-            msg = msg .. "\nTraceback:\n" .. debug.traceback()
-            return msg
-        end)
-        if not ok then
-            API.logWarn(err)
-            return
-        end
+        self:acquireTargetIfNeeded()
     end
-
-    -- Run scheduled jobs (casts, delayed stuff)
-    ok, err = pcall(function() self:processScheduler() end)
-    if not ok then
-        API.logWarn("[update] Scheduler error: " .. safeErr(err))
-        return
-    end
+    self:processScheduler()
 
 end
 
