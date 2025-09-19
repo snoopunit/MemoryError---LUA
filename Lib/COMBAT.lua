@@ -39,7 +39,6 @@ function CombatEngine.new()
     local self = setmetatable({}, CombatEngine)
 
     -- run-state
-    self.lastStep = "init"  -- crash tracing
     self.running = false
     self.lastGcdEnd = 0
     self.scheduler = {}
@@ -608,12 +607,6 @@ function CombatEngine:targetHasDebuff(id)
     return false
 end
 
-function CombatEngine:isTargetDead()
-    if not API.IsTargeting() then return true end
-    if API.ReadTargetInfo(true).Hitpoints == 0 then return true end
-    return false
-end
-
 -- ======== Scheduler ========
 
 function CombatEngine:schedule(delayMs, job)
@@ -634,7 +627,6 @@ end
 -- ======== Targeting (scheduled) ========
 
 function CombatEngine:acquireTargetIfNeeded()
-    self.lastStep = "targeting_or_planning"
     if API.IsTargeting() then return end
 
     if not self._priosSorted or #self._priosSorted == 0 then
@@ -857,7 +849,6 @@ function CombatEngine:update()
     if not self.running then return end
 
     -- Reset pending if ability shows cooldown now
-    self.lastStep = "check_pending_cast"
     if self.pendingCast then
         local ab = self:getAbilityBar(self.pendingCast)
         if ab and ab.cooldown_timer and ab.cooldown_timer > 0 then
@@ -877,8 +868,8 @@ function CombatEngine:update()
     end
 
     -- Ability planning
-    self.lastStep = "targeting_or_planning"
     if areWefighting() then
+        -- Check for higher priority targets during combat
         if self._priosSorted and #self._priosSorted > 1 and self.primaryTargetName then
             local currentPrio = nil
             for _, entry in ipairs(self._priosSorted) do
@@ -887,6 +878,7 @@ function CombatEngine:update()
                     break
                 end
             end
+            -- Find the highest priority available target
             local bestPrio = math.huge
             local bestName = nil
             for _, entry in ipairs(self._priosSorted) do
@@ -903,23 +895,30 @@ function CombatEngine:update()
                     end
                 end
             end
+            -- If a higher priority target is available, switch to it using acquireTargetIfNeeded
             if bestPrio < (currentPrio or math.huge) and bestName ~= self.primaryTargetName then
                 API.logInfo("[ENGINE] Switching to higher priority target: " .. tostring(bestName))
-                API.ClearTarget()
+                -- Clear current target so acquireTargetIfNeeded will acquire the new one
+                API.ClearTarget() -- or equivalent if available
                 self.primaryTargetName = nil
                 self.lastTTKStart = nowMs()
                 self._targetSettledAt = nowMs() + self._settleDelayMs
                 self._postTargetSleepUntil = nowMs() + 2000
+                -- Call acquireTargetIfNeeded to handle attack and kill/TTK logic
                 self:acquireTargetIfNeeded()
-                return
+                return -- skip ability planning for this tick
             end
         end
+        -- Ability casting
         self:planAndQueue()
+        
     else
         self:acquireTargetIfNeeded()
     end
-    self:processScheduler()
 
+    -- Run scheduled jobs (casts, delayed stuff)
+    self:processScheduler()
+    
 end
 
 function CombatEngine:start()
