@@ -339,6 +339,8 @@ end
 
 local function setupPrayers()
 
+    API.logDebug("Setting up prayers for: "..tostring(enemyToFight))
+
     if enemyToFight == nil then
         return false
     else
