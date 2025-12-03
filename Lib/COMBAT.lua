@@ -345,7 +345,7 @@ function CombatEngine.new()
             end
         },]]
 
-        --[[["Spectral Scythe"] = {
+        ["Spectral Scythe"] = {
             adrenaline = -10,
             cd = 15000,
             lastUsed = -1e12,
@@ -398,7 +398,7 @@ function CombatEngine.new()
                     desc.stageExpire = 0
                 end
             end
-        },]]
+        },
 
         ["Conjure Undead Army"] = {
             adrenaline = 0,
