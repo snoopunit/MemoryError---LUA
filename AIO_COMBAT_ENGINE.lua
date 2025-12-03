@@ -575,6 +575,12 @@ local function buffCheck()
         end 
     end]]
 
+    if Inventory:GetItemAmount("Magic notepaper") < 1 then
+        API.logWarn("Out of notepaper!")
+        emergencyTele()
+        terminate()    
+    end
+
     if not hasBuff(BUFFS.Super_Antifire) then
         if Inventory:GetItemAmount("Super antifire") > 0 then
             API.logDebug("Using super antifire")
@@ -742,12 +748,14 @@ do------------------------------------------------------------------------------
                 setupPrayers()
                 initialized = true
             end
+
+            buffCheck()
+            prayerCheck()
+
             engine:update()
 
             if API.IsTargeting() then
 
-                buffCheck()
-                prayerCheck()
                 fd_reflection_check()
                 noteStuff()
 
