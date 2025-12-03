@@ -216,13 +216,14 @@ local COLORS = {
 ----GUI----
 
 local function invContainsString(string)
-    local inv = API.ReadInvArrays33()
+    --[[local inv = API.ReadInvArrays33()
     for index, value in ipairs(inv) do
         if string.find(value.textitem, string) then
             return true
         end
     end
-    return false
+    return false]]
+    return Inventory:Contains(string)
 end
 
 local function terminate()
@@ -577,9 +578,9 @@ local function buffCheck()
             API.logDebug("Using super antifire")
             activateAbility("Super antifire potion")
             API.RandomSleep2(600, 50, 300)
-        else
+        --[[else
             emergencyTele()
-            terminate()
+            terminate()]]
         end
     end
     
@@ -616,7 +617,7 @@ local function noteStuff()
     if not noteItems then
         return
     end
-    if API.Invfreecount_() < math.random(1,8) then
+    if Inventory:FreeSpaces() < math.random(1,8) then
         if not Inventory:Contains(30372) and not Inventory:Contains(43045) then
             API.logWarn("[Note] No notepaper.")
             return false
