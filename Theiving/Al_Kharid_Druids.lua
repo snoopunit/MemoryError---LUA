@@ -3,6 +3,8 @@ print("Al-Kharid Druid Thieving script initiated.")
 local API = require("api")
 local UTILS = require("utils")
 
+local idleTimer = API.SystemTime()
+
 local function pickpocket()
   if Interact:NPC("Druid", "Pickpocket", 30) then
     --API.logInfo("Pickpocketing: Druid ")
@@ -16,18 +18,19 @@ local function excalibur()
   local debuff = API.DeBuffbar_GetIDstatus(14632, false) 
     
   if debuff and debuff.found then
-    API.logDebug("Excalibur still on cooldown!")
+    --API.logDebug("Excalibur still on cooldown!")
+    return
+  end
+
+  if (API.GetHPrecent() <= 60) then
     return
   end
   
   if UTILS.canUseSkill("Enhanced Excalibur") then
-    --API.logDebug("Found Enhanced Excalibur Ability")
     
-    if (API.GetHPrecent() <= 60) then
-      API.logInfo("Activating Enhanced Excalibur Ability")
-      API.DoAction_Ability("Enhanced Excalibur", 1, API.OFF_ACT_GeneralInterface_route)
-      API.RandomSleep2(600, 50, 300)
-    end
+    API.logInfo("Activating Enhanced Excalibur Ability")
+    API.DoAction_Ability("Enhanced Excalibur", 1, API.OFF_ACT_GeneralInterface_route)
+    API.RandomSleep2(600, 50, 300)
     
   end
   
@@ -37,8 +40,6 @@ API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(4)
 API.Write_LoopyLoop(true)
-
-local idleTimer = API.SystemTime()
 
 local function idleCheck()
   if API.CheckAnim(30) then
