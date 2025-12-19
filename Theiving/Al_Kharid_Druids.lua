@@ -12,17 +12,25 @@ local function pickpocket()
 end
 
 local function excalibur()
+
+  local debuff = API.DeBuffbar_GetIDstatus(14632, false) 
+    
+  if debuff and debuff.found then
+    API.logDebug("Excalibur still on cooldown!")
+    return
+  end
+  
   if UTILS.canUseSkill("Enhanced Excalibur") then
     --API.logDebug("Found Enhanced Excalibur Ability")
-    if not API.DeBuffbar_GetIDstatus(14632, false).found then
-      --API.logDebug("No debuff found!")
-      if (API.GetHPrecent() <= 80) then
-        API.logInfo("Activating Enhanced Excalibur Ability")
-        API.DoAction_Ability("Enhanced Excalibur", 1, API.OFF_ACT_GeneralInterface_route)
-        API.RandomSleep2(600, 50, 300)
-      end
+    
+    if (API.GetHPrecent() <= 60) then
+      API.logInfo("Activating Enhanced Excalibur Ability")
+      API.DoAction_Ability("Enhanced Excalibur", 1, API.OFF_ACT_GeneralInterface_route)
+      API.RandomSleep2(600, 50, 300)
     end
+    
   end
+  
 end
 
 API.SetDrawLogs(true)
