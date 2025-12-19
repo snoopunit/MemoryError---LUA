@@ -9,11 +9,6 @@ local totalRunes = 0
 local gainedXP = 0
 local totalThreads = 0
 
-API.Write_LoopyLoop(true)
-API.SetDrawLogs(true)
-API.SetDrawTrackedSkills(true)
-API.SetMaxIdleTime(4)
-
 local AREA           = {
     EDGEVILLE_LODESTONE     = { x = 3067, y = 3505,  z = 0 },
     EDGEVILLE_BANK          = { x = 3094, y = 3493,  z = 0 },
@@ -121,7 +116,6 @@ local function crossWildyWall()
     API.logDebug("Interacting: Wilderness wall.")
 
     Interact:Object("Wilderness wall", "Cross", 40) 
-    
 
     while API.ReadPlayerAnim() ~= crossAnim and API.Read_LoopyLoop() do 
         API.RandomSleep2(50,0,50)
@@ -156,6 +150,7 @@ local function wallToAbyss()
         API.logDebug("Using mage teleport.")
         mageTeleport()
         API.RandomSleep2(600,0,600)
+        API.WaitUntilMovingEnds()
     end
 
 end
@@ -165,22 +160,19 @@ local function natureRift()
     while not isAtLocation(AREA.NATURE_ALTAR) and API.Read_LoopyLoop() do
         Interact:Object("Nature rift", "Exit-through", 20)
         API.logDebug("Exiting nature rift.")
-        API.RandomSleep2(250,0,250)
+        API.RandomSleep2(600,0,600)
+        API.WaitUntilMovingEnds()
     end
 
 end
 
 local function natureAltar()
-    local failTimer = API.SystemTime()
-    while Inventory:IsFull() and API.Read_LoopyLoop() and (API.SystemTime() - failTimer < 10000) do
+    while Inventory:IsFull() and API.Read_LoopyLoop() do
         if Interact:Object("Nature altar", "Use", 10) then
             API.logDebug("Using nature altar.")
-            API.RandomSleep2(500,0,500)
+            API.RandomSleep2(600,0,600)
+            API.WaitUntilMovingandAnimEnds()
         end
-    end
-    if Inventory:IsFull() and (API.SystemTime() - failTimer < 10000) then
-        API.logWarn("Failed to craft at nature altar!")
-        API.Write_LoopyLoop(false)
     end
     local runesMade = Inventory:GetItemAmount(561)
     if runesMade == 0 then
@@ -201,18 +193,19 @@ local function wildySwordTeleport()
         API.logWarn("Wildy sword not found!")
         API.Write_LoopyLoop(false)
     end
-    API.RandomSleep2(2400,0,600)
+    API.RandomSleep2(1800,0,600)
 end
 
 local function checkFamiliar()
     API.logDebug("Checking familiar.")
 
     local function usePouch()
+        
         local pouch = API.GetABs_name1("Abyssal lurker pouch")
         if pouch.enabled and pouch.action == "Summon" then
             API.logDebug("Summoning Abyssal Lurker.")
             API.DoAction_Ability_Direct(pouch, 1, API.OFF_ACT_GeneralInterface_route)
-            API.RandomSleep2(2400,0,600)
+            API.RandomSleep2(1800,0,600)
             return true
         else
             API.logWarn("Abyssal lurker pouch not found on actionbar!")
@@ -221,48 +214,71 @@ local function checkFamiliar()
         
     end
 
-    if Familiars:HasFamiliar() and (Familiars:GetTimeRemaining() >= 60) then 
+    local hasFam = Familiars:HasFamiliar()
+    local timeLeft = Familiars:GetTimeRemaining()
+    local sumPoints = API.GetSummoningPoints_()
+
+    if hasFam and (timeLeft >= 90) then 
+        API.logDebug("Familiar time: ok!")
         return true
     end
 
-    if (not Familiars:HasFamiliar()) or (Familiars:GetTimeRemaining() < 60) then 
-        local failTimer = API.SystemTime()
+    if not hasFam or (timeLeft < 90) then 
 
-        while (API.GetSummoningPoints_() < 20) and (API.SystemTime() - failTimer < 10000) and API.Read_LoopyLoop() do
+        if sumPoints < 60 then
             if Interact:Object("Small obelisk", "Renew points", 60) then
                 API.RandomSleep2(1000,0,1000)
                 API.WaitUntilMovingEnds()
             else
                 API.logDebug("Unable to renew summoning points!")
-                API.Write_LoopyLoop(false)
                 return false
             end    
         end
 
         if not isAtLocation(AREA.EDGEVILLE, 20) then 
-            wildySwordTeleport() 
+            wildySwordTeleport()
             while API.CheckAnim(50) and API.Read_LoopyLoop() do
-                API.RandomSleep2(500,0,500)
+                API.RandomSleep2(50,0,50)
             end
         end
 
         loadPresetNum(2)
 
         if usePouch() then
-            if Familiars:HasFamiliar() and (Familiars:GetTimeRemaining() >= 60) then 
+            hasFam = Familiars:HasFamiliar()
+            timeLeft = Familiars:GetTimeRemaining()
+            if hasFam and (timeLeft >= 60) then 
                 API.logDebug("Familiar renewed!")
-                return true
+            else
+                API.logDebug("hasFamiliar: "..tostring(hasFam))
+                API.logDebug("timeLeft: "..tostring(timeLeft))
+                API.logWarn("Familiar not renewed! Shutting down!")
+                return false
             end
-        else
-            API.logWarn("Unable to use abyssal lurker pouch!")
-            API.Write_LoopyLoop(false)
-            return false
         end
         
         loadPresetNum(1)
 
     end
 
+end
+
+local function reUp()
+
+    if not checkFamiliar() then
+        API.logDebug("checkFamiliar: false")
+        API.logWarn("Shutting Down!")
+        API.WriteLoopyLoop(false)
+        return
+    end
+    
+    if Inventory:IsFull() then
+        crossWildyWall()
+    else
+        loadLastPreset()
+        return
+    end
+    
 end
 
 local function runesPerHour()   
@@ -287,25 +303,11 @@ local function mainLoop()
 
     API.logDebug("Starting main loop.")
 
-    if isAtLocation(AREA.EDGEVILLE, 10) then
+    if isAtLocation(AREA.EDGEVILLE, 10) or isAtLocation(AREA.EDGEVILLE_BANK, 10) then
         if API.CheckAnim(50) then
             return
         end
-        --checkFamiliar()
-        if Inventory:IsFull() then
-            crossWildyWall()
-        else
-            loadLastPreset()
-            return
-        end
-    end
-
-    if isAtLocation(AREA.EDGEVILLE_BANK, 10) then
-        if Inventory:IsFull() then
-            crossWildyWall()
-        else
-            --checkFamiliar()
-        end
+        reUp()
     end
 
     if isAtLocation(AREA.WILDY, 15) then
@@ -316,34 +318,40 @@ local function mainLoop()
         natureRift()
     end
 
-    if isAtLocation(AREA.NATURE_ALTAR) and Inventory:IsFull() then
-        natureAltar()
-        wildySwordTeleport()
-        ----METRICS----
-        local metrics = {
-            {"Script","Abyss: Nature Runes - by Klamor"},
-            {"Runes:", comma_value(totalRunes)},
-            {"Runes/H:", comma_value(runesPerHour())},
-            {"Magical Threads:", totalThreads},
-            {"Threads/H:", threadsPerHour()},
-            {"Est. Profit: ", comma_value((totalRunes * API.GetExchangePrice(561))+(totalThreads * API.GetExchangePrice(47661))).."gp"},
-            {"Profit/H: ", comma_value(profitPerHour()).."gp"},
-            {"XP Gained:", comma_value(gainedXP)},
-            {"XP/H:", comma_value(xpPerHour())},
-        }
-        API.DrawTable(metrics)
-        ----METRICS----
-        if API.SystemTime() - startTime > (45*60000) then
-            startTime = API.SystemTime()
+    if isAtLocation(AREA.NATURE_ALTAR, 10) then
+        
+        if Inventory:IsFull() then
+            natureAltar()
+        else
+            wildySwordTeleport()
+            ----METRICS----
+            local metrics = {
+                {"Script","Abyss: Nature Runes - by Klamor"},
+                {"Runes:", comma_value(totalRunes)},
+                {"Runes/H:", comma_value(runesPerHour())},
+                {"Magical Threads:", totalThreads},
+                {"Threads/H:", threadsPerHour()},
+                {"Est. Profit: ", comma_value((totalRunes * API.GetExchangePrice(561))+(totalThreads * API.GetExchangePrice(47661))).."gp"},
+                {"Profit/H: ", comma_value(profitPerHour()).."gp"},
+                {"XP Gained:", comma_value(gainedXP)},
+                {"XP/H:", comma_value(xpPerHour())},
+            }
+            API.DrawTable(metrics)
+            ----METRICS----
         end
+        
     end
-
+    
 end
+
+API.Write_LoopyLoop(true)
+API.SetDrawLogs(true)
+API.SetDrawTrackedSkills(true)
+API.SetMaxIdleTime(4)
 
 while API.Read_LoopyLoop() do
 
     mainLoop()
-    --API.logInfo("Mage: " .. tostring(canSeeMage()))
-    --API.RandomSleep2(500,0,500)
+    API.RandomSleep2(600,0,250)
 
 end
