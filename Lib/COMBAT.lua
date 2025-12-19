@@ -30,7 +30,7 @@ local function nowMs()
 end
 
 local function areWefighting()
-    return API.IsTargeting() and API.CheckAnim(25)
+    return API.IsTargeting() and (API.ReadPlayerAnim() ~= 0) and (API.IsPlayerMoving_(API.GetLocalPlayerName()) == false)
 end
 
 -- ========= Engine =========
@@ -53,7 +53,7 @@ function CombatEngine.new()
     self.isFirstTarget = true         -- for kill counting
     self.scanInterval = 1800          -- ms between acquisition attempts
     self.lastScanTime = 0
-    self.useAoE = true
+    self.useAoE = false
 
     -- priorities: lower number = higher priority
     self.priorityList = {
@@ -148,7 +148,7 @@ function CombatEngine.new()
                 local rs = engine:getBuff("residualSouls")
                 local stacks = (rs and rs.stacks) or 0
 
-                if stacks == 3 then
+                if stacks >= 3 then
                     return 9.0   -- spender: high priority when capped
                 else
                     return 0.0
@@ -203,7 +203,7 @@ function CombatEngine.new()
             lastUsed = -1e12,
             expectedValue = function(engine)
                 -- Must have AoE mode enabled
-                if not engine.useAoE then return 0.0 end
+                --if not engine.useAoE then return 0.0 end
 
                 -- Must be at 100% adrenaline
                 if API.GetAddreline_() < 100 then return 0.0 end
@@ -455,6 +455,19 @@ function CombatEngine.new()
                 -- Default case (not in range)
                 return 0.0
             end
+        },
+
+        ["Weapon Special Attack"] = { 
+            adrenaline = -30,
+            cd = 60000,
+            lastUsed = -1e12, 
+            expectedValue = function(engine) 
+                if API.GetAddreline_() > 30 then
+                    return 9.5
+                else
+                    return 0
+                end
+            end 
         },
 
         ["Eat Food"] = { 

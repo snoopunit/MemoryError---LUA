@@ -320,7 +320,7 @@ end
 -----------------------UI-----------------------
 --------------------FUNCTIONS-------------------
 local function invContains(items)
-    local loot = API.InvItemcount_2(items)
+    local loot = Inventory:GetItemAmount(items)
     for _, v in ipairs(loot) do
         if v > 0 then
             return true
@@ -978,7 +978,7 @@ local function Craftnecro()
             end
         else
             if Counter == true then
-                Trips = Trips + API.InvItemcount_1(selectedRune)
+                Trips = Trips + Inventory:GetItemAmount(selectedRune)
                 Runes = Runes + API.InvStackSize(selectedRune)
                 Counter = false
             end
@@ -1002,7 +1002,7 @@ local function UnknownNecroLoacation()
 end
 -----------------NECRO FUNCTIONS----------------
 local function CheckforImpureEssence()
-    return API.InvItemcount_1(55667) < 16
+    return Inventory:GetItemAmount(55667) < 16
 end
 
 local function InventoryCheck()
@@ -1014,7 +1014,7 @@ local function InventoryCheck()
         end
         if Necro == false then
             API.RandomSleep2(250,500,300)
-            if API.InvItemcount_1(55667) >= 16  or API.InvItemcount_1(7936) >= 16 or API.InvItemcount_1(18178) >= 16 then
+            if Inventory:GetItemAmount(55667) >= 16  or Inventory:GetItemAmount(7936) >= 16 or Inventory:GetItemAmount(18178) >= 16 then
                 if not API.ReadPlayerMovin2() then
                     if SurgeDiveAbillity  then
                         API.DoAction_Object1(0xb5, API.OFF_ACT_GeneralObject_route0, { 65084, 65082 }, 65)
@@ -1073,7 +1073,7 @@ local function InventoryCheck()
             end
         end
         if banking == 2 then
-            if API.InvItemcount_1(55667) >= 16  or API.InvItemcount_1(7936) >= 16 or API.InvItemcount_1(18178) >= 16 then
+            if Inventory:GetItemAmount(55667) >= 16  or Inventory:GetItemAmount(7936) >= 16 or Inventory:GetItemAmount(18178) >= 16 then
                 banking = 0
                 fail = 0
                 API.logDebug("Banking state:" .. banking .. "")
@@ -1313,7 +1313,7 @@ while API.Read_LoopyLoop() do
                     CraftRune()
                 else
                     if Counter == true then
-                        Trips = Trips + API.InvItemcount_1(selectedRune)
+                        Trips = Trips + Inventory:GetItemAmount(selectedRune)
                         Runes = Runes + API.InvStackSize(selectedRune)
                         Counter = false
                     end
@@ -1329,7 +1329,7 @@ while API.Read_LoopyLoop() do
                 if runecount < 100 then
                     if invContains(ID_Items.ESSENCE) then
                         if API.DoAction_Object1(0x29,API.OFF_ACT_GeneralObject_route0,{ ID_Object.CHARGER },50) then
-                            runecount = runecount + API.InvItemcount_1(7936)
+                            runecount = runecount + Inventory:GetItemAmount(7936)
                             API.logDebug("Deposit Inv.: You deposit " .. runecount .. " essence into the charger")
                             API.RandomSleep2(1000, 50, 100)
                             RuneCounters()
@@ -1393,7 +1393,7 @@ while API.Read_LoopyLoop() do
                     API.logDebug("Reset SoulRun to: " .. runecount .. "")
                     API.RandomSleep2(250, 500, 600)
                     if Counter == true then
-                        Trips = Trips + API.InvItemcount_1(selectedRune)
+                        Trips = Trips + Inventory:GetItemAmount(selectedRune)
                         Runes = Runes + API.InvStackSize(selectedRune)
                         Counter = false
                     end

@@ -248,7 +248,7 @@ function mainRoutine()
 
     else
 
-        if API.InvFull_() then
+        if Inventory:IsFull() then
 
             API.logDebug("Inv_Full()")
             API.logDebug("itemType: "..tostring(itemType))

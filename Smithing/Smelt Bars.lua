@@ -52,6 +52,14 @@ local function doCrafting()
 
 end
 
+local function depositBars()
+    if Inventory:IsFull() then
+        API.logInfo("Depositing bars into Metal Bank")
+        Interact:Object("Furnace", "Deposit-All (Into Metal Bank)", 10)
+        API.RandomSleep2(600,0,1200)
+    end    
+end
+
 API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(4)
@@ -59,6 +67,7 @@ API.Write_LoopyLoop(true)
 
 while(API.Read_LoopyLoop())
 do-----------------------------------------------------------------------------------
+    depositBars()
     useFurnace()
     doCrafting()
 end----------------------------------------------------------------------------------

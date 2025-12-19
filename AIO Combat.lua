@@ -162,7 +162,7 @@ local notelist = {}
 ----Loot List----
 local lootlist = {}
 table.insert(lootlist, ITEMS.MISC.gold)
-table.insert(lootlist, ITEMS.MISC.black_dhide)
+table.insert(lootlist, ITEMS.MISC.feather)
 --table.insert(lootlist, ITEMS.BONES.frost_dbones)
 --table.insert(lootlist, ITEMS.ARMOR.subj_boot)
 --table.insert(lootlist, ITEMS.ARMOR.subj_garb)
@@ -293,7 +293,7 @@ local function hasDeBuff(debuff)
 end
 
 local function hasItem(item)
-    local invitems = API.InvItemcount_String(item)
+    local invitems = Inventory:GetItemAmount(item)
     if invitems > 0 then
         return true
     end
@@ -412,7 +412,7 @@ local function openLoot()
 
     API.DoAction_Interface(0x24,0xffffffff,1,1622,30,-1,API.OFF_ACT_GeneralInterface_route)
 
-    --[[local data = API.LootWindow_GetData()
+    local data = API.LootWindow_GetData()
     local hasWindowItems = false
     
     if #data then
@@ -443,7 +443,7 @@ local function openLoot()
         if not API.LootWindowOpen_2() then API.logDebug("Searching for loot...")
         else API.logDebug("Looting lootlist") end
         API.DoAction_Loot_w(lootlist, dist, API.PlayerCoordfloat(), radius)
-    end]]
+    end
 
 end
 
@@ -638,7 +638,7 @@ end
 
 local function buffCheck()
        
-    if API.InvItemcount_String("Ancient elven ritual shard") > 0 then
+    if Inventory:GetItemAmount("Ancient elven ritual shard") > 0 then
         if not hasDeBuff(DEBUFFS.Elven_Shard) and (API.GetPrayPrecent() <= 63) then
             --API.DoAction_Interface(0x2e,0xa95e,1,1670,110,-1,API.OFF_ACT_GeneralInterface_route)
             activateAbility("Ancient elven ritual shard")
@@ -646,14 +646,14 @@ local function buffCheck()
         end 
     end
 
-    if API.InvItemcount_String("Enhanced Excalibur") > 0 then
+    if Inventory:GetItemAmount("Enhanced Excalibur") > 0 then
         if not hasDeBuff(DEBUFFS.Enh_Excalibur) and (API.GetHPrecent() <= 80) then
             activateAbility("Enhanced Excalibur")
             API.RandomSleep2(600, 50, 300)
         end 
     end
     
-    if API.InvItemcount_String("Super antifire") > 0 then
+    if Inventory:GetItemAmount("Super antifire") > 0 then
         if not hasBuff(BUFFS.Super_Antifire) then
             API.logDebug("Using super antifire")
             activateAbility("Super antifire potion")
@@ -666,7 +666,7 @@ local function buffCheck()
         end
     end
 
-    if API.InvItemcount_String("Overload") > 0 then
+    if Inventory:GetItemAmount("Overload") > 0 then
         if not hasBuff(BUFFS.Overload) then
             API.logDebug("Using Overloads")
             activateAbility("Overload potion")
@@ -777,7 +777,7 @@ local function noteStuff()
     if not noteItems then
         return
     end
-    if API.Invfreecount_() < math.random(1,8) then
+    if Inventory:FreeSpaces() < math.random(1,8) then
         if not Inventory:Contains(30372) and not Inventory:Contains(43045) then
             API.logWarn("[Note] No notepaper.")
             return false

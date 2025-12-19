@@ -127,9 +127,9 @@ table.insert(lootlist, ITEMS.MISC.black_dhide)
 local enemyToFight = nil
 local lootDrops = false
 local noteItems = true
-local useSpecial = false
+local useSpecial = true
 local waitForDeath = false
-local useAoE = true
+local useAoE = false
 local runLoop = false
 local initialized = false
 
@@ -271,7 +271,7 @@ local function uniqueEnemies()
     for _, enemy in ipairs(enemies) do
         local name = enemy.Name
         local action = enemy.Action
-            if name and (action == "Attack") and not seenIDs[name] and not (name == "") then
+            if name and ((action == "Attack") or (action == "Talk-To")) and not seenIDs[name] and not (name == "") then
             table.insert(uniqueEnemies, enemy) 
             seenIDs[name] = true
         end
@@ -568,17 +568,19 @@ local function buffCheck()
         end 
     end
 
-    --[[if Inventory:GetItemAmount("Enhanced Excalibur") > 0 then
+    if Inventory:GetItemAmount("Enhanced Excalibur") > 0 then
         if not hasDeBuff(DEBUFFS.Enh_Excalibur) and (API.GetHPrecent() <= 80) then
             activateAbility("Enhanced Excalibur")
             API.RandomSleep2(600, 50, 300)
         end 
-    end]]
+    end
 
-    if Inventory:GetItemAmount("Magic notepaper") < 1 then
-        API.logWarn("Out of notepaper!")
-        emergencyTele()
-        terminate()    
+    if noteItems then    
+        if Inventory:GetItemAmount("Magic notepaper") < 1 then
+            API.logWarn("Out of notepaper!")
+            emergencyTele()
+            terminate()   
+        end 
     end
 
     if not hasBuff(BUFFS.Super_Antifire) then
@@ -647,17 +649,6 @@ local function noteStuff()
     end
 end
 
-local function specialAttack()
-    if not useSpecial then
-        return
-    end
-
-    if UTILS.canUseSkill("Weapon Special Attack") then
-        activateAbility("Weapon Special Attack")
-        API.RandomSleep2(600, 0, 600)    
-    end
-end
-
 local function chargePackCheck()
     --[[local chatTexts = API.GatherEvents_chat_check()
     for _, v in ipairs(chatTexts) do
@@ -709,6 +700,183 @@ local function fd_reflection_check()
     end
 end
 
+local function playersInRange()
+    if #API.ReadAllObjectsArray({2},{-1},{}) > 1 then
+        API.logWarn("Other players detected nearby! Teleporting out...")
+        emergencyTele()
+        API.Write_LoopyLoop(false)
+        return true
+    end
+end
+
+local totalBonesGathered = 0
+local lastBoneCount = 0
+local function updateBoneCount()
+    local count = Inventory:GetItemAmount(18832)    
+    if count > lastBoneCount then
+        totalBonesGathered = totalBonesGathered + (count - lastBoneCount)
+        lastBoneCount = count
+    end
+end
+
+local usingCannon = false
+local function findCannonObject()
+    local objects = API.ReadAllObjectsArray({--[[object type here]]}, {--[[cannon object ID here]]}, {--[[cannon names here]]})
+    if #objects > 0 then
+        API.logDebug("Found cannon object in the game-world. Assuming it's ours.")
+        return true
+    else
+        API.logDebug("No cannon object found in the game-world.")
+        return false
+    end
+end
+
+local function checkForCannon()
+    if Inventory:Contains("Dwarven siege engine") then
+        API.logDebug("Found Dwarven siege engine in inventory.")
+        usingCannon = true
+        return true
+    elseif Inventory:Contains("Dwarf multicannon") then
+        usingCannon = true
+        return true
+    else
+        if not findCannonObject() then
+            usingCannon = false
+            API.logDebug("No cannon found.")
+            return false 
+        end
+    end
+end
+
+local function checkInvCannonballs()
+    if not usingCannon then
+        return false
+    end
+    if Inventory:Contains("Cannonball") then
+        return true
+    elseif Inventory:Contains("Meteorite cannonball") then
+        return true
+    else
+        API.logWarn("Out of cannonballs!")
+        return false
+    end
+end
+
+local cannonSpot = WPOINT.new(0,0,0) --set to your cannon spot coords
+local function goToCannonSpot()
+    if not usingCannon then
+        return
+    end
+    local playerPos = API.PlayerCoord()
+    local dist = math.sqrt((playerPos.x - cannonSpot.x)^2 + (playerPos.y - cannonSpot.y)^2)
+    if dist > 1 then
+        API.logDebug("Moving to cannon spot...")
+        API.DoAction_WalkerW(cannonSpot)
+        API.RandomSleep2(1000, 0, 500)
+        API.WaitUntilMovingEnds()
+    end
+end
+
+local function placeCannon()
+    if not usingCannon then
+        return
+    end
+    if not checkForCannon() then
+        return
+    end
+    goToCannonSpot()
+    if not checkInvCannonballs() then
+        return
+    end
+    API.logDebug("Placing cannon...")
+    if Inventory:Contains("Dwarven siege engine") then
+        Inventory:UseItem("Dwarven siege engine")
+    elseif Inventory:Contains("Dwarf multicannon") then
+        Inventory:UseItem("Dwarf multicannon")
+    end
+    API.RandomSleep2(2400, 0, 1200)
+    if Inventory:Contains("Dwarven siege engine") then
+        API.logWarn("Failed to place cannon.")
+        return
+    elseif Inventory:Contains("Dwarf multicannon") then
+        API.logWarn("Failed to place cannon.")
+        return
+    end
+end
+
+local function pickUpCannon()
+    if not usingCannon then
+        return
+    end
+    if findCannonObject() then
+        if not Interact:Object("Dwarf multicannon", "Pick-up") then
+            API.logWarn("Failed to pick up cannon.")
+            return false
+        elseif not Interact:Object("Dwarven siege engine", "Pick-up") then
+            API.logWarn("Failed to pick up cannon.")
+            return false
+        else
+            API.RandomSleep2(600, 0, 600)
+            API.WaitUntilMovingEnds()
+            if Inventory:Contains("Dwarven siege engine") then
+                API.logDebug("Cannon picked up.")
+                return true
+            elseif Inventory:Contains("Dwarf multicannon") then
+                API.logDebug("Cannon picked up.")
+                return true
+            end
+        end
+    end
+end
+
+local function checkCannonBuff()
+    if not usingCannon then
+        return
+    end
+    local cBuffId = 01234 
+    if not hasBuff(cBuffId) then
+        API.logWarn("Cannon out of ammo buff!")
+        return false
+    end
+    if hasBuff(cBuffId) then
+        local cBalls = API.Buffbar_GetIDstatus(cBuffId, false).text
+        if tonumber(cBalls) < 10 then
+            API.logWarn("Cannon low on ammo!")
+            return false
+        end
+        return true
+    end
+end
+
+local function fireCannon()
+    if not usingCannon then
+        return false
+    end
+    if not checkForCannon() then
+        return false
+    end
+    if not checkInvCannonballs() then
+        return false
+    end
+    if not Interact:Object("Dwarf multicannon", "Fire") then
+        API.logWarn("Failed to fire cannon.")
+        return false    
+    elseif not Interact:Object("Dwarven siege engine", "Fire") then
+        API.logWarn("Failed to fire cannon.")
+        return false
+    end
+    API.logDebug("Firing cannon...")
+    API.RandomSleep2(600, 0, 600)
+    API.WaitUntilMovingEnds()
+
+    if checkCannonBuff() then
+        return true
+    else
+        return false
+    end
+    
+end
+
 --main loop
 API.Write_LoopyLoop(true)
 API.SetDrawLogs(true)
@@ -742,24 +910,27 @@ do------------------------------------------------------------------------------
 
     if runLoop then 
 
-        if engine.running then
+       if engine.running then
 
             if not initialized then
                 setupPrayers()
                 initialized = true
             end
 
+            playersInRange()
+
             buffCheck()
             prayerCheck()
+            noteStuff()
 
             engine:update()
 
             if API.IsTargeting() then
-
                 fd_reflection_check()
-                noteStuff()
-
-            end     
+                healthCheck()
+            end    
+            
+            
 
         end
     else

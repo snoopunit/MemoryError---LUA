@@ -264,7 +264,7 @@ function Woodcutting.gather()
     --local checkWoodBox = Woodcutting.GLOBALS.boxType ~= nil
     local failSafe = 0
 
-    while not API.InvFull_() --[[and (not checkWoodBox or not Woodcutting.woodBoxFull())]] and API.Read_LoopyLoop() do        
+    while not Inventory:IsFull() --[[and (not checkWoodBox or not Woodcutting.woodBoxFull())]] and API.Read_LoopyLoop() do        
         if not Woodcutting.chop() then
             API.logWarn("Unable to chop tree: "..Woodcutting.GLOBALS.treeType.name)
             failSafe = (failSafe + 1)
@@ -279,7 +279,7 @@ function Woodcutting.gather()
             end
             while API.CheckAnim(75) and API.Read_LoopyLoop() do
                 --if checkWoodBox then
-                    if API.Invfreecount_() < math.random(0,8) then
+                    if Inventory:FreeSpaces() < math.random(0,8) then
                         if not Woodcutting.GLOBALS.boxFull then
                             if Woodcutting.woodBoxFull() then
                                 Woodcutting.GLOBALS.boxFull = true
