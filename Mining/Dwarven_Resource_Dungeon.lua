@@ -8,7 +8,7 @@ local mithril_ore_id = 447
 local totalOresMined = 0
 local lastOreCount = 0
 
-local startTime = API.SystemTime
+local startTime = API.SystemTime()
 
 local function currentOres()
     return Inventory:GetItemAmount(mithril_ore_id)
