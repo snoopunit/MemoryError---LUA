@@ -158,16 +158,16 @@ end
 ---@return boolean
 function UTILS:gameStateChecks()
   if API.GetGameState2() ~= 3 and self.stateFailCount > 5 then
-    API.logDebug('not logged in after 100 checks')
+    print('not logged in after 100 checks')
     API.Write_LoopyLoop(false)
     return false
   elseif API.GetGameState2() ~= 3 then
     UTILS.SleepUntilWithoutChecks(function() return API.GetGameState2() == 3 end,5,'state change to 3',true)
-    API.logDebug('not logged in ' .. tostring(self.stateFailCount))
+    print('not logged in ' .. tostring(self.stateFailCount))
     self.stateFailCount = self.stateFailCount + 1
   end
   if not API.Read_LoopyLoop() then
-    API.logDebug('LoopyLoop is false')
+    print('LoopyLoop is false')
     return false
   end
   return true
@@ -240,8 +240,8 @@ end
     }
   }
 
-  API.logDebug('Teleporting to ', UTILS.GetLabelFromArgument(lodestone.BanditCamp, lodestone))
-  would API.logDebug 'Teleporting to BanditCamp'
+  print('Teleporting to ', UTILS.GetLabelFromArgument(lodestone.BanditCamp, lodestone))
+  would print 'Teleporting to BanditCamp'
 --]]
 ---
 --- Function to get the label of the table element
@@ -321,7 +321,7 @@ function UTILS.DO_RandomEvents()
   local F_obj = API.GetAllObjArrayInteract({ 19884, 26022, 27228, 27297, 28411, 30599, 15451 }, 20, 1)
   --if not (F_obj) == nil then
   if (F_Obj) ~= nil then
-    API.logDebug("Random event object detected: trying to click")
+    print("Random event object detected: trying to click")
     UTILS.randomSleep(1000)
     if API.DoAction_NPC__Direct(0x29, API.InteractNPC_route, F_obj[1]) then
       UTILS.randomSleep(1000)
@@ -335,7 +335,7 @@ end
 ---@param barNumber number
 ---@return boolean
 function UTILS.LoadActionBar(barNumber)
-  API.logDebug("Loading action bar: " .. barNumber)
+  print("Loading action bar: " .. barNumber)
   local bars = {
     ONE = { number = 255, id = 1, offset = API.OFF_ACT_GeneralInterface_route },
     TWO = { number = 255, id = 2, offset = API.OFF_ACT_GeneralInterface_route },
@@ -367,7 +367,7 @@ function UTILS.LoadActionBar(barNumber)
   elseif barNumber >= 16 and barNumber <= 18 then
     selected.number = 253
   else
-    API.logDebug("Invalid bar number passed: " .. tostring(barNumber))
+    print("Invalid bar number passed: " .. tostring(barNumber))
     return false
   end
 
@@ -388,7 +388,7 @@ function UTILS.LoadActionBar(barNumber)
     selected.id = barNumber - 10
   end
 
-  -- API.logDebug("selected is: {id: " .. selected.id .. ", number: " .. selected.number .. ", offset: " .. selected.offset)
+  -- print("selected is: {id: " .. selected.id .. ", number: " .. selected.number .. ", offset: " .. selected.offset)
   API.DoAction_Interface(0xffffffff, 0xffffffff, selected.id, 1430, selected.number, -1, selected.offset)
 end
 
@@ -429,7 +429,7 @@ end
 --- Checks for other random events,game state and API.Read_LoopyLoop
 ---@param conditionFunc function -- condition to evaluate
 ---@param timeout number -- max duration to wait
----@param message string -- message to API.logDebug if condition is satisfied
+---@param message string -- message to print if condition is satisfied
 ---@param ... any -- arguments to condition function
 ---@return boolean
 function UTILS.SleepUntil(conditionFunc, timeout, message, ...)
@@ -438,21 +438,21 @@ function UTILS.SleepUntil(conditionFunc, timeout, message, ...)
   while not conditionFunc(...) do
     API.DoRandomEvents()
     if os.difftime(os.time(), startTime) >= timeout then
-      API.logDebug("Stopped waiting for " .. message .. " after " .. timeout .. " seconds.")
+      print("Stopped waiting for " .. message .. " after " .. timeout .. " seconds.")
       break
     end
     if not API.Read_LoopyLoop() then
-      API.logDebug("Script exited - breaking sleep.")
+      print("Script exited - breaking sleep.")
       break
     end
     if not UTILS:gameStateChecks() then
-      API.logDebug("State checks failed - breaking sleep.")
+      print("State checks failed - breaking sleep.")
       break
     end
     API.RandomSleep2(50, 0, 0)
   end
   if conditionFunc(...) then
-    API.logDebug("Sleep condition met for " .. message)
+    print("Sleep condition met for " .. message)
     sleepSuccessful = true
   end
   return sleepSuccessful
@@ -462,7 +462,7 @@ end
 --- No checks
 ---@param conditionFunc function -- condition to evaluate
 ---@param timeout number -- max duration to wait
----@param message string -- message to API.logDebug if condition is satisfied
+---@param message string -- message to print if condition is satisfied
 ---@param loopy boolean -- should check if script is still running
 ---@param ... any -- arguments to condition function
 ---@return boolean
@@ -473,17 +473,17 @@ function UTILS.SleepUntilWithoutChecks(conditionFunc, timeout, message, loopy, .
   while not conditionFunc(...) do
     API.DoRandomEvents()
     if os.difftime(os.time(), startTime) >= timeout then
-      API.logDebug("Stopped waiting for " .. message .. " after " .. timeout .. " seconds.")
+      print("Stopped waiting for " .. message .. " after " .. timeout .. " seconds.")
       break
     end
     if checkLoopy and not API.Read_LoopyLoop() then
-      API.logDebug("Script exited - breaking sleep.")
+      print("Script exited - breaking sleep.")
       break
     end
     API.RandomSleep2(50, 0, 0)
   end
   if conditionFunc(...) then
-    API.logDebug("Sleep condition met for " .. message)
+    print("Sleep condition met for " .. message)
     sleepSuccessful = true
   end
   return sleepSuccessful
@@ -571,7 +571,7 @@ end
 function UTILS.canQueueSkill(skill)
   if UTILS.isSkillQueued(skill) then return false end
   if UTILS.canUseSkill(skill) then
-    local skillFound = API.GetABs_name(skill, true)
+    local skillFound = API.GetABs_name1(skill)
     if skillFound.cooldown_timer < 6 then return true end
   end
   return false
@@ -580,9 +580,8 @@ end
 ---@param skill string -- skillName
 ---@return boolean
 function UTILS.canUseSkill(skill)
-  local skillFound = API.GetABs_name(skill, true)
-  if not skillFound then return false end
-  if not skillFound.id or skillFound.id == 0 then return false end
+  local skillFound = API.GetABs_name1(skill)
+  if skillFound.id == 0 then return false end
   if not skillFound.enabled then return false end
   return true
 end
@@ -593,7 +592,7 @@ end
 ---@param skillName string
 ---@return Abilitybar | nil
 function UTILS.getSkillOnBar(skillName)
-  local skillOnAB = API.GetABs_name(skillName, true)
+  local skillOnAB = API.GetABs_name1(skillName)
   if UTILS.canUseSkill(skillName) then
     return skillOnAB
   else
@@ -729,7 +728,7 @@ end
 ---@return boolean
 function UTILS.hasChronicleAttraction()
   if not UTILS.isUsingCurses() then
-    API.logDebug('not on curses')
+    print('not on curses')
     return false
   end
   local open = UTILS.isPrayersTabOpen()
@@ -761,7 +760,7 @@ end
 --      -- Example for a rectangle:
 --        local rectangleArea = {3020, 3234, 3022, 3239}
 --        local inRectangle = UTILS.playerInArea(rectangleArea)
---        API.logDebug("Player is in rectangle area: ", inRectangle)
+--        print("Player is in rectangle area: ", inRectangle)
 --
 --      -- Example for a polygon:
 --        local point = WPOINT.new(3021,3233,0)
@@ -772,7 +771,7 @@ end
 --          WPOINT.new(3020,3239,0),
 --        }
 --     local inPolygon = UTILS.playerInArea(polygonArea)
---     API.logDebug("Player is in polygon area: ", inPolygon)
+--     print("Player is in polygon area: ", inPolygon)
 function UTILS.playerInArea(area)
   return UTILS.isCoordInArea(API.PlayerCoord(), area)
 end
@@ -789,7 +788,7 @@ end
 --        local point = WPOINT.new(3021,3233,0)
 --        local rectangleArea = {3020, 3234, 3022, 3239}
 --        local inRectangle = UTILS.isCoordInArea(point, rectangleArea)
---        API.logDebug("Point is in rectangle area: ", inRectangle)
+--        print("Point is in rectangle area: ", inRectangle)
 --
 --      -- Example for a polygon:
 --        local point = WPOINT.new(3021,3233,0)
@@ -800,7 +799,7 @@ end
 --          WPOINT.new(3020,3239,0),
 --        }
 --        local inPolygon = UTILS.isCoordInArea(point,polygonArea)
---        API.logDebug("Point is in polygon area: ", inPolygon)
+--        print("Point is in polygon area: ", inPolygon)
 function UTILS.isCoordInArea(coord, area)
   if coord.z ~= API.PlayerCoord().z then
     return false
@@ -929,18 +928,19 @@ function UTILS.NoteItem(item)
 
   if not foundNotepaper then
     API.logError("Couldn't find notepaper")
-    API.logDebug("Couldn't find notepaper")
+    print("Couldn't find notepaper")
     return false
   end
 
   if not foundItem then
     API.logError("Couldn't find item with id:" .. tostring(item))
-    API.logDebug("Couldn't find item with id:", item)
+    print("Couldn't find item with id:", item)
     return false
   end
 
   API.DoAction_Interface(0x24, notepaper.itemid1, 0, notepaper.id1, notepaper.id2, notepaper.id3,
     API.OFF_ACT_Bladed_interface_route)
+    API.DoAction_DontResetSelection()
   API.RandomSleep2(50, 100, 200)
   API.DoAction_Interface(0x24, itemToNote.itemid1, 0, itemToNote.id1, itemToNote.id2, itemToNote.id3,
     API.OFF_ACT_GeneralInterface_route1)
