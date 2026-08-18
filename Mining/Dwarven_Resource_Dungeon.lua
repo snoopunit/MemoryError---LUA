@@ -56,8 +56,10 @@ end
 
 function updateOreMined()
     local count = currentOres()
-    if count > lastOreCount then
-        totalOresMined = totalOresMined + (count - lastOreCount)
+    if count ~= lastOreCount then
+        if count > lastOreCount then
+            totalOresMined = totalOresMined + (count - lastOreCount)
+        end
         lastOreCount = count
     end
 end
