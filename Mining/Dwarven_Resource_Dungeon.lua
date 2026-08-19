@@ -5,6 +5,12 @@ local API = require("api")
 local Deposit_Box = 25937
 local mithril_ore_id = 447
 
+local Mithril_Rocks = {
+    113050,
+    113051,
+    113052
+}
+
 local totalOresMined = 0
 local lastOreCount = 0
 
