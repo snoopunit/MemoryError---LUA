@@ -145,7 +145,7 @@ end
 --Exported function list is in API
 --main loop
 API.Write_LoopyLoop(true)
-API.SetDrawLogs(false)
+API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(4)
 while(API.Read_LoopyLoop())
