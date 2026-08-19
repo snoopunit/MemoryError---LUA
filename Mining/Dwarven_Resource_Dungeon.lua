@@ -75,8 +75,11 @@ local function clickRockertunity()
             API.OFF_ACT_GeneralObject_route0,
             closestRock
         ) then
+            print("Clicked rockertunity! Waiting for movement to end...")
             API.RandomSleep2(1200, 600, 1200)
             API.WaitUntilMovingEnds()
+        else
+            print("API.DoAction_Object_Direct() failed...")    
         end
     end
 end
