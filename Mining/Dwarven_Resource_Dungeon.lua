@@ -152,7 +152,7 @@ end
 --main loop
 API.Write_LoopyLoop(true)
 API.SetDrawLogs(false)
-API.SetDrawTrackedSkills(false)
+API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(4)
 while(API.Read_LoopyLoop())
 do-----------------------------------------------------------------------------------
