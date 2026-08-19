@@ -233,6 +233,7 @@ function deposit()
 
     useOreBox()
     useDepositBox()
+    API.RandomSleep2(1200, 0, 600)
     fillBox()
     useOreBox()
     useDepositBox()
