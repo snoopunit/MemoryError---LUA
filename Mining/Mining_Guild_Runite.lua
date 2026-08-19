@@ -254,31 +254,34 @@ local function goToBank()
     return true
 end
 
-local function deposit()
-    local failTimer = API.SystemTime()
-
-    while Inventory:FreeSpaces() < 4
-        and API.Read_LoopyLoop()
-    do
-        local success = Interact:Object(
-            "Bank deposit box",
-            "Deposit",
-            30
-        )
-
-        if success then
-            API.RandomSleep2(1000, 500, 1000)
-        end
-
-        if API.SystemTime() - failTimer > 30000 then
-            print("Failed to deposit ores after 30 seconds.")
+function deposit()
+    
+    function useOreBox()
+        if API.DoAction_Interface(0x24,0xaef1,0,1473,5,0,API.OFF_ACT_Bladed_interface_route) then
+            API.RandomSleep2(600, 250, 600)
+            return true
+        else
+            API.logDebug("Failed to use ore box.")
             return false
         end
     end
 
-    API.RandomSleep2(1000, 500, 1000)
+    function useDepositBox()
+        if API.DoAction_Object1(0x24,API.OFF_ACT_GeneralObject_route00,{ Deposit_Box },50) then
+            API.RandomSleep2(600, 250, 600)
+            return true
+        else
+            API.logDebug("Failed to use deposit box.")
+            return false
+        end
+    end
 
-    return true
+    useOreBox()
+    useDepositBox()
+    fillBox()
+    useOreBox()
+    useDepositBox()
+    
 end
 
 local function returnToMine()
