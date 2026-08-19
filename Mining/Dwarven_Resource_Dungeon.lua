@@ -11,13 +11,18 @@ local Mithril_Rocks = {
     113052
 }
 
+local MITHRIL = {
+    ORE = 447
+    ROCK = {113050,113051,113052}
+}
+
 local totalOresMined = 0
 local lastOreCount = 0
 
 local startTime = API.SystemTime()
 
 local function currentOres()
-    return Inventory:GetItemAmount(mithril_ore_id)
+    return Inventory:GetItemAmount(MITHRIL.ORE)
 end
 
 function mineOre()
@@ -25,9 +30,10 @@ function mineOre()
 end
 
 local function clickRockertunity()
+    local rockIDs = {7164, 7165}
     local rockertunity = API.ReadAllObjectsArray(
         {4},
-        {7164, 7165},
+        rockIDs,
         {}
     )
 
@@ -46,7 +52,7 @@ local function clickRockertunity()
 
     local mithrilRocks = API.ReadAllObjectsArray(
         {0},
-        Mithril_Rocks,
+        MITHRIL.ROCK,
         {"Mithril rock"}
     )
 
@@ -115,6 +121,7 @@ end
 function useDepositBox()
     API.DoAction_Object1(0x24,API.OFF_ACT_GeneralObject_route00,{ Deposit_Box },50);
     API.RandomSleep2(600, 250, 600)
+    API.WaitUntilMovingEnds()
 end
 
 function depositOre()
@@ -162,7 +169,7 @@ do------------------------------------------------------------------------------
         end  
     else
         mineOre()
-        --clickRockertunity()
+        clickRockertunity()
     end
 
     --updateOreMined()
