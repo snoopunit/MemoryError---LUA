@@ -163,10 +163,10 @@ do------------------------------------------------------------------------------
         end  
     else
         mineOre()
-        --clickRockertunity()
+        clickRockertunity()
     end
 
-    --updateOreMined()
+    updateOreMined()
 
     ----METRICS----
     --local metrics = {
