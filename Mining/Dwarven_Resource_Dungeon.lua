@@ -12,8 +12,8 @@ local Mithril_Rocks = {
 }
 
 local MITHRIL = {
-    ORE = 447
-    ROCK = {113050,113051,113052}
+    ORE = 447,
+    ROCK = {113050,113051,113052},
 }
 
 local totalOresMined = 0
