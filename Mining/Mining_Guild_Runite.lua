@@ -2,11 +2,6 @@ print("Run Lua script Mining_Guild_Runite.")
 
 local API = require("api")
 
--- ============================================================
--- Mining Guild Runite
--- ============================================================
-
--- Runite rocks
 local Runite_Rocks = {
     113066,
     113067,
@@ -14,17 +9,9 @@ local Runite_Rocks = {
 }
 
 local Runite_Location = WPOINT:new(3033, 9737, 1)
-
--- Mining Guild door
 local Mining_Guild_Door = WPOINT:new(3046, 9756, 1)
-
--- Resource dungeon entrance
 local Mysterious_Entrance = WPOINT:new(3033, 9772, 1)
-
--- Resource dungeon side / bank deposit box
 local Deposit_Box = WPOINT:new(1042, 4578, 3)
-
--- Resource dungeon exit
 local Mysterious_Door = WPOINT:new(1040, 4576, 3)
 
 local totalOresMined = 0
@@ -32,12 +19,7 @@ local lastOreCount = 0
 local startTime = API.SystemTime()
 local lastClick = 0
 
--- ============================================================
--- Utility
--- ============================================================
-
 local function currentOres()
-    -- Runite ore ID
     return Inventory:GetItemAmount(451)
 end
 
@@ -47,10 +29,6 @@ local function walkToObject(coords)
     API.WaitUntilMovingEnds()
     API.RandomSleep2(800, 300, 800)
 end
-
--- ============================================================
--- Runite mining
--- ============================================================
 
 local function clickRockertunity()
     local rockertunity = API.ReadAllObjectsArray(
@@ -119,10 +97,6 @@ local function mine()
     lastClick = API.SystemTime()
 end
 
--- ============================================================
--- Ore box
--- ============================================================
-
 local function fillBox()
     local count = Inventory:FreeSpaces()
 
@@ -145,10 +119,6 @@ local function fillBox()
 
     return false
 end
-
--- ============================================================
--- Door / entrance traversal
--- ============================================================
 
 local function openMiningGuildDoor()
     API.logDebug("Opening Mining Guild Door.")
@@ -219,62 +189,45 @@ local function exitResourceDungeon()
     return true
 end
 
--- ============================================================
--- Banking
---
--- IMPORTANT:
--- Deposit route:
---     Door -> Mysterious entrance -> Deposit box
---
--- Return route:
---     Mysterious door -> Door -> Runite
--- ============================================================
-
 local function goToBank()
     API.logDebug("Starting banking traversal.")
 
-    -- STEP 1:
-    -- Mining Guild -> outside
     if not openMiningGuildDoor() then
         return false
     end
 
-    -- STEP 2:
-    -- Outside -> Resource Dungeon
     if not enterResourceDungeon() then
         return false
     end
 
-    -- STEP 3:
-    -- Resource Dungeon -> Deposit Box
     API.logDebug("Walking to Bank Deposit Box.")
-
     walkToObject(Deposit_Box)
 
     return true
 end
 
-function deposit()
-    
-    function useOreBox()
-        if API.DoAction_Interface(0x24,0xaef1,0,1473,5,0,API.OFF_ACT_Bladed_interface_route) then
-            API.RandomSleep2(600, 250, 600)
-            return true
-        else
-            API.logDebug("Failed to use ore box.")
-            return false
-        end
+function useOreBox()
+    if API.DoAction_Interface(0x24,0xaef1,0,1473,5,0,API.OFF_ACT_Bladed_interface_route) then
+        API.RandomSleep2(600, 250, 600)
+        return true
+    else
+        API.logDebug("Failed to use ore box.")
+        return false
     end
+end
 
-    function useDepositBox()
-        if API.DoAction_Object1(0x24,API.OFF_ACT_GeneralObject_route00,{ Deposit_Box },50) then
-            API.RandomSleep2(600, 250, 600)
-            return true
-        else
-            API.logDebug("Failed to use deposit box.")
-            return false
-        end
+function useDepositBox()
+    if API.DoAction_Object1(0x24,API.OFF_ACT_GeneralObject_route00,{ Deposit_Box },50) then
+        API.RandomSleep2(600, 250, 600)
+        API.WaitUntilMovingEnds()
+        return true
+    else
+        API.logDebug("Failed to use deposit box.")
+        return false
     end
+end
+
+function deposit()
 
     useOreBox()
     useDepositBox()
@@ -285,32 +238,19 @@ function deposit()
 end
 
 local function returnToMine()
-    API.logDebug("Starting return traversal.")
-
-    -- STEP 1:
-    -- Resource Dungeon -> outside
     if not exitResourceDungeon() then
         return false
     end
 
-    -- STEP 2:
-    -- Outside -> Mining Guild
     if not openMiningGuildDoor() then
         return false
     end
 
-    -- STEP 3:
-    -- Mining Guild -> Runite
     API.logDebug("Returning to Runite rocks.")
-
     walkToObject(Runite_Location)
 
     return true
 end
-
--- ============================================================
--- Metrics
--- ============================================================
 
 local function OresPerHour()
     local elapsed = API.SystemTime() - startTime
@@ -337,20 +277,12 @@ local function updateOreMined()
     end
 end
 
--- ============================================================
--- Initialization
--- ============================================================
-
 API.Write_LoopyLoop(true)
 API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(4)
 
 lastOreCount = currentOres()
-
--- ============================================================
--- Main loop
--- ============================================================
 
 while API.Read_LoopyLoop() do
 
@@ -359,49 +291,24 @@ while API.Read_LoopyLoop() do
         return
     end
 
-    -- ========================================================
-    -- INVENTORY FULL
-    -- ========================================================
-
     if Inventory:IsFull() then
 
         API.logDebug("Inventory full. Starting banking sequence.")
 
-        -- Deposit traversal:
-        --
-        -- Door
-        --   ↓
-        -- Mysterious entrance
-        --   ↓
-        -- Bank deposit box
-        --
         if goToBank() then
 
             if deposit() then
 
                 API.logDebug("Deposit successful.")
 
-                -- Return traversal:
-                --
-                -- Mysterious door
-                --   ↓
-                -- Door
-                --   ↓
-                -- Runite rocks
-                --
                 returnToMine()
 
             end
 
         end
 
-    -- ========================================================
-    -- MINING
-    -- ========================================================
-
     else
 
-        -- Keep ore box topped up while mining.
         if Inventory:FreeSpaces() < math.random(2, 8) then
             fillBox()
         end
@@ -413,10 +320,6 @@ while API.Read_LoopyLoop() do
     end
 
     updateOreMined()
-
-    -- ========================================================
-    -- METRICS
-    -- ========================================================
 
     local metrics = {
         {"Script", "Mining Guild Runite"},
@@ -453,7 +356,6 @@ while API.Read_LoopyLoop() do
 
     API.RandomSleep2(600, 0, 250)
 
-    -- Stop after two hours, matching the original script.
     local elapsedTime =
         API.SystemTime() - startTime
 
