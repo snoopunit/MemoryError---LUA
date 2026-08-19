@@ -21,11 +21,21 @@ end
 ---@return bool
 function fillBox()
     local count = Inventory:FreeSpaces()
+    
     --FILL ORE BOX
-    API.DoAction_Interface(0x24,0xaef1,1,1473,5,0,API.OFF_ACT_GeneralInterface_route)
+
+    local boxAB = API.GetABs_name("ore box", false)
+
+    if boxAB.action == "Fill" and boxAB.enabled then
+        API.DoAction_Ability_Direct(boxAB, 1, API.OFF_ACT_GeneralInterface_route)
+    end
+
     API.RandomSleep2(1200, 600, 1200);
+
     if (count < Inventory:FreeSpaces()) then
+        lastOreCount = currentOres()
         return true
+    
     else 
         return false;
     end
