@@ -107,16 +107,17 @@ function fillBox()
     end
 end
 
-function depositOre()
-    function useOreBox()
-        API.DoAction_Interface(0x24,0xaef1,0,1473,5,0,API.OFF_ACT_Bladed_interface_route)
-        API.RandomSleep2(600, 250, 600)
-    end
+function useOreBox()
+    API.DoAction_Interface(0x24,0xaef1,0,1473,5,0,API.OFF_ACT_Bladed_interface_route)
+    API.RandomSleep2(600, 250, 600)
+end
 
-    function useDepositBox()
-        API.DoAction_Object1(0x24,API.OFF_ACT_GeneralObject_route00,{ Deposit_Box },50);
-        API.RandomSleep2(600, 250, 600)
-    end
+function useDepositBox()
+    API.DoAction_Object1(0x24,API.OFF_ACT_GeneralObject_route00,{ Deposit_Box },50);
+    API.RandomSleep2(600, 250, 600)
+end
+
+function depositOre()
 
     useOreBox()
     useDepositBox()
@@ -143,8 +144,8 @@ end
 --Exported function list is in API
 --main loop
 API.Write_LoopyLoop(true)
-API.SetDrawLogs(true)
-API.SetDrawTrackedSkills(true)
+API.SetDrawLogs(false)
+API.SetDrawTrackedSkills(false)
 API.SetMaxIdleTime(4)
 while(API.Read_LoopyLoop())
 do-----------------------------------------------------------------------------------
@@ -164,7 +165,7 @@ do------------------------------------------------------------------------------
         --clickRockertunity()
     end
 
-    updateOreMined()
+    --updateOreMined()
 
     ----METRICS----
     --local metrics = {
@@ -187,10 +188,10 @@ do------------------------------------------------------------------------------
 
     API.RandomSleep2(2400, 0, 250)
 
-    if (API.SystemTime() - startTime) > 3600000 then
-        print("Script has been running for over an hour. Terminating Script.")
-        LoopyLoop = false
-        return
-    end
+    --if (API.SystemTime() - startTime) > 3600000 then
+    --    print("Script has been running for over an hour. Terminating Script.")
+    --    LoopyLoop = false
+    --    return
+    --end
 
 end----------------------------------------------------------------------------------
