@@ -166,7 +166,7 @@ do------------------------------------------------------------------------------
         clickRockertunity()
     end
 
-    --updateOreMined()
+    updateOreMined()
 
     ----METRICS----
     --local metrics = {
