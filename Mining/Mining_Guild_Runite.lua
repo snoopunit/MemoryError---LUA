@@ -231,12 +231,35 @@ end
 
 function deposit()
 
-    useOreBox()
-    useDepositBox()
+    local before = Inventory:FreeSpaces()
+    
+    if not useOreBox() then
+        return false
+    end
+    if not useDepositBox() then
+        return false
+    end
+    
     API.RandomSleep2(1200, 0, 600)
-    fillBox()
-    useOreBox()
-    useDepositBox()
+    
+    if not fillBox() then
+        return false
+    end
+    
+    if not useOreBox() then
+        return false
+    end
+    if not useDepositBox() then
+        return false
+    end
+
+    local after = Inventory:FreeSpaces()
+
+    if before ~= after then
+        return true
+    else
+        return false
+    end
     
 end
 
@@ -300,11 +323,17 @@ while API.Read_LoopyLoop() do
 
         if goToBank() then
             if deposit() then
-
                 API.logDebug("Deposit successful.")
                 returnToMine()
-
+            else
+                API.logDebug("Failed to deposit!")    
+                API.Write_LoopyLoop(false)
+                return
             end
+        else
+            API.logDebug("Failed to go to bank!")    
+            API.Write_LoopyLoop(false)
+            return    
         end
 
     else
