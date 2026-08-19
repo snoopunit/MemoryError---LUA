@@ -2,11 +2,11 @@ print("Run Lua script Mining_Guild_Runite.")
 
 local API = require("api")
 
-local Runite_Rocks = {
-    113066,
-    113067,
-    113065
+local RUNITE = {
+    ORE = 451,
+    ROCK = {113066,113067,113065},
 }
+local gePrice = API.GetExchangePrice(RUNITE.ORE)
 
 local Runite_Location = WPOINT:new(3033, 9737, 1)
 local Mining_Guild_Door = WPOINT:new(3046, 9756, 1)
@@ -52,7 +52,7 @@ local function clickRockertunity()
 
     local runiteRocks = API.ReadAllObjectsArray(
         {0},
-        Runite_Rocks,
+        RUNITE.ROCK,
         {"Runite rock"}
     )
 
@@ -296,15 +296,12 @@ while API.Read_LoopyLoop() do
         API.logDebug("Inventory full. Starting banking sequence.")
 
         if goToBank() then
-
             if deposit() then
 
                 API.logDebug("Deposit successful.")
-
                 returnToMine()
 
             end
-
         end
 
     else
@@ -314,7 +311,6 @@ while API.Read_LoopyLoop() do
         end
 
         clickRockertunity()
-
         mine()
 
     end
@@ -327,7 +323,7 @@ while API.Read_LoopyLoop() do
         {"Ores/H:", OresPerHour()},
         {
             "Est. Profit:",
-            (totalOresMined * API.GetExchangePrice(451)) .. "gp"
+            (totalOresMined * gePrice) .. "gp"
         },
         {
             "Profit/H:",
@@ -340,7 +336,7 @@ while API.Read_LoopyLoop() do
                     return math.floor(
                         (
                             totalOresMined
-                            * API.GetExchangePrice(451)
+                            * gePrice
                         ) / elapsed
                     ) .. "gp"
                 else
