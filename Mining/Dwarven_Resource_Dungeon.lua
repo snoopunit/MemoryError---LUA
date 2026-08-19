@@ -161,7 +161,7 @@ do------------------------------------------------------------------------------
         end  
     else
         mineOre()
-        clickRockertunity()
+        --clickRockertunity()
     end
 
     updateOreMined()
