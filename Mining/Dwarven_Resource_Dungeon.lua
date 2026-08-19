@@ -18,6 +18,63 @@ function mineOre()
     Interact:Object("Mithril rock", "Mine", 10)
 end
 
+local function clickRockertunity()
+    local rockertunity = API.ReadAllObjectsArray(
+        {4},
+        {7164, 7165},
+        {}
+    )
+
+    if #rockertunity < 1 then
+        return
+    end
+
+    local r = rockertunity[1]
+
+    API.logDebug(
+        "Found rockertunity at "
+        .. tostring(r.TileX)
+        .. ","
+        .. tostring(r.TileY)
+    )
+
+    local mithrilRocks = API.ReadAllObjectsArray(
+        {0},
+        Mithril_Rocks,
+        {"Mithril rock"}
+    )
+
+    if #mithrilRocks < 1 then
+        return
+    end
+
+    local closestRock = nil
+    local closestDist = math.huge
+
+    for _, rock in ipairs(mithrilRocks) do
+        local dist =
+            math.abs(r.TileX - rock.TileX)
+            + math.abs(r.TileY - rock.TileY)
+
+        if dist < closestDist then
+            closestDist = dist
+            closestRock = rock
+        end
+    end
+
+    if closestRock then
+        API.RandomSleep2(800, 0, 1200)
+        if API.DoAction_Object_Direct(
+            0x3a,
+            API.OFF_ACT_GeneralObject_route0,
+            closestRock
+        ) then
+            API.RandomSleep2(1200, 600, 1200)
+            API.WaitUntilMovingEnds()
+        end
+    end
+end
+
 ---@return bool
 function fillBox()
     local count = Inventory:FreeSpaces()
@@ -95,6 +152,7 @@ do------------------------------------------------------------------------------
         end  
     else
         mineOre()
+        clickRockertunity()
     end
 
     updateOreMined()

@@ -97,6 +97,7 @@ local function clickRockertunity()
     end
 
     if closestRock then
+        API.RandomSleep2(800, 0, 1200)
         if API.DoAction_Object_Direct(
             0x3a,
             API.OFF_ACT_GeneralObject_route0,
@@ -104,7 +105,6 @@ local function clickRockertunity()
         ) then
             API.RandomSleep2(1200, 600, 1200)
             API.WaitUntilMovingEnds()
-            API.RandomSleep2(2400, 0, 600)
         end
     end
 end
