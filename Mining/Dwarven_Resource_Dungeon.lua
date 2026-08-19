@@ -3,18 +3,12 @@ print("Run Lua script Dwarven_Resource_Dungeon.")
 local API = require("api")
 
 local Deposit_Box = 25937
-local mithril_ore_id = 447
-
-local Mithril_Rocks = {
-    113050,
-    113051,
-    113052
-}
 
 local MITHRIL = {
     ORE = 447,
     ROCK = {113050,113051,113052},
 }
+local gePrice = API.GetExchangePrice(MITHRIL.ORE)
 
 local totalOresMined = 0
 local lastOreCount = 0
@@ -179,12 +173,12 @@ do------------------------------------------------------------------------------
     --    {"Script","Resource Dungeon Mithril - by Klamor"},
     --    {"Total Ores:", totalOresMined},
     --    {"Ores/H:", OresPerHour()},
-    --    {"Est. Profit: ", (totalOresMined * API.GetExchangePrice(mithril_ore_id)).."gp"},
+    --    {"Est. Profit: ", (totalOresMined * gePrice).."gp"},
     --    {"Profit/H: ", 
     --        (function()
     --            local elapsed = (API.SystemTime() - startTime) / 3600000 -- convert ms to hours
     --            if elapsed > 0 then
-    --                return math.floor(( totalOresMined * API.GetExchangePrice(mithril_ore_id)) / elapsed) .. "gp"
+    --                return math.floor(( totalOresMined * gePrice) / elapsed) .. "gp"
     --            else
     --                return "0gp"
     --            end
