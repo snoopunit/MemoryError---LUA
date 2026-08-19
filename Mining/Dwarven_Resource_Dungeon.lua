@@ -169,30 +169,30 @@ do------------------------------------------------------------------------------
     updateOreMined()
 
     ----METRICS----
-    --local metrics = {
-    --    {"Script","Resource Dungeon Mithril - by Klamor"},
-    --    {"Total Ores:", totalOresMined},
-    --    {"Ores/H:", OresPerHour()},
-    --    {"Est. Profit: ", (totalOresMined * gePrice).."gp"},
-    --    {"Profit/H: ", 
-    --        (function()
-    --            local elapsed = (API.SystemTime() - startTime) / 3600000 -- convert ms to hours
-    --            if elapsed > 0 then
-    --                return math.floor(( totalOresMined * gePrice) / elapsed) .. "gp"
-    --            else
-    --                return "0gp"
-    --            end
-    --        end)()
-    --    }
-    --}
-    --API.DrawTable(metrics)
+    local metrics = {
+        {"Script","Resource Dungeon Mithril - by Klamor"},
+        {"Total Ores:", totalOresMined},
+        {"Ores/H:", OresPerHour()},
+        {"Est. Profit: ", (totalOresMined * gePrice).."gp"},
+        {"Profit/H: ", 
+            (function()
+                local elapsed = (API.SystemTime() - startTime) / 3600000 -- convert ms to hours
+                if elapsed > 0 then
+                    return math.floor(( totalOresMined * gePrice) / elapsed) .. "gp"
+                else
+                    return "0gp"
+                end
+            end)()
+        }
+    }
+    API.DrawTable(metrics)
 
     API.RandomSleep2(2400, 0, 250)
 
-    --if (API.SystemTime() - startTime) > 3600000 then
-    --    print("Script has been running for over an hour. Terminating Script.")
-    --    LoopyLoop = false
-    --    return
-    --end
+    if (API.SystemTime() - startTime) > 3600000 then
+        print("Script has been running for over an hour. Terminating Script.")
+        LoopyLoop = false
+        return
+    end
 
 end----------------------------------------------------------------------------------
