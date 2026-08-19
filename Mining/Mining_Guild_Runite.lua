@@ -203,7 +203,7 @@ local function goToBank()
     end
 
     API.logDebug("Walking to Bank Deposit Box.")
-    walkToObject()
+    walkToObject(Deposit_Box)
 
     return true
 end
