@@ -8,6 +8,8 @@ local RUNITE = {
 }
 local gePrice = API.GetExchangePrice(RUNITE.ORE)
 
+local Deposit_Box_ID = 25937
+
 local Runite_Location = WPOINT:new(3033, 9737, 1)
 local Mining_Guild_Door = WPOINT:new(3046, 9756, 1)
 local Mysterious_Entrance = WPOINT:new(3033, 9772, 1)
@@ -201,7 +203,7 @@ local function goToBank()
     end
 
     API.logDebug("Walking to Bank Deposit Box.")
-    walkToObject(Deposit_Box)
+    walkToObject()
 
     return true
 end
@@ -217,7 +219,7 @@ function useOreBox()
 end
 
 function useDepositBox()
-    if API.DoAction_Object1(0x24,API.OFF_ACT_GeneralObject_route00,{ Deposit_Box },50) then
+    if API.DoAction_Object1(0x24,API.OFF_ACT_GeneralObject_route00,{ Deposit_Box_ID },50) then
         API.RandomSleep2(600, 250, 600)
         API.WaitUntilMovingEnds()
         return true
