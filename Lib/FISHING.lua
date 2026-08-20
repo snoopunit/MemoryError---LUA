@@ -80,7 +80,7 @@ SPOTS = {
         name = "Fishing spot",
         action = "Cage",
         submenu = {},
-        Location = {}
+        Location = {{3259,3204,0},{3259,3206,0},{3259,3203,0},{3259,3207,0}}
     },
     KARAMBWAN = {
         name = "Fishing spot",
