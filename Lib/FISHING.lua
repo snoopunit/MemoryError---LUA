@@ -36,9 +36,9 @@ SPOTS = {
     },
     SARDINE_HERRING = {
         name = "Fishing spot",
-        action = "Bait",
-        submenu = {"Net"},
-        Location = {}
+        action = "Net",
+        submenu = {"Bait"},
+        Location = {{3255,3163,0},{3256,3177,0},{3246,3155,0}}
     },
     TROUT_SALMON = {
         name = "Fishing spot",
