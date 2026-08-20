@@ -7,7 +7,7 @@ local Max_AFK = 5
 
 function Fishing_and_Banking(spotType)
 
-    if API.InvFull_() then
+    if Inventory:IsFull() then
 
         Interact:Object("Bank booth", "Load Last Preset from", 50)
 
