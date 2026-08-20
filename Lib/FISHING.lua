@@ -148,9 +148,9 @@ function DistanceFromPlayer(TILE)
     end
     
     -- Check same plane (z level), if relevant
-    if TILE.z ~= player.z then
-        return math.huge
-    end
+    --if TILE.z ~= player.z then
+    --    return math.huge
+    --end
 
     -- Euclidean distance (2D, ignoring z since it's a plane-based game)
     local dx = TILE.x - player.x
@@ -171,8 +171,8 @@ function lineToPlayer(endPoint, segments)
         local t = i / segments
         local x = math.floor(startPoint.x + (endPoint.x - startPoint.x) * t)
         local y = math.floor(startPoint.y + (endPoint.y - startPoint.y) * t)
-        local z = math.floor(startPoint.z + (endPoint.z - startPoint.z) * t)
-        table.insert(points, {x = x, y = y, z = z})
+        --local z = math.floor(startPoint.z + (endPoint.z - startPoint.z) * t)
+        table.insert(points, {x = x, y = y, z = 1})
     end
 
     return points
