@@ -40,11 +40,17 @@ SPOTS = {
         submenu = {"Bait"},
         Location = {{3255,3163,0},{3256,3177,0},{3246,3155,0}}
     },
-    TROUT_SALMON = {
+    TROUT = {
         name = "Fishing spot",
         action = "Lure",
         submenu = {"Bait"},
-        Location = {{3238,3251,0},{3238,3252,0}}
+        Location = {{3238,3251,0},{3239,3243,0}}
+    },
+    TROUT = {
+        name = "Fishing spot",
+        action = "Lure",
+        submenu = {"Bait"},
+        Location = {{3238,3255,0},{3238,3252,0}}
     },
     LOBSTER = {
         name = "Fishing spot",
