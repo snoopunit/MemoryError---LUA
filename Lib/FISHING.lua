@@ -40,7 +40,7 @@ SPOTS = {
         submenu = {"Bait"},
         Location = {{3255,3163,0},{3256,3177,0},{3246,3155,0}}
     },
-    TROUT = {
+    TROUT_SALMON = {
         name = "Fishing spot",
         action = "Lure",
         submenu = {"Bait"},
