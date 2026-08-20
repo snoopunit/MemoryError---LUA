@@ -37,7 +37,7 @@ SPOTS = {
     SARDINE_HERRING = {
         name = "Fishing spot",
         action = "Bait",
-        submenu = {"Net", "Harpoon"},
+        submenu = {"Net"},
         Location = {}
     },
     TROUT_SALMON = {
