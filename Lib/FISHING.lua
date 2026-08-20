@@ -77,7 +77,7 @@ SPOTS = {
         Location = {}
     },
     CRAYFISH = {
-        name = "Crayfish spot",
+        name = "Fishing spot",
         action = "Cage",
         submenu = {},
         Location = {}
