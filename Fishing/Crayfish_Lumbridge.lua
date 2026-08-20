@@ -2,37 +2,43 @@ print("Crayfish Lumbridge")
 
 local API = require("api")
 local FISH = require("lib/FISHING")
-
-local Max_AFK = 5
+local BANK = require("lib/BANKING")
 
 function Fishing_and_Banking(spotType)
 
-    if API.InvFull_() then
+    if Inventory:IsFull() then
 
-        Interact:Object("Bank chest", "Load Last Preset from", 50)
+        BANK.goTo(BANK.BANKERS.LUMBRIDGE_BANK_CHEST)
 
         local bankTimer = API.SystemTime()
 
-        while API.Read_LoopyLoop and (API.SystemTime() - bankTimer) < 30000 do
+        while API.Read_LoopyLoop() and (API.SystemTime() - bankTimer) < 30000 do
             
-            if API.ReadPlayerMovin() then 
+            Interact:Object("Bank chest", "Load Last Preset from", 60)
+
+            while API.ReadPlayerMovin() and API.Read_LoopyLoop() do 
                 bankTimer = API.SystemTime()
+                API.RandomSleep2(2400, 0 ,600)
             end
 
-            if not Inventory:Contains("Raw shark") then
+            --Check we don't have any more items in inventory
+            if Inventory:IsEmpty() then
                 break
             end
 
         end
 
         if API.SystemTime() - bankTimer > 30000 then
-            API.logWarn("Unable to deposit at the deposit box!")
+            API.logWarn("bankTimer exceeded 30s!")
             API.Write_LoopyLoop(false)
             return
         end
 
     else
 
+        if not FISH.findFishingSpots(spotType) then
+            FISH.goTo(spotType)
+        end
         FISH.gather(spotType)
 
     end
@@ -44,7 +50,7 @@ end
 API.Write_LoopyLoop(true)
 API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
-API.SetMaxIdleTime(Max_AFK)
+API.SetMaxIdleTime(4)
 
 while(API.Read_LoopyLoop())
 
