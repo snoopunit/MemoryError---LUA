@@ -439,7 +439,7 @@ function Fishing.gather(spotType)
         return false
     end
 
-    while not API.InvFull_() and API.Read_LoopyLoop() do 
+    while not Inventory:IsFull() and API.Read_LoopyLoop() do 
         -- Pick a random coordinate from spotType.Location
         local randomLocation = spotType.Location[math.random(#spotType.Location)]
         
