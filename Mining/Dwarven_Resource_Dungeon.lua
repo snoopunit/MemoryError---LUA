@@ -35,15 +35,6 @@ local function clickRockertunity()
         return
     end
 
-    local r = rockertunity[1]
-
-    API.logDebug(
-        "Found rockertunity at "
-        .. tostring(r.TileX)
-        .. ","
-        .. tostring(r.TileY)
-    )
-
     local mithrilRocks = API.ReadAllObjectsArray(
         {0},
         MITHRIL.ROCK,
@@ -54,17 +45,45 @@ local function clickRockertunity()
         return
     end
 
+    local activeRock = API.ReadLpInteracting()
+    local activeRockX = activeRock and activeRock.TileX
+    local activeRockY = activeRock and activeRock.TileY
     local closestRock = nil
     local closestDist = math.huge
 
-    for _, rock in ipairs(mithrilRocks) do
-        local dist =
-            math.abs(r.TileX - rock.TileX)
-            + math.abs(r.TileY - rock.TileY)
+    for _, r in ipairs(rockertunity) do
+        API.logDebug(
+            "Found rockertunity at "
+            .. tostring(r.TileX)
+            .. ","
+            .. tostring(r.TileY)
+        )
 
-        if dist < closestDist then
-            closestDist = dist
-            closestRock = rock
+        for _, rock in ipairs(mithrilRocks) do
+            local isActiveRock =
+                activeRockX ~= nil
+                and activeRockY ~= nil
+                and rock.TileX == activeRockX
+                and rock.TileY == activeRockY
+
+            if not isActiveRock then
+                local dist =
+                    math.abs(r.TileX - rock.TileX)
+                    + math.abs(r.TileY - rock.TileY)
+
+                if dist == 0 then
+                    closestRock = rock
+                    closestDist = dist
+                    break
+                elseif dist < closestDist then
+                    closestDist = dist
+                    closestRock = rock
+                end
+            end
+        end
+
+        if closestDist == 0 then
+            break
         end
     end
 
@@ -76,7 +95,7 @@ local function clickRockertunity()
             closestRock
         ) then
             print("Clicked rockertunity! Waiting for movement to end...")
-            API.RandomSleep2(1200, 600, 1200)
+            API.RandomSleep2(2400, 0, 1200)
             API.WaitUntilMovingEnds()
         else
             print("API.DoAction_Object_Direct() failed...")    
@@ -162,8 +181,8 @@ do------------------------------------------------------------------------------
             depositOre()
         end  
     else
-        mineOre()
         clickRockertunity()
+        mineOre()
     end
 
     updateOreMined()
