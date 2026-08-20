@@ -1,4 +1,4 @@
-print("FISHING GUILD SHARKS")
+print("Al Kharid Herring+Sardines")
 
 local API = require("api")
 local FISH = require("lib/FISHING")
@@ -33,6 +33,9 @@ function Fishing_and_Banking(spotType)
 
     else
 
+        if not FISH.findFishingSpots(spotType) then
+            FISH.goTo(spotType)
+        end
         FISH.gather(spotType)
 
     end
