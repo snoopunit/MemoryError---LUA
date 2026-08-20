@@ -6,7 +6,7 @@ local BANK = require("lib/BANKING")
 
 function Fishing_and_Banking(spotType)
 
-    if API.InvFull_() then
+    if Inventory:IsFull() then
 
         BANK.goTo(BANK.BANKERS.STILES)
 
