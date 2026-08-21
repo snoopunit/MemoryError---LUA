@@ -954,7 +954,7 @@ do------------------------------------------------------------------------------
 
         while API.IsTargeting() and API.Read_LoopyLoop() do
 
-            currentTargetInfo = API.ReadTargetInfo(false)
+            currentTargetInfo = API.ReadTargetInfo99(false)
             
             if currentTargetInfo.Hitpoints == 0 then
                 break
