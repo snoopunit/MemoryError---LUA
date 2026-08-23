@@ -45,7 +45,6 @@ local function isAtVarrockLodestone()
 end
 
 local function varrockTeleport()
-    API.WaitUntilMovingandAnimEnds()
     local failTimer = API.SystemTime()
 
     while not isAtVarrockLodestone() and API.Read_LoopyLoop() do
@@ -131,13 +130,15 @@ local function teleportAubury()
     end
 
     local success = Interact:NPC("Aubury", "Teleport", 20)
-    API.RandomSleep2(2400, 0, 1200)
-    API.WaitUntilMovingEnds()
-    if success then 
-        API.logDebug("Successfully teleported to Aubury.")
+    local function conditionFunc()
+        local essenceRock = API.ReadAllObjectsArray({12},{2491},{"Rune essence"})
+        return #essenceRock > 0
+    end
+
+    if success then
+        SleepUntil(conditionFunc(), 30000, "Essence rock found after teleporting to Aubury.") 
         return true
     else
-        API.logDebug("Failed to teleport to Aubury.")
         return false
     end
 
