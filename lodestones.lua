@@ -54,7 +54,7 @@ local function SleepUntil(conditionFunc, timeout, message)
 end
 
 local function OpenLodestonesInterface()
-    if API.DoAction_Interface(0xffffffff, 0xffffffff, 1, 1465, 18, -1, API.OFF_ACT_GeneralInterface_route) then
+    if API.DoAction_Interface(0xffffffff,0xffffffff,1,1465,34,-1,API.OFF_ACT_GeneralInterface_route) then
         SleepUntil(function() return API.Compare2874Status(30, false) end, 10, "Lodestone interface open")
     end
 end
@@ -124,7 +124,7 @@ LODESTONES.SEERS_VILLAGE = buildLodestone(19, WPOINT.new(2689, 3482, 0))
 LODESTONES.TAVERLEY = buildLodestone(20, WPOINT.new(2878, 3442, 0))
 LODESTONES.TIRANNWN = buildLodestone(31, WPOINT.new(2254, 3149, 0))
 LODESTONES.UM = buildLodestone(35, WPOINT.new(1084, 1768, 1))
-LODESTONES.VARROCK = buildLodestone(21, WPOINT.new(3214, 3376, 0))
+LODESTONES.VARROCK = buildLodestone(21, WPOINT.new(3214, 3376, 2))
 LODESTONES.WILDERNESS = buildLodestone(32, WPOINT.new(0, 0, 0))
 LODESTONES.YANILLE = buildLodestone(25, WPOINT.new(2560, 3094, 0))
 
