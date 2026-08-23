@@ -24,6 +24,28 @@ local lastOreCount = 0
 local startTime = API.SystemTime()
 local lastClick = 0
 
+--borrowed from lodestones.lua
+local function SleepUntil(conditionFunc, timeout, message)
+    local startTime = os.time()
+    local sleepSuccessful = false
+    while not conditionFunc() do
+        if os.difftime(os.time(), startTime) >= timeout then
+            print("Stopped waiting for " .. message .. " after " .. timeout .. " seconds.")
+            break
+        end
+        if not API.Read_LoopyLoop() then
+            print("Script exited - breaking sleep.")
+            break
+        end
+        API.RandomSleep2(100, 100, 100)
+    end
+    if conditionFunc() then
+        print("Sleep condition met for " .. message)
+        sleepSuccessful = true
+    end
+    return sleepSuccessful
+end
+
 local function currentOres()
     return Inventory:GetItemAmount(451)
 end
