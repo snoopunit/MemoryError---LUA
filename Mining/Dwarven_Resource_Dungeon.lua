@@ -208,9 +208,9 @@ do------------------------------------------------------------------------------
 
     API.RandomSleep2(2400, 0, 250)
 
-    if (API.SystemTime() - startTime) > 3600000 then
-        print("Script has been running for over an hour. Terminating Script.")
-        LoopyLoop = false
+    if (API.SystemTime() - startTime) > (3600000 * 4) then
+        print("Script has been running for over 4 hours. Terminating Script.")
+        API.Write_LoopyLoop(false)
         return
     end
 
