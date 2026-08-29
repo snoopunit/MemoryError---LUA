@@ -20,7 +20,7 @@ local function loadLastPreset()
             API.Write_LoopyLoop(false)
         end
         API.RandomSleep2(600, 0, 1200)
-        return Inventory:Contains("Maple logs")
+        return Inventory:Contains("Accursed ashes")
 end
 
 local function coatIncense()
@@ -64,9 +64,9 @@ API.SetMaxIdleTime(Max_AFK)
 while(API.Read_LoopyLoop())
 
 do-----------------------------------------------------------------------------------
-    if Inventory:Contains("Maple logs") then
-        --coatIncense()
-        craftIncense()
+    if Inventory:Contains("Accursed ashes") then
+        coatIncense()
+        --craftIncense()
     else
         if not loadLastPreset() then
             API.logWarn("No Maple logs in inventory!")
