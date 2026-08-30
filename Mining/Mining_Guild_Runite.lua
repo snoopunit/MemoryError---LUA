@@ -10,8 +10,11 @@ local gePrice = API.GetExchangePrice(RUNITE.ORE)
 
 local Deposit_Box_ID = 25937
 local Mining_Guild_Door_ID = 2112
-local Mysterious_Entrance_ID = 
+local Mysterious_Entrance_ID = 52855
 local Mysterious_Door_ID = 52864
+
+local Entrance_Anim_Up = 13288
+local Entrance_Anim_Down = 13285
 
 local Runite_Location = WPOINT:new(3033, 9737, 1)
 local Mining_Guild_Door = WPOINT:new(3046, 9756, 1)
@@ -188,6 +191,10 @@ local function goToBank()
             API.logWarn("Unable to open the resource dungeon entrance!")
             return false
         end
+        if API.ReadPlayerAnim() == Entrance_Anim_Up or API.ReadPlayerAnim() == Entrance_Anim_Down then
+            API.RandomSleep2(600, 0, 250)
+            break
+        end
         API.RandomSleep2(600, 0, 250)
     end
     
@@ -259,6 +266,10 @@ local function returnToMine()
             return false
         end
         API.RandomSleep2(1600, 0, 1250)
+        if API.ReadPlayerAnim() == Entrance_Anim_Up or API.ReadPlayerAnim() == Entrance_Anim_Down then
+            API.RandomSleep2(600, 0, 250)
+            break
+        end
     end
     
     while isInsideMiningGuild() == "outside" and API.Read_LoopyLoop() do
