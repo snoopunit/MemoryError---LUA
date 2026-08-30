@@ -9,6 +9,9 @@ local RUNITE = {
 local gePrice = API.GetExchangePrice(RUNITE.ORE)
 
 local Deposit_Box_ID = 25937
+local Mining_Guild_Door_ID = 2112
+local Mysterious_Entrance_ID = 
+local Mysterious_Door_ID = 52864
 
 local Runite_Location = WPOINT:new(3033, 9737, 1)
 local Mining_Guild_Door = WPOINT:new(3046, 9756, 1)
@@ -122,90 +125,74 @@ local function fillBox()
     return false
 end
 
-local function openMiningGuildDoor()
-    API.logDebug("Opening Mining Guild Door.")
+local function isInsideMiningGuild()
 
-    walkToObject(Mining_Guild_Door)
+    local door = API.ReadAllObjectsArray({12}, {Mining_Guild_Door_ID}, {"Door"})
 
-    local success = Interact:Object(
-        "Door",
-        "Open",
-        30
-    )
-
-    if not success then
-        API.logDebug("Failed to interact with Mining Guild Door.")
+    if not door or #door ~= 1 then
+        API.logDebug("Unable to locate Mining Guild Door <object>")
         return false
     end
 
-    API.RandomSleep2(1200, 600, 1200)
-    API.WaitUntilMovingEnds()
-    API.RandomSleep2(1000, 500, 1000)
+    local playerCoords = API.PlayerCoord()
 
-    return true
+    if math.floor(playerCoords.y) > Mining_Guild_Door.y then 
+        return "outside"
+    else
+        return "inside"
+    end
+
+end
+
+local function isInsideResourceDungeon()
+
+    local dungeonExit = API.ReadAllObjectsArray({0}, {Mysterious_Door_ID}, {"Mysterious Door"})
+    local bankDepositBox = API.ReadAllObjectsArray({12}, {Deposit_Box_ID}, {"Bank deposit box"})
+
+    if dungeonExit and bankDepositBox then
+        return true
+    else
+        return false
+    end
+
+end
+
+local function openMiningGuildDoor()
+    API.logDebug("Opening Mining Guild Door.")
+    return Interact:Object("Door", "Open", 30)
 end
 
 local function enterResourceDungeon()
     API.logDebug("Entering Resource Dungeon.")
-
-    walkToObject(Mysterious_Entrance)
-
-    local success = Interact:Object(
-        "Mysterious entrance",
-        "Enter",
-        30
-    )
-
-    if not success then
-        API.logDebug("Failed to interact with Mysterious entrance.")
-        return false
-    end
-
-    API.RandomSleep2(1800, 800, 1500)
-    API.WaitUntilMovingEnds()
-    API.RandomSleep2(1200, 600, 1200)
-
-    return true
+    return Interact:Object("Mysterious entrance","Enter",30)
 end
 
 local function exitResourceDungeon()
     API.logDebug("Exiting Resource Dungeon.")
-
-    walkToObject(Mysterious_Door)
-
-    local success = Interact:Object(
-        "Mysterious door",
-        "Exit",
-        30
-    )
-
-    if not success then
-        API.logDebug("Failed to interact with Mysterious door.")
-        return false
-    end
-
-    API.RandomSleep2(1800, 800, 1500)
-    API.WaitUntilMovingEnds()
-    API.RandomSleep2(1200, 600, 1200)
-
-    return true
+    return Interact:Object("Mysterious door","Exit",30)
 end
 
 local function goToBank()
     API.logDebug("Starting banking traversal.")
 
-    if not openMiningGuildDoor() then
-        return false
+    while isInsideMiningGuild() == "inside" and API.Read_LoopyLoop() do
+        if not openMiningGuildDoor() then 
+            API.logWarn("Unable to open the mining guild door!")
+            return false
+        end
+        API.RandomSleep2(600, 0, 250)
     end
 
-    if not enterResourceDungeon() then
-        return false
+    while isInsideMiningGuild() == "outside" and API.Read_LoopyLoop() do
+        if not enterResourceDungeon() then 
+            API.logWarn("Unable to open the resource dungeon entrance!")
+            return false
+        end
+        API.RandomSleep2(600, 0, 250)
     end
+    
+    return isInsideResourceDungeon()
 
-    API.logDebug("Walking to Bank Deposit Box.")
-    walkToObject(Deposit_Box)
-
-    return true
 end
 
 function useOreBox()
@@ -264,18 +251,25 @@ function deposit()
 end
 
 local function returnToMine()
-    if not exitResourceDungeon() then
-        return false
-    end
-
-    if not openMiningGuildDoor() then
-        return false
-    end
-
     API.logDebug("Returning to Runite rocks.")
-    walkToObject(Runite_Location)
 
-    return true
+    while isInsideResourceDungeon() and API.Read_LoopyLoop() do
+        if not exitResourceDungeon() then 
+            API.logWarn("Unable to open the resource dungeon exit!")
+            return false
+        end
+        API.RandomSleep2(1600, 0, 1250)
+    end
+    
+    while isInsideMiningGuild() == "outside" and API.Read_LoopyLoop() do
+        if not openMiningGuildDoor() then 
+            API.logWarn("Unable to open the mining guild door!")
+            return false
+        end
+        API.RandomSleep2(600, 0, 250)
+    end
+    
+    return isInsideMiningGuild() == "inside"
 end
 
 local function OresPerHour()
