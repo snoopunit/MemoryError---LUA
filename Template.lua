@@ -14,13 +14,13 @@ local TASK = require("lib/TASK")
 
 local Max_AFK = 5
 
-local function loadLastPreset() 
+local function loadLastPreset(item) 
         if not Interact:NPC("Banker", "Load Last Preset from") then
             API.logWarn("Unable to interact with Banker!")
             API.Write_LoopyLoop(false)
         end
         API.RandomSleep2(600, 0, 1200)
-        return Inventory:Contains("Accursed ashes")
+        return Inventory:Contains(item)
 end
 
 local function coatIncense()
@@ -37,12 +37,6 @@ local function coatIncense()
 end
 
 function craftIncense()
-
-    if not Inventory:Contains("Maple logs") then
-        API.logWarn("No Maple logs in inventory!")
-        API.Write_LoopyLoop(false)
-        return false
-    end
 
     local boxAB = API.GetABs_name("logs", false)
 
@@ -64,16 +58,27 @@ API.SetMaxIdleTime(Max_AFK)
 while(API.Read_LoopyLoop())
 
 do-----------------------------------------------------------------------------------
-    if Inventory:Contains("Accursed ashes") then
-        coatIncense()
-        --craftIncense()
+
+    --[[if Inventory:Contains("Accursed ashes") and Inventory:Contains("Maple incense sticks") then
+        coatIncense() 
     else
-        if not loadLastPreset() then
+        if not loadLastPreset("Accursed ashes") then
+            API.logWarn("No Accursed ashes in inventory!")
+            API.Write_LoopyLoop(false)
+            return false
+        end
+    end--]]
+
+    if Inventory:Contains("Maple logs") then
+        craftIncense() 
+    else
+        if not loadLastPreset("Maple logs") then
             API.logWarn("No Maple logs in inventory!")
             API.Write_LoopyLoop(false)
             return false
         end
     end
+
     API.RandomSleep2(800, 0, 400)
 end----------------------------------------------------------------------------------
 
