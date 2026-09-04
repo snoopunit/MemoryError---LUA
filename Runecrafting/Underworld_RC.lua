@@ -17,7 +17,7 @@ local function loadLastPreset()
     local failTimer = API.SystemTime()
     local usedBank = false
 
-    while not Inventory:IsFull() and API.Read_LoopyLoop() then
+    while not Inventory:IsFull() and API.Read_LoopyLoop() do
 
         if not usedBank then
             if Interact:Object("Bank chest", "Load Last Preset from", 30) then
@@ -55,7 +55,7 @@ local function enterDarkPortal()
     local hasInteracted = false
     local failTimer = API.SystemTime()
 
-    while not isAtLocation(AREA.RC_ALTARS, 10) do
+    while not isAtLocation(AREA.RC_ALTARS, 10) and API.Read_LoopyLoop() do
     
         if not hasInteracted then
             if Interact:Object("Dark portal", "Enter", 30) then
@@ -86,7 +86,7 @@ local function returnFromDarkPortal()
     local hasInteracted = false
     local failTimer = API.SystemTime()
 
-    while not isAtLocation(AREA.CITY_OF_UM, 30) do
+    while not isAtLocation(AREA.CITY_OF_UM, 30) and API.Read_LoopyLoop() do
     
         if not hasInteracted then
             if Interact:Object("Dark portal", "Exit", 30) then
