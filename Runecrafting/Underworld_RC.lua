@@ -134,7 +134,7 @@ local function craftRunes()
     while Inventory:IsFull() and API.Read_LoopyLoop() do
     
         if not hasInteracted then
-            if Interact:Object(altar, "Craft runes", 30) then
+            if Interact:Object("Flesh altar", "Craft runes", 30) then
                 API.logDebug("Crafting runes...")
                 hasInteracted = true
             else
