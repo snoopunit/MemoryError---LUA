@@ -2,25 +2,27 @@ print("Run Lua script Mining_Guild_Runite.")
 
 local API = require("api")
 
-local RUNITE = {
-    ORE = 451,
-    ROCK = {113066,113067,113065},
+local LUMINITE = {
+    ORE = 44820,
+    ROCK = {113057,113056,113058},
 }
-local gePrice = API.GetExchangePrice(RUNITE.ORE)
+
+local IRON = {
+    ORE = 440,
+    ROCK = {113038,113039,113040},
+}
+
+local Mining_Guild_Door = WPOINT:new(3046, 9756, 1)
+
+local ironPrice = API.GetExchangePrice(IRON.ORE)
+local luminitePrice = API.GetExchangePrice(LUMINITE.ORE)
 
 local Deposit_Box_ID = 25937
-local Mining_Guild_Door_ID = 2112
 local Mysterious_Entrance_ID = 52855
 local Mysterious_Door_ID = 52864
 
 local Entrance_Anim_Up = 13288
 local Entrance_Anim_Down = 13285
-
-local Runite_Location = WPOINT:new(3033, 9737, 1)
-local Mining_Guild_Door = WPOINT:new(3046, 9756, 1)
-local Mysterious_Entrance = WPOINT:new(3033, 9772, 1)
-local Deposit_Box = WPOINT:new(1042, 4578, 3)
-local Mysterious_Door = WPOINT:new(1040, 4576, 3)
 
 local totalOresMined = 0
 local lastOreCount = 0
@@ -28,7 +30,7 @@ local startTime = API.SystemTime()
 local lastClick = 0
 
 local function currentOres()
-    return Inventory:GetItemAmount(451)
+    return Inventory:GetItemAmount(IRON.ORE)
 end
 
 --[[
@@ -114,20 +116,20 @@ local function clickRockertunity()
         .. tostring(r.TileY)
     )
 
-    local runiteRocks = API.ReadAllObjectsArray(
+    local ironRocks = API.ReadAllObjectsArray(
         {0},
-        RUNITE.ROCK,
-        {"Runite rock"}
+        IRON.ROCK,
+        {"Iron rock"}
     )
 
-    if #runiteRocks < 1 then
+    if #ironRocks < 1 then
         return
     end
 
     local closestRock = nil
     local closestDist = math.huge
 
-    for _, rock in ipairs(runiteRocks) do
+    for _, rock in ipairs(ironRocks) do
         local dist =
             math.abs(r.TileX - rock.TileX)
             + math.abs(r.TileY - rock.TileY)
@@ -145,7 +147,7 @@ local function clickRockertunity()
             API.OFF_ACT_GeneralObject_route0,
             closestRock
         ) then
-            API.RandomSleep2(1200, 600, 1200)
+            API.RandomSleep2(2400, 600, 1800)
             API.WaitUntilMovingEnds()
         end
     end
@@ -156,7 +158,7 @@ local function mine()
         return
     end
 
-    Interact:Object("Runite rock", "Mine", 20)
+    Interact:Object("Iron rock", "Mine", 20)
 
     lastClick = API.SystemTime()
 end
@@ -179,7 +181,7 @@ local function fillBox()
 
     if count < Inventory:FreeSpaces() then
         lastOreCount = currentOres()
-        API.logDebug("Ore box has: "..tostring(getAmountInOrebox(RUNITE.ORE).." runite ores."))
+        API.logDebug("Ore box has: "..tostring(getAmountInOrebox(IRON.ORE).." iron ores."))
         return true
     end
 
@@ -249,18 +251,6 @@ local function goToBank()
 
     local failTimer = API.SystemTime()
 
-    if not openMiningGuildDoor() then 
-        API.logWarn("Unable to open the mining guild door!")
-        return false
-    end
-
-    while isInsideMiningGuild() == "inside" and API.Read_LoopyLoop() do
-        
-        timerFail15(failTimer)
-        API.RandomSleep2(600, 0, 250)
-
-    end
-
     if not enterResourceDungeon() then 
         API.logWarn("Unable to open the resource dungeon entrance!")
         return false
@@ -275,6 +265,7 @@ local function goToBank()
 
     end
     
+    API.RandomSleep2(600, 0, 250)
     return isInsideResourceDungeon()
 
 end
@@ -351,21 +342,7 @@ local function returnToMine()
        
     end
     
-    if not openMiningGuildDoor() then 
-        API.logWarn("Unable to open the mining guild door!")
-        return false
-    end
-
-    failTimer = API.SystemTime()
-
-    while isInsideMiningGuild() ~= "inside" and API.Read_LoopyLoop() do
-        
-        timerFail15(failTimer)
-        API.RandomSleep2(600, 0, 250)
-
-    end
-    
-    return isInsideMiningGuild() == "inside"
+    return isInsideMiningGuild() == "outside"
 end
 
 local function OresPerHour()
@@ -428,7 +405,7 @@ while API.Read_LoopyLoop() do
 
     else
 
-        if Inventory:FreeSpaces() < math.random(2, 8) and (getAmountInOrebox(RUNITE.ORE) < 120) then
+        if Inventory:FreeSpaces() < math.random(2, 8) and (getAmountInOrebox(IRON.ORE) < 120) then
             fillBox()
         end
 
@@ -445,7 +422,7 @@ while API.Read_LoopyLoop() do
         {"Ores/H:", OresPerHour()},
         {
             "Est. Profit:",
-            (totalOresMined * gePrice) .. "gp"
+            (totalOresMined * ironPrice) .. "gp"
         },
         {
             "Profit/H:",
@@ -458,7 +435,7 @@ while API.Read_LoopyLoop() do
                     return math.floor(
                         (
                             totalOresMined
-                            * gePrice
+                            * ironPrice
                         ) / elapsed
                     ) .. "gp"
                 else
@@ -477,8 +454,8 @@ while API.Read_LoopyLoop() do
     local elapsedTime =
         API.SystemTime() - startTime
 
-    if elapsedTime > (3600000 * 2) then
-        print("2 hours have passed. Terminating Script.")
+    if elapsedTime > (3600000 * 4) then
+        print("4 hours have passed. Terminating Script.")
         API.Write_LoopyLoop(false)
     end
 
