@@ -15,30 +15,31 @@ local ALTARS        = {
 local function loadLastPreset()
 
     local failTimer = API.SystemTime()
-    local usedBank = false
+    local failCount = 0
 
     while not Inventory:IsFull() and API.Read_LoopyLoop() do
 
-        if not usedBank then
+        if not API.ReadPlayerMovin2() then
             if Interact:Object("Bank chest", "Load Last Preset from", 30) then
                 API.logDebug("Loading last preset...")
-                API.RandomSleep2(600,0,600)
-                usedBank = true
             else
                 API.logDebug("Unable to interact with Bank chest!")
-                API.Write_LoopyLoop(false)
-                return
-            end
+                failCount = failCount + 1
+            end    
+        end
+
+        API.RandomSleep2(600,0,600)
+
+        if failCount > 10 then
+            API.logWarn("loadLastPreset() failCount = "..tostring(failCount).."!")
+            API.Write_LoopyLoop(false)
+            return
         end
 
         if API.SystemTime() - failTimer > 30000 then
             API.logWarn("Banking fail timer reached 30s!")
             API.Write_LoopyLoop(false)
             return
-        end
-
-        if API.ReadPlayerMovin2() then
-            API.RandomSleep2(600,0,600)
         end
         
     end
@@ -52,64 +53,68 @@ end
 
 local function enterDarkPortal()
 
-    local hasInteracted = false
     local failTimer = API.SystemTime()
+    local failCount = 0
 
     while not isAtLocation(AREA.RC_ALTARS, 10) and API.Read_LoopyLoop() do
     
-        if not hasInteracted then
+        if not API.ReadPlayerMovin2() or not API.CheckAnim(20) then
             if Interact:Object("Dark portal", "Enter", 30) then
                 API.logDebug("Entering dark portal.")
-                hasInteracted = true
             else
-                API.logWarn("Unable to Enter the Dark Portal!")
-                API.Write_LoopyLoop(false)
-                return
+                failCount = failCount + 1
             end
         end
 
-        if API.SystemTime() - failTimer > 30000 then
-            API.logWarn("Enter portal fail timer reached 30s!")
+        API.RandomSleep2(600,0,600)
+
+        if failCount > 10 then
+            API.logWarn("enterDarkPortal() failCount = "..tostring(failCount).."!")
             API.Write_LoopyLoop(false)
             return
         end
 
-        if API.ReadPlayerMovin2() or API.CheckAnim(20) then
-            API.RandomSleep2(600,0,600)
-        end   
+        if API.SystemTime() - failTimer > 30000 then
+            API.logWarn("enterDarkPortal() fail timer reached 30s!")
+            API.Write_LoopyLoop(false)
+            return
+        end 
     
     end
 
 end
 
 local function returnFromDarkPortal()
-    local hasInteracted = false
+    
     local failTimer = API.SystemTime()
+    local failCount = 0
 
     while not isAtLocation(AREA.CITY_OF_UM, 30) and API.Read_LoopyLoop() do
     
-        if not hasInteracted then
+        if not API.ReadPlayerMovin2() or not API.CheckAnim(20) then
             if Interact:Object("Dark portal", "Exit", 30) then
                 API.logDebug("Exiting dark portal.")
-                hasInteracted = true
             else
-                API.logWarn("Unable to Exit the Dark Portal!")
-                API.Write_LoopyLoop(false)
-                return
+                failCount = failCount + 1
             end
         end
 
-        if API.SystemTime() - failTimer > 30000 then
-            API.logWarn("Exit portal fail timer reached 30s!")
+        API.RandomSleep2(600,0,600)
+
+        if failCount > 10 then
+            API.logWarn("exitDarkPortal() failCount = "..tostring(failCount).."!")
             API.Write_LoopyLoop(false)
             return
         end
 
-        if API.ReadPlayerMovin2() or API.CheckAnim(20) then
-            API.RandomSleep2(600,0,600)
-        end   
+        if API.SystemTime() - failTimer > 30000 then
+            API.logWarn("exitDarkPortal() fail timer reached 30s!")
+            API.Write_LoopyLoop(false)
+            return
+        end 
     
     end
+
 end
 
 local function craftRunes()
@@ -128,20 +133,23 @@ local function craftRunes()
     end
 
     local altar = randomAltar()
-    local hasInteracted = false
     local failTimer = API.SystemTime()
+    local failCount = 0
 
     while Inventory:IsFull() and API.Read_LoopyLoop() do
     
-        if not hasInteracted then
-            if Interact:Object("Flesh altar", "Craft runes", 30) then
+        if not API.ReadPlayerMovin2() or not API.CheckAnim(20) then
+            if Interact:Object(altar, "Craft runes", 30) then
                 API.logDebug("Crafting runes...")
-                hasInteracted = true
             else
-                API.logWarn("Unable to interact with runecrafting altar!")
-                API.Write_LoopyLoop(false)
-                return
+                failCount = failCount + 1
             end
+        end
+
+        if failCount > 10 then
+            API.logWarn("craftRunes() failCount = "..tostring(failCount).."!")
+            API.Write_LoopyLoop(false)
+            return
         end
 
         if API.SystemTime() - failTimer > 30000 then
@@ -150,10 +158,6 @@ local function craftRunes()
             return
         end
 
-        if API.ReadPlayerMovin2() or API.CheckAnim(20) then
-            API.RandomSleep2(600,0,600)
-        end
-    
     end
 
 end
