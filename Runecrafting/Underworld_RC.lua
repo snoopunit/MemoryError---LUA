@@ -138,7 +138,7 @@ local function craftRunes()
 
     while Inventory:IsFull() and API.Read_LoopyLoop() do
     
-        if not API.ReadPlayerMovin2() then
+        if not API.ReadPlayerMovin2() or API.CheckAnim(20) then
             if Interact:Object(altar, "Craft runes", 30) then
                 API.logDebug("Crafting runes...")
             else
@@ -165,6 +165,7 @@ end
 local function mainLoop()    
 
     if isAtLocation(AREA.CITY_OF_UM, 30) then
+        API.RandomSleep2(1200,0,600)
         if Inventory:IsFull() then
             enterDarkPortal()
         else
@@ -174,6 +175,7 @@ local function mainLoop()
 
 
     if isAtLocation(AREA.RC_ALTARS, 30) then
+        API.RandomSleep2(1200,0,600)
         if Inventory:IsFull() then
             craftRunes()
         else
