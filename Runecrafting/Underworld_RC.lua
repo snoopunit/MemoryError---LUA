@@ -36,7 +36,7 @@ local function loadLastPreset()
             return
         end
 
-        if API.SystemTime() - failTimer > 30000 then
+        if (API.SystemTime() - failTimer) > 30000 then
             API.logWarn("Banking fail timer reached 30s!")
             API.Write_LoopyLoop(false)
             return
@@ -58,7 +58,7 @@ local function enterDarkPortal()
 
     while not isAtLocation(AREA.RC_ALTARS, 10) and API.Read_LoopyLoop() do
     
-        if not API.ReadPlayerMovin2() or not API.CheckAnim(20) then
+        if not API.ReadPlayerMovin2() then
             if Interact:Object("Dark portal", "Enter", 30) then
                 API.logDebug("Entering dark portal.")
             else
@@ -74,7 +74,7 @@ local function enterDarkPortal()
             return
         end
 
-        if API.SystemTime() - failTimer > 30000 then
+        if (API.SystemTime() - failTimer) > 30000 then
             API.logWarn("enterDarkPortal() fail timer reached 30s!")
             API.Write_LoopyLoop(false)
             return
@@ -91,7 +91,7 @@ local function returnFromDarkPortal()
 
     while not isAtLocation(AREA.CITY_OF_UM, 30) and API.Read_LoopyLoop() do
     
-        if not API.ReadPlayerMovin2() or not API.CheckAnim(20) then
+        if not API.ReadPlayerMovin2() then
             if Interact:Object("Dark portal", "Exit", 30) then
                 API.logDebug("Exiting dark portal.")
             else
@@ -107,7 +107,7 @@ local function returnFromDarkPortal()
             return
         end
 
-        if API.SystemTime() - failTimer > 30000 then
+        if (API.SystemTime() - failTimer) > 30000 then
             API.logWarn("exitDarkPortal() fail timer reached 30s!")
             API.Write_LoopyLoop(false)
             return
@@ -138,7 +138,7 @@ local function craftRunes()
 
     while Inventory:IsFull() and API.Read_LoopyLoop() do
     
-        if not API.ReadPlayerMovin2() or not API.CheckAnim(20) then
+        if not API.ReadPlayerMovin2() then
             if Interact:Object(altar, "Craft runes", 30) then
                 API.logDebug("Crafting runes...")
             else
@@ -152,7 +152,7 @@ local function craftRunes()
             return
         end
 
-        if API.SystemTime() - failTimer > 30000 then
+        if (API.SystemTime() - failTimer) > 30000 then
             API.logWarn("Runecrafting fail timer reached 30s!")
             API.Write_LoopyLoop(false)
             return
@@ -165,7 +165,6 @@ end
 local function mainLoop()    
 
     if isAtLocation(AREA.CITY_OF_UM, 30) then
-        API.RandomSleep2(1800,0,600)
         if Inventory:IsFull() then
             enterDarkPortal()
         else
@@ -175,7 +174,6 @@ local function mainLoop()
 
 
     if isAtLocation(AREA.RC_ALTARS, 30) then
-        API.RandomSleep2(1800,0,600)
         if Inventory:IsFull() then
             craftRunes()
         else
