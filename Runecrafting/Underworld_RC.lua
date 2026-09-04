@@ -161,6 +161,7 @@ end
 local function mainLoop()    
 
     if isAtLocation(AREA.CITY_OF_UM, 30) then
+        API.RandomSleep2(600,0,600)
         if Inventory:IsFull() then
             enterDarkPortal()
         else
@@ -170,6 +171,7 @@ local function mainLoop()
 
 
     if isAtLocation(AREA.RC_ALTARS, 30) then
+        API.RandomSleep2(600,0,600)
         if Inventory:IsFull() then
             craftRunes()
         else
