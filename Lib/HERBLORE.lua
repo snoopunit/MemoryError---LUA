@@ -411,10 +411,10 @@ CLEAN_HERBS = {
 }
 
 GLOBALS = {
-    makeUnf = false,
+    makeUnf = true,
     useSkillcape = false,
     useWell = false,
-    potionType = POTIONS.Prayer_Renewal_3,
+    potionType = POTIONS.Strength_Potion_3,
     potionsMade = 0,
     currentState = "Idle"
 }
