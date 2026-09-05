@@ -1,11 +1,22 @@
 local API = require("api")
 local HERB = require("lib/HERBLORE")
-local MISC = require("lib/MISC")
 
+local initialized = false
 
+local function init()
+    
+    if not initialized then
+        HERB.drawGUI()
+        initialized = true
+    end
+end
 
 local function main()
 
+    if not initialized then
+        init()
+    end
+    startHerbloreRoutine()
     
 end
 
@@ -17,8 +28,6 @@ API.SetMaxIdleTime(Max_AFK)
 while(API.Read_LoopyLoop())
 
 do-----------------------------------------------------------------------------------
-    HERB.drawGUI()
-    startHerbloreRoutine()
-
+    main()
     API.RandomSleep2(800, 0, 400)
 end----------------------------------------------------------------------------------
