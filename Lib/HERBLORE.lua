@@ -781,6 +781,7 @@ function Herblore.makePotions()
 
             if Herblore.makeVials() then
                 Herblore.updateCurrentState("Making unfinished potions...")
+                API.RandomSleep2(2400,0,2400)
                 MISC.doCrafting()
             else
                 API.logWarn("Shutting down!") 
