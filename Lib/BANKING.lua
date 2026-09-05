@@ -569,7 +569,7 @@ function Banking.doBank(bankType, preset)
     local banktimer = API.SystemTime()
 
     if preset == "last" then
-        while API.InvFull_() do
+        while Inventory:IsFull() do
             if chosenBank.Type == 1 then
                 API.DoAction_NPC__Direct(ACTIONS.load_last, OFFSETS.NPC.load_last, chosenBank)
             else
