@@ -17,6 +17,7 @@ API.SetMaxIdleTime(Max_AFK)
 while(API.Read_LoopyLoop())
 
 do-----------------------------------------------------------------------------------
+    HERB.drawGUI()
     startHerbloreRoutine()
 
     API.RandomSleep2(800, 0, 400)
