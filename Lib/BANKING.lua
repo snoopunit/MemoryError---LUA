@@ -625,7 +625,7 @@ function Banking.doPreset(presetNum)
     waitForBankToOpen()
 
     API.logInfo("Loading preset: "..tostring(presetNum))
-    API.DoAction_Interface(0x24,0xffffffff,1,517,119,presetNum,API.OFF_ACT_GeneralInterface_route)
+    Bank:LoadPreset(presetNum)
     bankTimer = API.SystemTime()
 
     waitForBankToClose()
