@@ -59,7 +59,7 @@ while(API.Read_LoopyLoop())
 
 do-----------------------------------------------------------------------------------
 
-    if Inventory:Contains("Infernal ashes") and Inventory:Contains("Yew incense sticks") then
+    --[[if Inventory:Contains("Infernal ashes") and Inventory:Contains("Yew incense sticks") then
         coatIncense() 
     else
         if not loadLastPreset("Infernal ashes") then
@@ -67,7 +67,7 @@ do------------------------------------------------------------------------------
             API.Write_LoopyLoop(false)
             return false
         end
-    end
+    end]]
 
     --[[if Inventory:Contains("Maple logs") then
         craftIncense() 
@@ -78,6 +78,18 @@ do------------------------------------------------------------------------------
             return false
         end
     end--]]
+
+    if Inventory:Contains("Grimy tarromin") then
+        if HERB.cleanHerbs(GRIMY_HERBS.Grimy_Tarromin.ID) then
+            MISC.doCrafting()
+        end
+    else
+        if not loadLastPreset("Grimy tarromin") then
+            API.logWarn("No Grimy tarromin in inventory!")
+            API.Write_LoopyLoop(false)
+            return false
+        end
+    end
 
     API.RandomSleep2(800, 0, 400)
 end----------------------------------------------------------------------------------

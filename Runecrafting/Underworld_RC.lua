@@ -12,6 +12,33 @@ local ALTARS        = {
     MIASMA            = "Miasma altar"
 }
 
+local METRICS = {
+    runs = 0,
+    totalRunesCrafted = 0,
+    spiritRunesCrafted = 0,
+    boneRunesCrafted = 0,
+    fleshRunesCrafted = 0,
+    miasmaRunesCrafted = 0,
+}
+
+local RUNES = {
+    SPIRIT = 55337,
+    BONE = 55338,
+    FLESH = 55339,
+    MIASMA = 55340
+}
+
+local startTime = API.SystemTime()
+
+local function updateMetrics()
+    METRICS.runs = METRICS.runs + 1
+    METRICS.totalRunesCrafted = METRICS.totalRunesCrafted + (Inventory:GetItemAmount(RUNES.SPIRIT) or 0) + (Inventory:GetItemAmount(RUNES.BONE) or 0) + (Inventory:GetItemAmount(RUNES.FLESH) or 0) + (Inventory:GetItemAmount(RUNES.MIASMA) or 0)
+    METRICS.spiritRunesCrafted = METRICS.spiritRunesCrafted + (Inventory:GetItemAmount(RUNES.SPIRIT) or 0)
+    METRICS.boneRunesCrafted = METRICS.boneRunesCrafted + (Inventory:GetItemAmount(RUNES.BONE) or 0)
+    METRICS.fleshRunesCrafted = METRICS.fleshRunesCrafted + (Inventory:GetItemAmount(RUNES.FLESH) or 0)
+    METRICS.miasmaRunesCrafted = METRICS.miasmaRunesCrafted + (Inventory:GetItemAmount(RUNES.MIASMA) or 0)
+end
+
 local function loadLastPreset()
 
     local failTimer = API.SystemTime()
@@ -36,11 +63,6 @@ local function loadLastPreset()
             return
         end
 
-        if (API.SystemTime() - failTimer) > 30000 then
-            API.logWarn("Banking fail timer reached 30s!")
-            API.Write_LoopyLoop(false)
-            return
-        end
         
     end
 
@@ -74,11 +96,6 @@ local function enterDarkPortal()
             return
         end
 
-        if (API.SystemTime() - failTimer) > 30000 then
-            API.logWarn("enterDarkPortal() fail timer reached 30s!")
-            API.Write_LoopyLoop(false)
-            return
-        end 
     
     end
 
@@ -107,11 +124,7 @@ local function returnFromDarkPortal()
             return
         end
 
-        if (API.SystemTime() - failTimer) > 30000 then
-            API.logWarn("exitDarkPortal() fail timer reached 30s!")
-            API.Write_LoopyLoop(false)
-            return
-        end 
+        
     
     end
 
@@ -119,27 +132,27 @@ end
 
 local function craftRunes()
 
-    local function randomAltar()
+    --[[local function randomAltar()
         local num = math.random(0,100)
 
-        if num >= 0 and num <= 33 then
+        if num >= 0 and num <= 23 then
             return ALTARS.SPIRIT
-        elseif num >= 34 and num <= 66 then
+        elseif num >= 24 and num <= 56 then
             return ALTARS.BONE
-        elseif num >= 67 and num <= 100 then
+        elseif num >= 57 and num <= 100 then
             return ALTARS.FLESH
         end
         
-    end
+    end]]
 
-    local altar = randomAltar()
+    --local altar = randomAltar()
     local failTimer = API.SystemTime()
     local failCount = 0
 
     while Inventory:IsFull() and API.Read_LoopyLoop() do
     
-        if not API.ReadPlayerMovin2() or API.CheckAnim(20) then
-            if Interact:Object(altar, "Craft runes", 30) then
+        if not API.ReadPlayerMovin2() and not API.CheckAnim(20) then
+            if Interact:Object("Flesh altar", "Craft runes", 30) then
                 API.logDebug("Crafting runes...")
             else
                 failCount = failCount + 1
@@ -152,14 +165,23 @@ local function craftRunes()
             return
         end
 
-        if (API.SystemTime() - failTimer) > 30000 then
-            API.logWarn("Runecrafting fail timer reached 30s!")
-            API.Write_LoopyLoop(false)
-            return
-        end
+        API.RandomSleep2(1200,0,600)
 
     end
 
+end
+
+local function RunesPerHour()
+    local elapsed = API.SystemTime() - startTime
+
+    if elapsed <= 0 then
+        return 0
+    end
+
+    return math.floor(
+        (METRICS.totalRunesCrafted * 60)
+        / (elapsed / 60000)
+    )
 end
 
 local function mainLoop()    
@@ -178,10 +200,22 @@ local function mainLoop()
         API.RandomSleep2(1200,0,600)
         if Inventory:IsFull() then
             craftRunes()
+            updateMetrics()
         else
             returnFromDarkPortal()
         end
     end
+
+    local metrics = {
+        {"Total Runes:", METRICS.totalRunesCrafted},
+        {"Runes/H:", RunesPerHour()},
+        {"Spirit Runes:", METRICS.spiritRunesCrafted},
+        {"Bone Runes:", METRICS.boneRunesCrafted},
+        {"Flesh Runes:", METRICS.fleshRunesCrafted},
+        {"Miasma Runes:", METRICS.miasmaRunesCrafted},
+    }
+
+    API.DrawTable(metrics)
     
 end
 

@@ -264,13 +264,13 @@ function CombatEngine.new()
             end
         },
 
-        --[[["Conjure Skeleton Warrior"] = {
+        ["Conjure Skeleton Warrior"] = {
             adrenaline = 0,
             lastUsed = -1e12,
             expectedValue = function(_, engine)
                 return engine:hasConjure("skeletonWarrior") and 0.0 or 1.8
             end
-        },]]
+        },
 
         ["Command Skeleton Warrior"] = {
             adrenaline = 0,
@@ -304,13 +304,13 @@ function CombatEngine.new()
             end
         },]]
 
-        --[[["Conjure Vengeful Ghost"] = {
+        ["Conjure Vengeful Ghost"] = {
             adrenaline = 0,
             lastUsed = -1e12,
             expectedValue = function(_, engine)
                 return engine:hasConjure("vengefulGhost") and 0.0 or 1.8
             end
-        },]]
+        },
 
         ["Command Vengeful Ghost"] = {
             adrenaline = 0,
