@@ -361,11 +361,7 @@ function walkPath(destination)
 end
 
 function isBankOpen()
-    if API.VB_FindPSettinOrder(2874).state == 24 then
-        return true
-    else
-        return false
-    end
+    return Bank:IsOpen()
 end
 
 function waitForBankToOpen()
