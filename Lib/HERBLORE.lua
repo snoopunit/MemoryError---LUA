@@ -470,9 +470,7 @@ function Herblore.drawGUI()
 
 
 
-    potionTypes = { "Prayer renewal (3)", "Saradomin brew (3)", "Super restore (3)", "Overload (3)" }
-
-
+    potionTypes = { "Prayer renewal (3)", "Saradomin brew (3)", "Super restore (3)", "Overload (3)", "Strength (3)" }
 
     local gui_center_x = imguiBackground.box_start.x + (imguiBackground.box_size.x / 2)
 
