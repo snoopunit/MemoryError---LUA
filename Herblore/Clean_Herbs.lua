@@ -2,7 +2,7 @@ local API = require("api")
 local HERB = require("lib/HERBLORE")
 local MISC = require("lib/MISC")
 
-local function loadLastPreset() 
+local function loadLastPreset(herb) 
         if not Interact:NPC("Banker", "Load Last Preset from",10) then
             if not Interact:Object("Bank chest", "Load Last Preset from",10) then
                 API.logWarn("Unable to interact with Banker!")
@@ -10,15 +10,23 @@ local function loadLastPreset()
             end
         end
         API.RandomSleep2(600, 0, 250)
-        return HERB.findGrimyHerbs()
+        return Inventory:Contains(herb.Name)
 end
 
-local function cleanHerbs(herbID)
-    if HERB.cleanHerbs(herbID) then
-        MISC.doCrafting()
+local function main()
+
+    local herb = HERB.findGrimyHerbs()
+
+    if herb then
+        if HERB.cleanHerbs(herb.ID) then
+            MISC.doCrafting()
+        end
     else
-        API.logWarn("Unable to clean herbs!")
-        API.Write_LoopyLoop(false)
+        if not loadLastPreset(herb) then
+            API.logWarn("No grimy herbs in inventory!")
+            API.Write_LoopyLoop(false)
+            return false
+        end
     end
 end
 
@@ -30,17 +38,7 @@ API.SetMaxIdleTime(Max_AFK)
 while(API.Read_LoopyLoop())
 
 do-----------------------------------------------------------------------------------
-    if HERB.findGrimyHerbs() then
-        if HERB.cleanHerbs(HERB.findGrimyHerbs().ID) then
-            MISC.doCrafting()
-        end
-    else
-        if not loadLastPreset() then
-            API.logWarn("No grimy herbs in inventory!")
-            API.Write_LoopyLoop(false)
-            return false
-        end
-    end
+    main()
 
     API.RandomSleep2(800, 0, 400)
 end----------------------------------------------------------------------------------
