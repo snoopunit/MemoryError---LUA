@@ -631,7 +631,7 @@ function Banking.doPreset(presetNum)
     waitForBankToClose()
 
     API.logInfo("Preset loaded successfully!")
-    API.RandomSleep2(600,0,250)
+    API.RandomSleep2(1200,0,650)
     return true
 end
 
