@@ -9,6 +9,7 @@ local function loadLastPreset()
             API.Write_LoopyLoop(false)
         end
     end
+    API.RandomSleep2(800, 0, 400)
     return HERB.findGrimyHerbs()
 end
 
