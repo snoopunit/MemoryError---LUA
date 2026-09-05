@@ -1,7 +1,7 @@
 local API = require("api")
 local HERB = require("lib/HERBLORE")
 
-local function loadLastPreset(item) 
+local function loadLastPreset() 
         if not Interact:NPC("Banker", "Load Last Preset from",10) then
             if not Interact:Object("Bank chest", "Load Last Preset from",10) then
                 API.logWarn("Unable to interact with Banker!")
@@ -9,7 +9,7 @@ local function loadLastPreset(item)
             end
         end
         API.RandomSleep2(600, 0, 250)
-        return Inventory:Contains(item)
+        return HERB.findGrimyHerbs()
 end
 
 local function cleanHerbs(herbID)
@@ -34,7 +34,7 @@ do------------------------------------------------------------------------------
             MISC.doCrafting()
         end
     else
-        if not loadLastPreset(HERB.findGrimyHerbs().Name) then
+        if not loadLastPreset() then
             API.logWarn("No grimy herbs in inventory!")
             API.Write_LoopyLoop(false)
             return false
