@@ -1,5 +1,6 @@
 local API = require("api")
 local HERB = require("lib/HERBLORE")
+local MISC = require("lib/MISC")
 
 local function loadLastPreset() 
         if not Interact:NPC("Banker", "Load Last Preset from",10) then
