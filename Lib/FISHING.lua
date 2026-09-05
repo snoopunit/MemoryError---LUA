@@ -36,15 +36,21 @@ SPOTS = {
     },
     SARDINE_HERRING = {
         name = "Fishing spot",
-        action = "Bait",
-        submenu = {"Net", "Harpoon"},
-        Location = {}
+        action = "Net",
+        submenu = {"Bait"},
+        Location = {{3255,3163,0},{3256,3177,0},{3246,3155,0}}
     },
     TROUT_SALMON = {
         name = "Fishing spot",
         action = "Lure",
         submenu = {"Bait"},
-        Location = {{3238,3251,0},{3238,3252,0}}
+        Location = {{3238,3251,0},{3239,3243,0}}
+    },
+    TROUT = {
+        name = "Fishing spot",
+        action = "Lure",
+        submenu = {"Bait"},
+        Location = {{3238,3255,0},{3238,3252,0}}
     },
     LOBSTER = {
         name = "Fishing spot",
@@ -77,10 +83,10 @@ SPOTS = {
         Location = {}
     },
     CRAYFISH = {
-        name = "Crayfish spot",
+        name = "Fishing spot",
         action = "Cage",
         submenu = {},
-        Location = {}
+        Location = {{3259,3204,0},{3259,3206,0},{3259,3203,0},{3259,3207,0}}
     },
     KARAMBWAN = {
         name = "Fishing spot",
@@ -148,9 +154,9 @@ function DistanceFromPlayer(TILE)
     end
     
     -- Check same plane (z level), if relevant
-    if TILE.z ~= player.z then
-        return math.huge
-    end
+    --if TILE.z ~= player.z then
+    --    return math.huge
+    --end
 
     -- Euclidean distance (2D, ignoring z since it's a plane-based game)
     local dx = TILE.x - player.x
@@ -171,8 +177,8 @@ function lineToPlayer(endPoint, segments)
         local t = i / segments
         local x = math.floor(startPoint.x + (endPoint.x - startPoint.x) * t)
         local y = math.floor(startPoint.y + (endPoint.y - startPoint.y) * t)
-        local z = math.floor(startPoint.z + (endPoint.z - startPoint.z) * t)
-        table.insert(points, {x = x, y = y, z = z})
+        --local z = math.floor(startPoint.z + (endPoint.z - startPoint.z) * t)
+        table.insert(points, {x = x, y = y, z = 1})
     end
 
     return points
@@ -439,7 +445,7 @@ function Fishing.gather(spotType)
         return false
     end
 
-    while not API.InvFull_() and API.Read_LoopyLoop() do 
+    while not Inventory:IsFull() and API.Read_LoopyLoop() do 
         -- Pick a random coordinate from spotType.Location
         local randomLocation = spotType.Location[math.random(#spotType.Location)]
         

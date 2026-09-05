@@ -922,10 +922,10 @@ do------------------------------------------------------------------------------
 
     if runLoop and enemyToFight ~= nil and enemyToFight ~= "None" then
 
-        setupPrayers()
-        chargePackCheck()
+        --setupPrayers()
+        --chargePackCheck()
         healthCheck()
-        porterCheck()
+        --porterCheck()
    
         if not currentTarget then 
             local noTarget = API.SystemTime()
@@ -954,7 +954,7 @@ do------------------------------------------------------------------------------
 
         while API.IsTargeting() and API.Read_LoopyLoop() do
 
-            currentTargetInfo = API.ReadTargetInfo(false)
+            currentTargetInfo = API.ReadTargetInfo99(false)
             
             if currentTargetInfo.Hitpoints == 0 then
                 break
@@ -965,16 +965,16 @@ do------------------------------------------------------------------------------
                 API.RandomSleep2(600, 0, 600)
             end
         
-            buffCheck()
-            prayerCheck()
+            --buffCheck()
+            --prayerCheck()
             healthCheck()
-            fd_reflection_check()
-            aggressionCheck()
+            --fd_reflection_check()
+            --aggressionCheck()
             --rejuvenate()
-            specialAttack()  
-            essenceOfFinality()
-            noteStuff()
-            openLoot()
+            --specialAttack()  
+            --essenceOfFinality()
+            --noteStuff()
+            --openLoot()
             if not hasMoved then 
                 moveToEnemy() 
                 hasMoved = true
@@ -984,7 +984,7 @@ do------------------------------------------------------------------------------
 
         end     
   
-        prayerCheck()
+        --prayerCheck()
         currentTarget = nil
         imguiTarget.string_value = ""
         API.DrawTextAt(imguiTarget)
@@ -992,8 +992,8 @@ do------------------------------------------------------------------------------
         if waitForDeath then 
             API.RandomSleep2(3000, 0, 0)
         end
-        openLoot()
-        noteStuff()
+        --openLoot()
+        --noteStuff()
     else
 
         if enemyToFight == nil or enemyToFight == "None" then 

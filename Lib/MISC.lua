@@ -57,19 +57,19 @@ function Miscellaneous.getLevel(skill)
 end
 
 function Miscellaneous.isCraftingInterfaceOpen()
-  return API.VB_FindPSett(2874, 1, 0).state == 1310738
+  return API.VC_FindPSett(2874).state == 1310738
 end
 
 function Miscellaneous.isChooseToolOpen()
-    return API.VB_FindPSettinOrder(2874, 0).state == 1277970 
+    return API.VB_FindPSettinOrder(2874).state == 1277970 
 end
 
 function Miscellaneous.isSwitchToolMenuOpen()
-    return API.VB_FindPSettinOrder(2874, 0).state == 1277992
+    return API.VB_FindPSettinOrder(2874).state == 1277992
 end
 
 function Miscellaneous.isSwitchedToolMenuOpen()
-    return API.VB_FindPSettinOrder(2874, 0).state == 40
+    return API.VB_FindPSettinOrder(2874).state == 40
 end
 
 function Miscellaneous.waitForCraftingInterface()

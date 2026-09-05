@@ -16,10 +16,14 @@ local function isSmeltingInterfaceOpen()
   return API.VB_FindPSett(2874, 1, 0).state == 85
 end
 
+local function isSmithingInterfaceOpen()
+    return API.Compare2874Status(85, false)
+end
+
 local function doCrafting()
     local smeltTimer = API.SystemTime()
 
-    while not isSmeltingInterfaceOpen() and API.Read_LoopyLoop() do
+    while not isSmithingInterfaceOpen() and API.Read_LoopyLoop() do
         if API.SystemTime() - smeltTimer > 30000 then
             API.logWarn("Smelting interface not found after 30s!")
             API.Write_LoopyLoop(false)
@@ -55,7 +59,7 @@ end
 local function depositBars()
     if Inventory:IsFull() then
         API.logInfo("Depositing bars into Metal Bank")
-        Interact:Object("Furnace", "Deposit-All (Into Metal Bank)", 10)
+        Interact:Object("Furnace", "Deposit-all (into metal bank)", 10)
         API.RandomSleep2(600,0,1200)
     end    
 end

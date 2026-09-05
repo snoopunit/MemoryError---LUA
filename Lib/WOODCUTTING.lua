@@ -190,9 +190,21 @@ end
 
 ---@return boolean -- returns true if we successfully start chopping a tree
 function Woodcutting.chop()
-    if Woodcutting.GLOBALS.treeType == nil then return false end
+    if Woodcutting.GLOBALS.treeType == nil then 
+        API.logWarn("Tree type is not set. Cannot chop tree.")
+        return false 
+    end
     API.logDebug("Woodcutting.chop(): " .. Woodcutting.GLOBALS.treeType.name)
-    return Interact:Object(Woodcutting.GLOBALS.treeType.name, "Chop down", 30)
+    if Woodcutting.GLOBALS.treeType.name == "Oak" then
+        local trees = API.ReadAllObjectsArray({12}, {-1}, {"Oak"})
+        for i, tree in ipairs(trees) do
+            if tree.bool1 == nil then
+                return API.DoAction_Object_Direct(0x3b, API.OFF_ACT_GeneralObject_route0, tree)
+            end
+        end
+        else
+        return Interact:Object(Woodcutting.GLOBALS.treeType.name, "Chop down")
+    end
 end
 
 ---@return any -- returns the key of wood box found in inv or nil if none

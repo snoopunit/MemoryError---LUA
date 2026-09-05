@@ -1,0 +1,217 @@
+print("Run Lua script Dwarven_Resource_Dungeon.")
+
+local API = require("api")
+
+local Deposit_Box = 25937
+
+local MITHRIL = {
+    ORE = 447,
+    ROCK = {113050,113051,113052},
+}
+local gePrice = API.GetExchangePrice(MITHRIL.ORE)
+
+local totalOresMined = 0
+local lastOreCount = 0
+
+local startTime = API.SystemTime()
+
+local function currentOres()
+    return Inventory:GetItemAmount(MITHRIL.ORE)
+end
+
+function mineOre()
+    Interact:Object("Mithril rock", "Mine", 10)
+end
+
+local function clickRockertunity()
+    local rockIDs = {7164, 7165}
+    local rockertunity = API.ReadAllObjectsArray(
+        {4},
+        rockIDs,
+        {}
+    )
+
+    if #rockertunity < 1 then
+        return
+    end
+
+    local mithrilRocks = API.ReadAllObjectsArray(
+        {0},
+        MITHRIL.ROCK,
+        {"Mithril rock"}
+    )
+
+    if #mithrilRocks < 1 then
+        return
+    end
+
+    local activeRock = API.ReadLpInteracting()
+    local activeRockX = activeRock and activeRock.TileX
+    local activeRockY = activeRock and activeRock.TileY
+    local closestRock = nil
+    local closestDist = math.huge
+
+    for _, r in ipairs(rockertunity) do
+        API.logDebug(
+            "Found rockertunity at "
+            .. tostring(r.TileX)
+            .. ","
+            .. tostring(r.TileY)
+        )
+
+        for _, rock in ipairs(mithrilRocks) do
+            local isActiveRock =
+                activeRockX ~= nil
+                and activeRockY ~= nil
+                and rock.TileX == activeRockX
+                and rock.TileY == activeRockY
+
+            if not isActiveRock then
+                local dist =
+                    math.abs(r.TileX - rock.TileX)
+                    + math.abs(r.TileY - rock.TileY)
+
+                if dist == 0 then
+                    closestRock = rock
+                    closestDist = dist
+                    break
+                elseif dist < closestDist then
+                    closestDist = dist
+                    closestRock = rock
+                end
+            end
+        end
+
+        if closestDist == 0 then
+            break
+        end
+    end
+
+    if closestRock then
+        API.RandomSleep2(800, 0, 1200)
+        if API.DoAction_Object_Direct(
+            0x3a,
+            API.OFF_ACT_GeneralObject_route0,
+            closestRock
+        ) then
+            print("Clicked rockertunity! Waiting for movement to end...")
+            API.RandomSleep2(2400, 0, 1200)
+            API.WaitUntilMovingEnds()
+        else
+            print("API.DoAction_Object_Direct() failed...")    
+        end
+    end
+end
+
+---@return bool
+function fillBox()
+    local count = Inventory:FreeSpaces()
+    
+    --FILL ORE BOX
+
+    local boxAB = API.GetABs_name("ore box", false)
+
+    if boxAB.action == "Fill" and boxAB.enabled then
+        API.DoAction_Ability_Direct(boxAB, 1, API.OFF_ACT_GeneralInterface_route)
+    end
+
+    API.RandomSleep2(1200, 600, 1200);
+
+    if (count < Inventory:FreeSpaces()) then
+        lastOreCount = currentOres()
+        return true
+    
+    else 
+        return false;
+    end
+end
+
+function useOreBox()
+    API.DoAction_Interface(0x24,0xaef1,0,1473,5,0,API.OFF_ACT_Bladed_interface_route)
+    API.RandomSleep2(600, 250, 600)
+end
+
+function useDepositBox()
+    API.DoAction_Object1(0x24,API.OFF_ACT_GeneralObject_route00,{ Deposit_Box },50);
+    API.RandomSleep2(600, 250, 600)
+    API.WaitUntilMovingEnds()
+end
+
+function depositOre()
+
+    useOreBox()
+    useDepositBox()
+    fillBox()
+    useOreBox()
+    useDepositBox()
+    
+end
+
+function OresPerHour()   
+    return math.floor((totalOresMined*60)/((API.SystemTime() - startTime)/60000))
+end
+
+function updateOreMined()
+    local count = currentOres()
+    if count ~= lastOreCount then
+        if count > lastOreCount then
+            totalOresMined = totalOresMined + (count - lastOreCount)
+        end
+        lastOreCount = count
+    end
+end
+
+--Exported function list is in API
+--main loop
+API.Write_LoopyLoop(true)
+API.SetDrawLogs(true)
+API.SetDrawTrackedSkills(true)
+API.SetMaxIdleTime(4)
+while(API.Read_LoopyLoop())
+do-----------------------------------------------------------------------------------
+    if not (API.PlayerLoggedIn()) then
+        print("Player is not logged in. Terminating Script.")
+        LoopyLoop = false
+        return     
+    end
+    
+    if (Inventory:FreeSpaces() < API.Math_RandomNumber(6)) then
+        if not (fillBox()) then
+            API.RandomSleep2(650, 0, 650);
+            depositOre()
+        end  
+    else
+        clickRockertunity()
+        mineOre()
+    end
+
+    updateOreMined()
+
+    ----METRICS----
+    local metrics = {
+        {"Script","Resource Dungeon Mithril - by Klamor"},
+        {"Total Ores:", totalOresMined},
+        {"Ores/H:", OresPerHour()},
+        {"Est. Profit: ", (totalOresMined * gePrice).."gp"},
+        {"Profit/H: ", 
+            (function()
+                local elapsed = (API.SystemTime() - startTime) / 3600000 -- convert ms to hours
+                if elapsed > 0 then
+                    return math.floor(( totalOresMined * gePrice) / elapsed) .. "gp"
+                else
+                    return "0gp"
+                end
+            end)()
+        }
+    }
+    API.DrawTable(metrics)
+
+    API.RandomSleep2(2400, 0, 250)
+
+    if (API.SystemTime() - startTime) > (3600000 * 4) then
+        print("Script has been running for over 4 hours. Terminating Script.")
+        API.Write_LoopyLoop(false)
+        return
+    end
+
+end----------------------------------------------------------------------------------

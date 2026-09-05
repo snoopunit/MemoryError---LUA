@@ -14,21 +14,39 @@ local TASK = require("lib/TASK")
 
 local Max_AFK = 5
 
-function Fishing_and_Banking(spotType, bankType)
+local function loadLastPreset(item) 
+        if not Interact:NPC("Banker", "Load Last Preset from") then
+            API.logWarn("Unable to interact with Banker!")
+            API.Write_LoopyLoop(false)
+        end
+        API.RandomSleep2(600, 0, 1200)
+        return Inventory:Contains(item)
+end
 
-    if API.InvFull_() then
+local function coatIncense()
 
-        API.logInfo("Noting...")
+    local boxAB = API.GetABs_name("Incense", false)
 
-        BANK.doBank(bankType, "note")
-
-    else
-
-        FISH.gather(spotType)
-
+    if boxAB.action == "Coat" and boxAB.enabled then
+        API.DoAction_Ability_Direct(boxAB, 1, API.OFF_ACT_GeneralInterface_route)
     end
 
-    API.RandomSleep2(2400, 0 ,600)
+    API.RandomSleep2(1200, 600, 1200)
+
+    return MISC.doCrafting()
+end
+
+function craftIncense()
+
+    local boxAB = API.GetABs_name("logs", false)
+
+    if boxAB.action == "Craft" and boxAB.enabled then
+        API.DoAction_Ability_Direct(boxAB, 1, API.OFF_ACT_GeneralInterface_route)
+    end
+
+    API.RandomSleep2(1200, 600, 1200)
+
+    return MISC.doCrafting()
 
 end
 
@@ -37,11 +55,42 @@ API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(Max_AFK)
 
-HERB.drawGUI()
-
 while(API.Read_LoopyLoop())
 
 do-----------------------------------------------------------------------------------
-    startHerbloreRoutine()
+
+    --[[if Inventory:Contains("Infernal ashes") and Inventory:Contains("Yew incense sticks") then
+        coatIncense() 
+    else
+        if not loadLastPreset("Infernal ashes") then
+            API.logWarn("No Infernal ashes in inventory!")
+            API.Write_LoopyLoop(false)
+            return false
+        end
+    end]]
+
+    --[[if Inventory:Contains("Maple logs") then
+        craftIncense() 
+    else
+        if not loadLastPreset("Maple logs") then
+            API.logWarn("No Maple logs in inventory!")
+            API.Write_LoopyLoop(false)
+            return false
+        end
+    end--]]
+
+    if Inventory:Contains("Grimy tarromin") then
+        if HERB.cleanHerbs(GRIMY_HERBS.Grimy_Tarromin.ID) then
+            MISC.doCrafting()
+        end
+    else
+        if not loadLastPreset("Grimy tarromin") then
+            API.logWarn("No Grimy tarromin in inventory!")
+            API.Write_LoopyLoop(false)
+            return false
+        end
+    end
+
+    API.RandomSleep2(800, 0, 400)
 end----------------------------------------------------------------------------------
 
