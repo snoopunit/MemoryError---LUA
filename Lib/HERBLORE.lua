@@ -733,6 +733,17 @@ function Herblore.findGrimyHerbs()
 
 end
 
+function Herblore.findCleanHerbs()
+
+    for x, herb in pairs(CLEAN_HERBS) do
+        if Inventory:Contains(herb.Name) then
+            API.logDebug("Found Clean Herb: "..herb.Name)
+            return herb
+        end
+    end
+
+end
+
 function Herblore.makePotions() 
 
     Herblore.updateCurrentState("Banking...")
