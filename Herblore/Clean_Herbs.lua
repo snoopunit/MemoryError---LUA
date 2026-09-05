@@ -9,7 +9,7 @@ local function loadLastPreset()
             API.Write_LoopyLoop(false)
         end
     end
-    return Inventory:IsFull()
+    return HERB.findGrimyHerbs()
 end
 
 local function main()
