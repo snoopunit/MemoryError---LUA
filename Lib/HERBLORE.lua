@@ -470,7 +470,7 @@ function Herblore.drawGUI()
 
 
 
-    potionTypes = { "Prayer renewal (3)", "Saradomin brew (3)", "Super restore (3)", "Overload (3)", "Strength potion (3)" }
+    potionTypes = { "Prayer renewal (3)", "Saradomin brew (3)", "Super restore (3)", "Overload (3)", "Strength potion (3)", "Mining potion (3)" }
 
     local gui_center_x = imguiBackground.box_start.x + (imguiBackground.box_size.x / 2)
 
@@ -781,7 +781,7 @@ function Herblore.makePotions()
 
             if Herblore.makeVials() then
                 Herblore.updateCurrentState("Making unfinished potions...")
-                API.RandomSleep2(2400,0,2400)
+                API.RandomSleep2(1200,0,600)
                 MISC.doCrafting()
             else
                 API.logWarn("Shutting down!") 
