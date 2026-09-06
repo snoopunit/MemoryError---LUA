@@ -814,8 +814,9 @@ function Herblore.makePotions()
                 API.logWarn("Failed to mix potions!")
                 API.Write_LoopyLoop(false)
                 return             
-            end     
-            API.RandomSleep2(2400,0,2400)    
+            end
+            Herblore.updateCurrentState("Making "..GLOBALS.potionType.Name)     
+            API.RandomSleep2(1200,0,600)    
         end
 
         MISC.doCrafting()
