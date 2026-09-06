@@ -617,9 +617,11 @@ function Banking.doPreset(presetNum)
 
     local bankTimer = API.SystemTime()
     if not Interact:NPC("Banker", "Bank", 10) then
-        API.logWarn("Failed to interact with banker!")
-        API.Write_LoopyLoop(false)
-        return false
+        if not Interact:Object("Bank chest", "Bank", 10) then
+            API.logWarn("Failed to interact with banker or bank chest!")
+            API.Write_LoopyLoop(false)
+            return false
+        end
     end
 
     waitForBankToOpen()
