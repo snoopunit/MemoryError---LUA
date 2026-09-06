@@ -744,9 +744,11 @@ end
 
 function Herblore.makePotions() 
 
-    Herblore.updateCurrentState("Banking...")
+    
 
     if GLOBALS.makeUnf then
+
+        Herblore.updateCurrentState("Loading bank preset: 1...")
 
         if BANK.doPreset(1) then
 
@@ -798,7 +800,7 @@ function Herblore.makePotions()
 
     end
 
-    Herblore.updateCurrentState("Banking...")
+    Herblore.updateCurrentState("Loading bank preset: 2...")
 
     if BANK.doPreset(2) then
 
