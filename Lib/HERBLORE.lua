@@ -770,6 +770,7 @@ function Herblore.makePotions()
                 else
                     Herblore.updateCurrentState("Cleaning herbs...")
                     if Herblore.cleanHerbs(herbToClean.ID) then
+                        API.RandomSleep2(1200, 0, 400)
                         MISC.doCrafting()
                     else 
                         API.logWarn("Failed to clean herbs!")
