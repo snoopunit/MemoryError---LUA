@@ -615,7 +615,6 @@ end
 
 function Banking.doPreset(presetNum)
 
-    local bankTimer = API.SystemTime()
     if not Interact:NPC("Banker", "Bank", 10) then
         if not Interact:Object("Bank chest", "Bank", 10) then
             API.logWarn("Failed to interact with banker or bank chest!")
@@ -625,15 +624,20 @@ function Banking.doPreset(presetNum)
     end
 
     waitForBankToOpen()
+    API.RandomSleep2(1200,0,650)
 
     API.logInfo("Loading preset: "..tostring(presetNum))
-    API.DoAction_Interface(0x24,0xffffffff,1,517,119,presetNum,API.OFF_ACT_GeneralInterface_route)
-    bankTimer = API.SystemTime()
+    if not API.DoAction_Interface(0x24,0xffffffff,1,517,119,presetNum,API.OFF_ACT_GeneralInterface_route) then
+        API.logWarn("Failed to load preset doAction preset number!")
+        API.Write_LoopyLoop(false)
+        return false
+    end
+    API.RandomSleep2(1200,0,650)
 
     waitForBankToClose()
 
     API.logInfo("Preset loaded successfully!")
-    API.RandomSleep2(1200,0,650)
+    
     return true
 end
 
