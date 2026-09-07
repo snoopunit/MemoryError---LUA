@@ -68,6 +68,12 @@ local function loadLastPreset()
 
 end
 
+local function grimoireTeleport()
+
+    local ability = API.GetABs_name("Grimoire", false)
+
+end
+
 local function isAtLocation(location, distance)
     local distance = distance or 20
     return API.PInArea(location.x, distance, location.y, distance, location.z)

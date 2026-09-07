@@ -11,8 +11,8 @@ local function loadLastPreset(item)
             API.logWarn("Unable to interact with Banker!")
             API.Write_LoopyLoop(false)
         end
-        API.RandomSleep2(600, 0, 1200)
-        return Inventory:Contains(item)
+        API.RandomSleep2(1200, 0, 1200)
+        return Inventory:IsFull()
 end
 
 local function addHerbs()
@@ -28,7 +28,7 @@ local function addHerbs()
     return MISC.doCrafting()
 end
 
-local main()
+local function main()
 
   if Inventory:Contains("Infernal yew incense sticks") then
     local herb = HERB.findGrimyHerbs()
