@@ -2,7 +2,7 @@ print("Dwarf Weed Incense")
 
 local API = require("api")
 local MISC = require("lib/MISC")
-
+local HERB = require("lib/HERBLORE")
 
 local Max_AFK = 5
 
@@ -30,11 +30,21 @@ end
 
 local main()
 
-  if Inventory:Contains("Infernal ye") and Inventory:Contains("Yew incense sticks") then
-        coatIncense() 
-    else
-        if not loadLastPreset("Infernal ashes") then
-            API.logWarn("No Infernal ashes in inventory!")
+  if Inventory:Contains("Infernal yew incense sticks") then
+    local herb = HERB.findGrimyHerbs()
+
+    if herb then
+        if HERB.cleanHerbs(herb.ID) then
+            API.RandomSleep2(1200, 0, 600)
+            MISC.doCrafting()
+        end
+    end
+
+    addHerbs()
+        
+  else
+        if not loadLastPreset("Infenal yew incense sticks") then
+            API.logWarn("No Infernal yew incense sticks in inventory!")
             API.Write_LoopyLoop(false)
             return false
         end
