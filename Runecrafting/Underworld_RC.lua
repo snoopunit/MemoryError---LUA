@@ -70,8 +70,29 @@ end
 
 local function grimoireTeleport()
 
-    local ability = API.GetABs_name("Grimoire", false)
+    local ability = API.GetABs_name("Underworld Grimoire", false)
 
+    if ability.action == "Um Smithy" and ability.enabled then
+        return API.DoAction_Ability_Direct(ability,1,API.OFF_ACT_GeneralInterface_route)
+    end
+    
+    return false
+    
+end
+
+local function passingBracelet()
+
+    local ability = API.GetABs_name("Passing bracelet", false)
+
+    if ability.action == "Rub" and ability.enabled then
+        API.DoAction_Ability_Direct(ability,1,API.OFF_ACT_GeneralInterface_route)
+    end
+    
+    API.RandomSleep2(1200, 0, 1200)
+    API.logDebug("pressing 2 key button.")
+    API.KeyboardPress2(0x32, 60, 100)
+    API.RandomSleep2(1200, 0, 1200)
+    
 end
 
 local function isAtLocation(location, distance)
@@ -195,6 +216,7 @@ local function mainLoop()
     if isAtLocation(AREA.CITY_OF_UM, 30) then
         API.RandomSleep2(1200,0,600)
         if Inventory:IsFull() then
+            passingBracelet()
             enterDarkPortal()
         else
             loadLastPreset()
@@ -208,7 +230,9 @@ local function mainLoop()
             craftRunes()
             updateMetrics()
         else
-            returnFromDarkPortal()
+            if not grimoireTeleport() then
+                returnFromDarkPortal()
+            end
         end
     end
 
