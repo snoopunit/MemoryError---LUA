@@ -1,4 +1,4 @@
-print("TESTING TEMPLATE")
+print("Infernal Yew Incense")
 
 local API = require("api")
 local MISC = require("lib/MISC")
