@@ -62,7 +62,7 @@ POTIONS = {
     Zamorak_Brew_3 = { Name = "Zamorak brew (3)", ID = 189 },
     Bravery_Potion = { Name = "Bravery potion", ID = 739 },
     Blamish_Oil = { Name = "Blamish oil", ID = 1582 },
-    Antifire_3 = { Name = "Antifire potion (3)", ID = 2454 },
+    Antifire_3 = { Name = "Antifire (3)", ID = 2454 },
     Energy_Potion_3 = { Name = "Energy potion (3)", ID = 3010 },
     Super_Energy_3 = { Name = "Super energy (3)", ID = 3018 },
     Super_Restore_3 = { Name = "Super restore (3)", ID = 3026 },
@@ -470,7 +470,7 @@ function Herblore.drawGUI()
 
 
 
-    potionTypes = { "Prayer renewal (3)", "Saradomin brew (3)", "Super restore (3)", "Overload (3)", "Strength potion (3)", "Mining potion (3)", "Super strength (3)" }
+    potionTypes = { "Prayer renewal (3)", "Saradomin brew (3)", "Super restore (3)", "Overload (3)", "Strength potion (3)", "Mining potion (3)", "Super strength (3)", "Antifire (3)" }
 
     local gui_center_x = imguiBackground.box_start.x + (imguiBackground.box_size.x / 2)
 

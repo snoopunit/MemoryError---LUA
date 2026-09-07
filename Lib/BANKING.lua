@@ -624,7 +624,7 @@ function Banking.doPreset(presetNum)
     end
 
     waitForBankToOpen()
-    API.RandomSleep2(1200,0,650)
+    API.RandomSleep2(1800,0,650)
 
     API.logInfo("Loading preset: "..tostring(presetNum))
     if not API.DoAction_Interface(0x24,0xffffffff,1,517,119,presetNum,API.OFF_ACT_GeneralInterface_route) then
