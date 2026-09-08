@@ -15,6 +15,7 @@ local ALTARS        = {
 local METRICS = {
     runs = 0,
     totalRunesCrafted = 0,
+    totalImpEssConsumed = 0,
     spiritRunesCrafted = 0,
     boneRunesCrafted = 0,
     fleshRunesCrafted = 0,
@@ -203,6 +204,7 @@ local function craftRunes()
     local altar = randomAltar()
     local failTimer = API.SystemTime()
     local failCount = 0
+    local impureEssenceCount = Inventory:GetItemAmount("Impure essence")
 
     while Inventory:IsFull() and API.Read_LoopyLoop() do
     
@@ -222,6 +224,10 @@ local function craftRunes()
 
         API.RandomSleep2(1200,0,600)
 
+    end
+
+    if Inventory:GetItemAmount("Impure essence") < impureEssenceCount then
+        METRICS.totalImpEssCount = METRICS.totalImpEssCount + impureEssenceCount
     end
 
 end
@@ -269,6 +275,7 @@ local function mainLoop()
     local metrics = {
         {"Total Runes:", METRICS.totalRunesCrafted},
         {"Runes/H:", RunesPerHour()},
+        {"Essence Consumed:",Metrics.totalImpEssConsumed},
         {"Spirit Runes:", METRICS.spiritRunesCrafted},
         {"Bone Runes:", METRICS.boneRunesCrafted},
         {"Flesh Runes:", METRICS.fleshRunesCrafted},
