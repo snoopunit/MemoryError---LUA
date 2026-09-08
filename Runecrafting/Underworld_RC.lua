@@ -55,8 +55,12 @@ local function loadLastPreset()
             end    
         end
 
-        API.RandomSleep2(600,0,600)
+        API.RandomSleep2(1200,0,600)
 
+        if not Inventory:IsFull() then
+            failCount = failCount + 1
+        end
+        
         if failCount > 10 then
             API.logWarn("loadLastPreset() failCount = "..tostring(failCount).."!")
             API.Write_LoopyLoop(false)
@@ -162,12 +166,14 @@ local function craftRunes()
     local function randomAltar()
         local num = math.random(0,100)
 
-        if num >= 0 and num <= 23 then
+        if num >= 0 and num <= 15 then
             return ALTARS.SPIRIT
-        elseif num >= 24 and num <= 56 then
+        elseif num >= 16 and num <= 35 then
             return ALTARS.BONE
-        elseif num >= 57 and num <= 100 then
+        elseif num >= 36 and num <= 64 then
             return ALTARS.FLESH
+        elseif num >= 65 and num <= 100 then
+            return ALTATS.MIASMA
         end
         
     end
