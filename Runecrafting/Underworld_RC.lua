@@ -110,19 +110,8 @@ local function surge()
     
     if ability and ability.enabled then
         API.logDebug("Activating surge!")
-        API.DoAction_Ability_Direct(ability,1,API.OF_ACT_GeneralInterface_route)
+        return API.DoAction_Ability_Direct(ability,1,API.OFF_ACT_GeneralInterface_route)
     end
-
-    API.logDebug("Waiting for surge to cast...")
-    API.RandomSleep2(1000, 0, 600)
-
-    if not ability.enabled then
-        API.logDebug("Surge on cooldown! success!")
-        return true
-    end
-
-    API.logDebug("surge(): false")
-    return false
     
 end
 
@@ -141,14 +130,16 @@ local function enterDarkPortal()
         if not API.ReadPlayerMovin2() then
             if Interact:Object("Dark portal", "Enter", 30) then
                 API.logDebug("Entering dark portal.")
+                API.RandomSleep2(600,0,250)
             else
                 failCount = failCount + 1
             end
         end
 
-        API.RandomSleep2(1200,0,600)
+        
 
         if surge() then
+            API.RandomSleep2(250,0,250)
             Interact:Object("Dark portal", "Enter", 30)
         end
 
