@@ -99,6 +99,26 @@ local function passingBracelet()
     
 end
 
+local function surge()
+
+    local ability = API.GetABs_name("Surge", false)
+
+    if not ability then return false
+    
+    if ability and ability.enabled then
+        API.DoAction_Ability_Direct(ability,1,API.OF_ACT_GeneralInterface_route)
+    end
+
+    API.RandomSleep2(1000, 0, 600)
+
+    if not ability.enabled then
+        return true
+    end
+
+    return false
+    
+end
+
 local function isAtLocation(location, distance)
     local distance = distance or 20
     return API.PInArea(location.x, distance, location.y, distance, location.z)
@@ -225,6 +245,9 @@ local function mainLoop()
             passingBracelet()
             API.RandomSleep2(1200, 0, 1200)
             enterDarkPortal()
+            if surge() then
+                enterDarkPortal()
+            end
         else
             loadLastPreset()
         end
