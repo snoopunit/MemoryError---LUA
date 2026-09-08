@@ -139,7 +139,11 @@ local function enterDarkPortal()
             end
         end
 
-        API.RandomSleep2(600,0,600)
+        API.RandomSleep2(1200,0,600)
+
+        if surge() then
+            Interact:Object("Dark portal", "Enter", 30)
+        end
 
         if failCount > 10 then
             API.logWarn("enterDarkPortal() failCount = "..tostring(failCount).."!")
@@ -245,9 +249,6 @@ local function mainLoop()
             passingBracelet()
             API.RandomSleep2(1200, 0, 1200)
             enterDarkPortal()
-            if surge() then
-                enterDarkPortal()
-            end
         else
             loadLastPreset()
         end
