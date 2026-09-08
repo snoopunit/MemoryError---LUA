@@ -227,7 +227,7 @@ local function craftRunes()
     end
 
     if Inventory:GetItemAmount("Impure essence") < impureEssenceCount then
-        METRICS.totalImpEssCount = METRICS.totalImpEssCount + impureEssenceCount
+        METRICS.totalImpEssConsumed = METRICS.totalImpEssConsumed + impureEssenceCount
     end
 
 end
