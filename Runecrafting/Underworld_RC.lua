@@ -275,7 +275,7 @@ local function mainLoop()
     local metrics = {
         {"Total Runes:", METRICS.totalRunesCrafted},
         {"Runes/H:", RunesPerHour()},
-        {"Essence Consumed:",Metrics.totalImpEssConsumed},
+        {"Essence Consumed:",METRICS.totalImpEssConsumed},
         {"Spirit Runes:", METRICS.spiritRunesCrafted},
         {"Bone Runes:", METRICS.boneRunesCrafted},
         {"Flesh Runes:", METRICS.fleshRunesCrafted},
