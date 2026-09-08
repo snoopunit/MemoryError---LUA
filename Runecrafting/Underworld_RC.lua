@@ -262,7 +262,7 @@ local function mainLoop()
             if not grimoireTeleport() then
                 returnFromDarkPortal()
             end
-            API.RandomSleep2(1800, 0, 1200)
+            API.RandomSleep2(2400, 0, 1200)
         end
     end
 
