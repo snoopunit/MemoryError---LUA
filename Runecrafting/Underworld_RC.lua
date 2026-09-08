@@ -159,7 +159,7 @@ end
 
 local function craftRunes()
 
-    --[[local function randomAltar()
+    local function randomAltar()
         local num = math.random(0,100)
 
         if num >= 0 and num <= 23 then
@@ -170,16 +170,16 @@ local function craftRunes()
             return ALTARS.FLESH
         end
         
-    end]]
+    end
 
-    --local altar = randomAltar()
+    local altar = randomAltar()
     local failTimer = API.SystemTime()
     local failCount = 0
 
     while Inventory:IsFull() and API.Read_LoopyLoop() do
     
         if not API.ReadPlayerMovin2() and not API.CheckAnim(20) then
-            if Interact:Object("Flesh altar", "Craft runes", 30) then
+            if Interact:Object(altar, "Craft runes", 30) then
                 API.logDebug("Crafting runes...")
             else
                 failCount = failCount + 1
@@ -217,6 +217,7 @@ local function mainLoop()
         API.RandomSleep2(1200,0,600)
         if Inventory:IsFull() then
             passingBracelet()
+            API.RandomSleep2(1200, 0, 1200)
             enterDarkPortal()
         else
             loadLastPreset()
@@ -233,6 +234,7 @@ local function mainLoop()
             if not grimoireTeleport() then
                 returnFromDarkPortal()
             end
+            API.RandomSleep2(1800, 0, 1200)
         end
     end
 

@@ -36,6 +36,16 @@ local function excalibur()
   
 end
 
+local function eatFood()
+  if API.GetHPrecent() < 60 then
+    ab = API.GetABs_name("Eat Food", false)
+    if ab and ab.Enabled then
+      API.DoAction_Ability_Direct(ab, 1, API.OFF_ACT_GeneralInterface_route)
+      API.RandomSleep2(600, 50, 300)
+    end
+  end
+end
+
 local function idleCheck()
   if API.CheckAnim(30) then
     idleTimer = API.SystemTime()
@@ -47,6 +57,13 @@ local function idleCheck()
   end  
 end
 
+local function invCheck()
+  if Inventory:IsFull() then
+    API.logInfo("Inventory is full!")
+    API.Write_LoopyLoop(false)
+  end
+end
+
 API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(4)
@@ -55,8 +72,10 @@ API.Write_LoopyLoop(true)
 while API.Read_LoopyLoop()
 do
   
+  eatFood()
   idleCheck()
-  excalibur()
+  invCheck()
+  --excalibur()
   API.RandomSleep2(600,0,600)
   
 end

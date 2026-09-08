@@ -845,6 +845,12 @@ function API.Get_tick()
 	return Get_tick()
 end
 
+--- Get the current RS3 client logic cycle, or nil when unavailable.
+---@return number|nil
+function API.GetClientCycle()
+	return GetClientCycle()
+end
+
 --- count ticks
 ---@param val number --how many ticks
 ---@return boolean

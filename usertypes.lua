@@ -72,6 +72,8 @@
 ---@field addr number
 ---@field indexaddr_orig number
 ---@field id number
+---@field valid boolean
+---@field found boolean
 
 ---@class IInfo
 ---@field x number
