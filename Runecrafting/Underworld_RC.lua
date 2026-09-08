@@ -101,20 +101,27 @@ end
 
 local function surge()
 
-    local ability = API.GetABs_name("Surge", false)
+    local ability = API.GetABs_name("Surge", true)
 
-    if not ability then return false end
+    if not ability then 
+        API.logDebug("Didn't find the surge ability!")
+        return false 
+    end
     
     if ability and ability.enabled then
+        API.logDebug("Activating surge!")
         API.DoAction_Ability_Direct(ability,1,API.OF_ACT_GeneralInterface_route)
     end
 
+    API.logDebug("Waiting for surge to cast...")
     API.RandomSleep2(1000, 0, 600)
 
     if not ability.enabled then
+        API.logDebug("Surge on cooldown! success!")
         return true
     end
 
+    API.logDebug("surge(): false")
     return false
     
 end
