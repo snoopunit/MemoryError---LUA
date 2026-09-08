@@ -193,7 +193,7 @@ local function craftRunes()
         elseif num >= 36 and num <= 64 then
             return ALTARS.FLESH
         elseif num >= 65 and num <= 100 then
-            return ALTATS.MIASMA
+            return ALTARS.MIASMA
         end
         
     end
