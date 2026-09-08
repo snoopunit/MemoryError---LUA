@@ -103,7 +103,7 @@ local function surge()
 
     local ability = API.GetABs_name("Surge", false)
 
-    if not ability then return false
+    if not ability then return false end
     
     if ability and ability.enabled then
         API.DoAction_Ability_Direct(ability,1,API.OF_ACT_GeneralInterface_route)
