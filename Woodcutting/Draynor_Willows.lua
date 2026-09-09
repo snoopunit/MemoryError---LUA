@@ -45,15 +45,25 @@ local function chopWillows()
 end
 
 local function fillWoodBox()
+    
   local ability = API.GetABs_name("ood box", false)
-  if ability.action = "Fill" and ability.enabled then
+    
+  if ability.action == "Fill" and ability.enabled then
+        
     API.DoAction_Ability_Direct(ability, 1, API.OFF_ACT_GeneralInterface_route)
+        
   end
+    
   API.RandomSleep2(1200,0,400)
+    
   if Inventory:GetItemAmount("Willow logs") > 0 then
+        
     return false
+        
   end
+    
   return true
+    
 end
 
 API.Write_LoopyLoop(true)
