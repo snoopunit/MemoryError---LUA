@@ -1,9 +1,11 @@
 print("Draynor Willows.")
 
 local API = require("api")
+local WC = require("lib/WOODCUTTING")
 
 local Willow_Logs_ID = 1519
 local canFillBox = true
+local init = false
 
 local function useBank()
     return Interact:NPC("Banker", "Bank", 30)
@@ -41,7 +43,7 @@ local function doBanking()
 end
 
 local function chopWillows()
-  return Interact:Object("Willow", "Chop down", 30)
+  return WC.chop()
 end
 
 local function fillWoodBox()
@@ -66,6 +68,11 @@ local function fillWoodBox()
     
 end
 
+local function initialize()
+    WC.GLOBALS.treeType = TREES.WILLOW
+    WC.GLOBALS.logType = LOGS.WILLOW
+end
+
 API.Write_LoopyLoop(true)
 API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
@@ -73,7 +80,11 @@ API.SetMaxIdleTime(4)
 
 while(API.Read_LoopyLoop())
 do-----------------------------------------------------------------------------------
-    
+
+    if not init then
+        initialize()
+    end
+
     if Inventory:IsFull() then
 
         doBanking()
