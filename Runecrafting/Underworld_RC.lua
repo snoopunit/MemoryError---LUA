@@ -128,7 +128,7 @@ local function enterDarkPortal()
 
     while not isAtLocation(AREA.RC_ALTARS, 10) and API.Read_LoopyLoop() do
     
-        if not API.ReadPlayerMovin2() then
+        if not API.ReadPlayerMovin2() and not API.CheckAnim() then
             if Interact:Object("Dark portal", "Enter", 30) then
                 API.logDebug("Entering dark portal.")
                 API.RandomSleep2(600,0,250)
@@ -136,8 +136,6 @@ local function enterDarkPortal()
                 failCount = failCount + 1
             end
         end
-
-        
 
         if surge() then
             API.RandomSleep2(250,0,250)
