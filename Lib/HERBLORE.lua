@@ -470,7 +470,7 @@ function Herblore.drawGUI()
 
 
 
-    potionTypes = { "Prayer renewal (3)", "Saradomin brew (3)", "Super restore (3)", "Overload (3)", "Strength potion (3)", "Mining potion (3)", "Super strength (3)", "Antifire (3)" }
+    potionTypes = { "Prayer renewal (3)", "Saradomin brew (3)", "Super restore (3)", "Overload (3)", "Strength potion (3)", "Mining potion (3)", "Super strength (3)", "Antifire (3)", "Super necromancy (3)" }
 
     local gui_center_x = imguiBackground.box_start.x + (imguiBackground.box_size.x / 2)
 
@@ -806,11 +806,11 @@ function Herblore.makePotions()
 
         API.RandomSleep2(1200, 0, 400)
 
-        if not Inventory:IsFull() then
+        --[[if not Inventory:IsFull() then
             API.logWarn("Didn't grab a full inventory!")
             API.Write_LoopyLoop(false)
             return
-        end
+        end]]
 
         if not Herblore.mixPotionsAtPortableWell() then
             if not Herblore.mixPotionsInventory() then
