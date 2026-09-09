@@ -41,7 +41,7 @@ local function doBanking()
 end
 
 local function chopWillows()
-  return Interact:Object("Willow tree", "Chop down", 30)
+  return Interact:Object("Willow", "Chop down", 30)
 end
 
 local function fillWoodBox()
