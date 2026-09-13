@@ -42,7 +42,6 @@ end
 
 local function loadLastPreset()
 
-    local failTimer = API.SystemTime()
     local failCount = 0
 
     while not Inventory:IsFull() and API.Read_LoopyLoop() do
@@ -185,29 +184,28 @@ end
 local function craftRunes()
 
     local function randomAltar()
-        local num = math.random(0,100)
+        --[[local num = math.random(0,100)
 
         if num >= 0 and num <= 15 then
             return ALTARS.SPIRIT
         elseif num >= 16 and num <= 35 then
             return ALTARS.BONE
-        elseif num >= 36 and num <= 64 then
+        elseif num >= 36 and num <= 64 then]]
             return ALTARS.FLESH
-        elseif num >= 65 and num <= 100 then
+        --[[elseif num >= 65 and num <= 100 then
             return ALTARS.MIASMA
-        end
+        end]]
         
     end
 
     local altar = randomAltar()
-    local failTimer = API.SystemTime()
     local failCount = 0
     local impureEssenceCount = Inventory:GetItemAmount("Impure essence")
 
     while Inventory:IsFull() and API.Read_LoopyLoop() do
     
         if not API.ReadPlayerMovin2() and not API.CheckAnim(20) then
-            if Interact:Object(altar, "Craft runes", 30) then
+            if Interact:Object("Flesh altar", "Craft runes", 30) then
                 API.logDebug("Crafting runes...")
             else
                 failCount = failCount + 1
