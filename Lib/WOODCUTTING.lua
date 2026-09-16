@@ -203,7 +203,7 @@ function Woodcutting.chop()
             end
         end
         else
-        return Interact:Object(Woodcutting.GLOBALS.treeType.name, "Chop down")
+        return Interact:Object(Woodcutting.GLOBALS.treeType.name, "Chop down", 20)
     end
 end
 
