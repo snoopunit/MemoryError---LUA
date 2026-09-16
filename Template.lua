@@ -59,11 +59,11 @@ while(API.Read_LoopyLoop())
 
 do-----------------------------------------------------------------------------------
 
-    if Inventory:Contains("Infernal ashes") and Inventory:Contains("Yew incense sticks") then
+    if Inventory:Contains("Impious ashes") and Inventory:Contains("Willow incense sticks") then
         coatIncense() 
     else
-        if not loadLastPreset("Infernal ashes") then
-            API.logWarn("No Infernal ashes in inventory!")
+        if not loadLastPreset("Impious ashes") then
+            API.logWarn("No Impious ashes in inventory!")
             API.Write_LoopyLoop(false)
             return false
         end
