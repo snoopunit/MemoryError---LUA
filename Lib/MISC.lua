@@ -185,7 +185,13 @@ function Miscellaneous.chooseToolOption(option)
 
     end
 
-    API.DoAction_Interface(0xffffffff,0xffffffff,0,1179,option,-1,API.OFF_ACT_GeneralInterface_Choose_option)
+    if not API.DoAction_Interface(0xffffffff,0xffffffff,0,1179,option,-1,API.OFF_ACT_GeneralInterface_Choose_option) then
+        
+        API.logWarn("Failed to select option: "..tostring(option))
+
+        return false
+
+    end
 
     Miscellaneous.waitForChooseToolToClose()
 
