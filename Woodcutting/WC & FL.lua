@@ -128,7 +128,7 @@ end
 
 function doFiremaking()
 
-    if FIRE.findFires() == 0 then
+    if not FIRE.findFires() or FIRE.findFires() == 0 then
 
         API.logInfo("Starting a new fire...")
         WC.useLogs(2)
