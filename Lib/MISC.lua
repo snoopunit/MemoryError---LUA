@@ -62,7 +62,7 @@ end
 
 function Miscellaneous.isChooseToolOpen()
     --return API.VB_FindPSettinOrder(2874).state == 1277970 
-    return API.ScanForInterfaceTest2Get2(false, { 1179, 99, 14, 0 })[1].textids == "Choose a tool"
+    return API.ScanForInterfaceTest2Get2(false, { 1179, 99, 14, 0 }).textids == "Choose a tool"
 end
 
 function Miscellaneous.isSwitchToolMenuOpen()
