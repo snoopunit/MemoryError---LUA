@@ -187,17 +187,37 @@ function Miscellaneous.chooseToolOption(option)
 
     end
 
-    if not API.DoAction_Interface(0xffffffff,0xffffffff,0,1179,27,-1,API.OFF_ACT_GeneralInterface_Choose_option) then
-        
-        API.logWarn("Failed to select option: "..tostring(result))
+    local failCounter = 0
 
-        return false
+    while Miscellaneous.isChooseToolOpen() and API.Read_LoopyLoop() do
+
+        if API.DoAction_Interface(0xffffffff,0xffffffff,0,1179,27,result,API.OFF_ACT_GeneralInterface_Choose_option) then
+
+            Miscellaneous.waitForChooseToolToClose()
+
+            return true
+
+        else
+
+            failCounter = failCounter + 1
+
+            API.logWarn("Failed to select option: "..tostring(result)..". Attempt: "..tostring(failCounter))
+
+            API.RandomSleep2(600,0,600)
+
+        end
+
+        if failCounter > 5 then
+
+            API.logWarn("Failed to select option: "..tostring(result).." after 5 attempts.")
+
+            API.Write_LoopyLoop(false)
+
+            return false
+
+        end
 
     end
-
-    Miscellaneous.waitForChooseToolToClose()
-
-    return true
 
 end
 
