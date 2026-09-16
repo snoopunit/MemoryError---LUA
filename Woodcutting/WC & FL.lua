@@ -13,7 +13,8 @@ local scriptState = "Idle"
 local itemSelection = 2
 local isBanking = false
 local makeIncense = false
-
+local startTime = API.SystemTime()
+local timeToQuit = math.random(3600000, 7200000) -- Random time between 1 and 2 hours in milliseconds
 
 function drawGUI()
 
@@ -189,6 +190,15 @@ function depositBox()
     end
 end
 
+function timeToStop()
+    local elapsedTime = (API.SystemTime() - startTime)
+
+    if elapsedTime > timeToQuit then
+        print(tostring(math.floor(timeToQuit / 3600000)) .. " hours have passed. Terminating Script.")
+        API.Write_LoopyLoop(false)
+    end
+end
+
 function mainRoutine()
     if scriptState == "Idle" then
 
@@ -272,6 +282,7 @@ function mainRoutine()
             end    
 
         else
+            timeToStop()
             WC.gather()
         end
 
