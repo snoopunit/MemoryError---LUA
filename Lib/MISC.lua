@@ -151,27 +151,29 @@ end
 
 function Miscellaneous.chooseToolOption(option)
 
+    local result = nil
+
     if option == "Light" then
 
-        option = 12
+        result = 12
 
     elseif option == "Fletch" then
 
-        option = 17
+        result = 17
 
     elseif option == "Bonfire" then
 
-        option = 27
+        result = 27
 
     elseif option == "Incense" then
 
-        option = 32
+        result = 32
 
     end
 
-    if option ~= 12 and option ~= 17 and option ~= 27 and option ~= 32 then
+    if result ~= 12 and result ~= 17 and result ~= 27 and result ~= 32 then
 
-        API.logDebug("Crafting Interface option is not valid: ", option)
+        API.logDebug("Crafting Interface option is not valid: ", result)
 
         return false
 
@@ -185,9 +187,9 @@ function Miscellaneous.chooseToolOption(option)
 
     end
 
-    if not API.DoAction_Interface(0xffffffff,0xffffffff,0,1179,option,-1,API.OFF_ACT_GeneralInterface_Choose_option) then
+    if not API.DoAction_Interface(0xffffffff,0xffffffff,0,1179,result,-1,API.OFF_ACT_GeneralInterface_Choose_option) then
         
-        API.logWarn("Failed to select option: "..tostring(option))
+        API.logWarn("Failed to select option: "..tostring(result))
 
         return false
 
