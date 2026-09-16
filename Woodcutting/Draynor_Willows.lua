@@ -6,6 +6,9 @@ local WC = require("lib/WOODCUTTING")
 local Willow_Logs_ID = 1519
 local canFillBox = true
 local init = false
+local startTime = API.SystemTime()
+local timeToQuit = math.random(3600000, 7200000) -- Random time between 1 and 2 hours in milliseconds
+
 
 local function useBank()
     return Interact:NPC("Banker", "Bank", 30)
@@ -73,6 +76,18 @@ local function initialize()
     WC.GLOBALS.logType = LOGS.WILLOW
 end
 
+function timeToStop()
+    local elapsedTime = (API.SystemTime() - startTime)
+
+    if elapsedTime > timeToQuit then
+        print(tostring(math.floor(timeToQuit / 3600000)) .. " hours have passed. Terminating Script.")
+        API.Write_LoopyLoop(false)
+        return true
+    end
+
+    return false
+end
+
 API.Write_LoopyLoop(true)
 API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
@@ -88,6 +103,7 @@ do------------------------------------------------------------------------------
     if Inventory:IsFull() then
 
         doBanking()
+        timeToStop()
         canFillBox = true
 
     else
