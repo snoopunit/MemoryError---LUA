@@ -36,6 +36,7 @@ LOGS = {
     WILLOW =            {name = "Willow logs",          id = 1519},
     TEAK =              {name = "Teak logs",            id = 6333},
     MAPLE =             {name = "Maple logs",           id = 1517},
+    ACADIA =            {name = "Acadia logs",          id = 40285},
     MAHOGANY =          {name = "Mahogany logs",        id = 6332},
     ARCTIC_PINE =       {name = "Arctic pine logs",     id = 10810},
     EUCALYPTUS =        {name = "Eucalyptus logs",      id = 12581},
