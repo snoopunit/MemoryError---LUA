@@ -14,7 +14,8 @@ local itemSelection = 2
 local isBanking = false
 local makeIncense = false
 local startTime = API.SystemTime()
-local timeToQuit = math.random(3600000, 7200000) -- Random time between 1 and 2 hours in milliseconds
+local oneHour = 3600000 
+local timeToQuit = math.random(oneHour, oneHour * math.random(2,4)) 
 
 function drawGUI()
 
