@@ -201,6 +201,7 @@ function Woodcutting.chop()
     API.logDebug("Woodcutting.chop(): " .. Woodcutting.GLOBALS.treeType.name)
 
     if Woodcutting.GLOBALS.treeType.name == "Oak" then
+        API.logDebug("Attempting to chop Oak tree...")
         local trees = API.ReadAllObjectsArray({12}, {-1}, {"Oak"})
         table.sort(trees, function(a, b) return a.Distance < b.Distance end)
 
@@ -210,9 +211,11 @@ function Woodcutting.chop()
     end
 
     if Woodcutting.GLOBALS.treeType.name == "Acadia" then
+        API.logDebug("Attempting to chop Acadia tree...")
         return Interact:Object(Woodcutting.GLOBALS.treeType.name, "Cut down", 30)
     end
 
+    API.logDebug("Attempting to chop " .. Woodcutting.GLOBALS.treeType.name .. " tree...")
     return Interact:Object(Woodcutting.GLOBALS.treeType.name, "Chop down", 30)
 end
 
