@@ -55,6 +55,7 @@ TREE_TO_LOG_MAP = {
     OAK         = "OAK",
     WILLOW      = "WILLOW",
     MAPLE       = "MAPLE",
+    ACADIA      = "ACADIA",
     YEW         = "YEW",
     MAGIC       = "MAGIC",
     ELDER       = "ELDER",
