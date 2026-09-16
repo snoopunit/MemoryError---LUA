@@ -210,7 +210,7 @@ function Woodcutting.chop()
         end
     end
 
-    if Woodcutting.GLOBALS.treeType.name == "Acadia" then
+    if Woodcutting.GLOBALS.treeType.name == "Acadia tree" then
         API.logDebug("Attempting to chop Acadia tree...")
         return Interact:Object(Woodcutting.GLOBALS.treeType.name, "Cut down", 30)
     end
