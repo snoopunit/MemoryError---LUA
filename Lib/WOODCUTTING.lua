@@ -197,12 +197,12 @@ function Woodcutting.chop()
     API.logDebug("Woodcutting.chop(): " .. Woodcutting.GLOBALS.treeType.name)
     if Woodcutting.GLOBALS.treeType.name == "Oak" then
         local trees = API.ReadAllObjectsArray({12}, {-1}, {"Oak"})
-        for i, tree in ipairs(trees) do
-            if tree.bool1 == nil then
-                return API.DoAction_Object_Direct(0x3b, API.OFF_ACT_GeneralObject_route0, tree)
-            end
+        table.sort(trees, function(a, b) return a.Distance < b.Distance end)
+
+        if trees[2] then
+            return API.DoAction_Object_Direct(0x3b, API.OFF_ACT_GeneralObject_route0, trees[2])
         end
-        else
+
         return Interact:Object(Woodcutting.GLOBALS.treeType.name, "Chop down", 30)
     end
 end
