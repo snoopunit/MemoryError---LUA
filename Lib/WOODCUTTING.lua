@@ -204,6 +204,8 @@ function Woodcutting.chop()
         if trees[2] then
             return API.DoAction_Object_Direct(0x3b, API.OFF_ACT_GeneralObject_route0, trees[2])
         end
+    elseif Woodcutting.GLOBALS.treeType.name == "Acadia" then
+        return Interact:Object(Woodcutting.GLOBALS.treeType.name, "Cut down", 30)
     else
         return Interact:Object(Woodcutting.GLOBALS.treeType.name, "Chop down", 30)
     end
