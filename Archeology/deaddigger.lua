@@ -810,7 +810,7 @@ local destroyInterface = {
 }
 
 local function destroyInterfaceFound()
-    local result = API.ScanForInterfaceTest2Get(true, destroyInterface)
+    local result = API.ScanForInterfaceTest2Get2(true, destroyInterface)
     if #result > 0 then
         return true
     else
@@ -819,7 +819,7 @@ local function destroyInterfaceFound()
 end
 
 local function artifactFoundInterfacePresent()
-    local result = API.ScanForInterfaceTest2Get(true, artifactFoundInterface)
+    local result = API.ScanForInterfaceTest2Get2(true, artifactFoundInterface)
     if #result > 0 then
         return true
     else
