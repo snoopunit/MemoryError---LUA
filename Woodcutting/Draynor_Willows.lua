@@ -61,7 +61,7 @@ local function fillWoodBox()
     
   API.RandomSleep2(1200,0,400)
     
-  if Inventory:GetItemAmount("Willow logs") > 0 then
+  if Inventory:GetItemAmount("Willow logs") ~= 0 and Inventory:GetItemAmount("Willow logs") > 1 then
         
     return false
         
