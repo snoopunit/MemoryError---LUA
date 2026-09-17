@@ -237,7 +237,7 @@ function Chopping_and_Banking()
 
     else
 
-        if not isAtLocation(ACADIA.location[1], 40) then
+        if not isAtLocation({3304,3246,1}, 40) then
             if not goToTrees() then
                 API.Write_LoopyLoop(false)
                 return
