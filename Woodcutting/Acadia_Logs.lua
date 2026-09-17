@@ -4,6 +4,8 @@ local API = require("api")
 local WC = require("lib/WOODCUTTING")
 local BANK = require("lib/BANKING")
 
+local canFillBox = true
+
 local ACADIA = {
   Name = "Acadia tree",
   Location = {{3304,3246,1},{3309,3247,1},{3310,3243,1}},
@@ -111,6 +113,28 @@ function walkPath(destination)
     end
 end
 
+local function fillWoodBox()
+    
+  local ability = API.GetABs_name("ood box", false)
+    
+  if ability.action == "Fill" and ability.enabled then
+        
+    API.DoAction_Ability_Direct(ability, 1, API.OFF_ACT_GeneralInterface_route)
+        
+  end
+    
+  API.RandomSleep2(1200,0,400)
+    
+  if Inventory:GetItemAmount("Acadia logs") ~= 0 and Inventory:GetItemAmount("Acadia logs") > 1 then
+        
+    return false
+        
+  end
+    
+  return true
+    
+end
+
 function goToTrees() 
     local locations = ACADIA.Location
 
@@ -179,6 +203,12 @@ function Chopping_and_Banking()
               end
             end  
 
+            if failCounter >= 10 then
+                API.logWarn("Failed to open bank after 10 attempts!")
+                API.Write_LoopyLoop(false)
+                return
+            end
+
         end
     
         API.RandomSleep2(1800,0,1800)
@@ -196,15 +226,28 @@ function Chopping_and_Banking()
         end
 
         API.RandomSleep2(1800,0,1800)
-
-    else
-
         if not goToTrees() then
             API.Write_LoopyLoop(false)
             return
         end
-        WC.gather()
 
+        canFillBox = true
+
+    else
+
+        
+        if not API.CheckAnim(15) then
+            if not WC.chop() then
+              API.Write_LoopyLoop(false)
+              return
+            end
+        end
+  
+        if Inventory:FreeSpaces() <= math.random(1,16) and canFillBox then
+            if not fillWoodBox() then
+                canFillBox = false
+            end
+        end
     end
 
     API.RandomSleep2(2400, 0 ,600)
