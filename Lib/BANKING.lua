@@ -35,7 +35,7 @@ Banking.BANKERS = {
     },
     AL_KHARID = {
         Name = "Al Kharid bank",
-        Location = {},
+        Location = {{3268,3170,0},{3269,3170,0},{3270,3170,0},{3271,3170,0},{3272,3170,0}},
         Types = { "Banker", "Bank booth" }
     },
     CATHERBY = {
