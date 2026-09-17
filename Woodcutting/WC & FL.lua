@@ -1,4 +1,4 @@
-print("WC & FL/FM")
+print("Klamor's AIO - WC/FL/FM")
 
 local API = require("api")
 local UTILS = require("UTILS")
@@ -14,8 +14,8 @@ local itemSelection = 2
 local isBanking = false
 local makeIncense = false
 local startTime = API.SystemTime()
-local oneHour = 3600000 
-local timeToQuit = math.random(oneHour, oneHour * math.random(2,4)) 
+local timeToQuit = math.random(3600000, ( 3600000 * math.random(2,4) ))
+print("timeToQuit = "..tostring(timeToQuit))
 
 function drawGUI()
 
