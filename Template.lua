@@ -19,7 +19,7 @@ local function loadLastPreset(item)
             API.logWarn("Unable to interact with Banker!")
             API.Write_LoopyLoop(false)
         end
-        API.RandomSleep2(600, 0, 1200)
+        API.RandomSleep2(1200, 0, 3600)
         return Inventory:Contains(item)
 end
 
@@ -31,7 +31,7 @@ local function coatIncense()
         API.DoAction_Ability_Direct(boxAB, 1, API.OFF_ACT_GeneralInterface_route)
     end
 
-    API.RandomSleep2(1200, 600, 1200)
+    API.RandomSleep2(1800, 0, 3200)
 
     return MISC.doCrafting()
 end
@@ -44,7 +44,7 @@ function craftIncense()
         API.DoAction_Ability_Direct(boxAB, 1, API.OFF_ACT_GeneralInterface_route)
     end
 
-    API.RandomSleep2(1200, 600, 1200)
+    API.RandomSleep2(1800, 0, 3200)
 
     return MISC.doCrafting()
 
