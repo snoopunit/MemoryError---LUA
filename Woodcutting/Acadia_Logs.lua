@@ -172,8 +172,8 @@ function Chopping_and_Banking()
     
         while API.Read_LoopyLoop() and not Bank:IsOpen() do
             
-            if not Interact:NPC("Banker", "Bank", 10) then
-              if not Interact:Object("Bank booth", "Bank", 10) then
+            if not Interact:NPC("Banker", "Bank", 40) then
+              if not Interact:Object("Bank booth", "Bank", 40) then
                   API.logWarn("Unable to interact with the bankers or booths!")
                   failCounter = failCounter + 1
               end
