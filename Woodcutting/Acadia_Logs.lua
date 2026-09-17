@@ -135,6 +135,11 @@ local function fillWoodBox()
     
 end
 
+local function isAtLocation(location, distance)
+    local distance = distance or 20
+    return API.PInArea(location.x, distance, location.y, distance, location.z)
+end
+
 function goToTrees() 
     local locations = ACADIA.Location
 
@@ -226,15 +231,18 @@ function Chopping_and_Banking()
         end
 
         API.RandomSleep2(1800,0,1800)
-        if not goToTrees() then
-            API.Write_LoopyLoop(false)
-            return
-        end
+
 
         canFillBox = true
 
     else
 
+        if not isAtLocation(ACADIA.location[1], 40) then
+            if not goToTrees() then
+                API.Write_LoopyLoop(false)
+                return
+            end
+        end
         
         if not API.CheckAnim(15) then
             if not WC.chop() then
