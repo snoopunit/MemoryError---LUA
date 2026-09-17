@@ -5,6 +5,7 @@ local WC = require("lib/WOODCUTTING")
 local BANK = require("lib/BANKING")
 
 local ACADIA = {
+  Name = "Acadia tree",
   Location = {{3304,3246,1},{3309,3247,1},{3310,3243,1}},
   IDs = {},
   log_ID = 40285,
