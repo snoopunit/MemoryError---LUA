@@ -215,8 +215,8 @@ API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
 API.SetMaxIdleTime(4)
 
-Woodcutting.GLOBALS.treeType = TREES.ACADIA
-Woodcutting.GLOBALS.logType = LOGS.ACADIA
+WC.GLOBALS.treeType = TREES.ACADIA
+WC.GLOBALS.logType = LOGS.ACADIA
 
 while(API.Read_LoopyLoop())
 
