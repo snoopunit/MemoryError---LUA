@@ -1,4 +1,4 @@
-print("FISHING KARAMJA LOBSTER")
+print("Al Karhid Acadia Logs")
 
 local API = require("api")
 local WC = require("lib/WOODCUTTING")
@@ -237,7 +237,7 @@ function Chopping_and_Banking()
 
     else
 
-        if not isAtLocation({3304,3246,1}, 40) then
+        if not isAtLocation({x=3304,y=3246,z=1}) then
             if not goToTrees() then
                 API.Write_LoopyLoop(false)
                 return
