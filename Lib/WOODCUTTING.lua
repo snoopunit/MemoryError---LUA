@@ -210,10 +210,10 @@ function Woodcutting.chop()
     end
 
     if Woodcutting.GLOBALS.treeType.name == "Acadia tree" then
-        return Interact:Object(Woodcutting.GLOBALS.treeType.name, "Cut down", 30)
+        return Interact:Object(Woodcutting.GLOBALS.treeType.name, "Cut down", 60)
     end
 
-    return Interact:Object(Woodcutting.GLOBALS.treeType.name, "Chop down", 30)
+    return Interact:Object(Woodcutting.GLOBALS.treeType.name, "Chop down", 60)
 end
 
 ---@return any -- returns the key of wood box found in inv or nil if none
