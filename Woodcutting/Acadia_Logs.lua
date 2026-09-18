@@ -5,6 +5,8 @@ local WC = require("lib/WOODCUTTING")
 local BANK = require("lib/BANKING")
 
 local canFillBox = true
+local totalLogs = 0
+local startTime = API.SystemTime()
 
 local ACADIA = {
   Name = "Acadia tree",
@@ -12,6 +14,7 @@ local ACADIA = {
   IDs = {},
   log_ID = 40285,
 }
+local gePrice = API.GetExchangePrice(ACADIA.log_ID)
 
 ---@param point WPOINT
 ---@return number
@@ -113,6 +116,10 @@ function walkPath(destination)
     end
 end
 
+local function hasAcadiaWoodSpirits()
+  return Inventory:Contains("Acadia wood spirit")
+end
+
 local function readChat()
     local chats = API.GatherEvents_chat_check()
 
@@ -123,6 +130,15 @@ local function readChat()
         end
     end   
     return nil
+end
+
+local function choppedLogCheck()
+    local check = readChat()
+    if check  == "You get some acadia tree logs." then
+        return true
+    else
+        return false
+    end
 end
 
 local function woodBoxFullCheck()
@@ -205,6 +221,14 @@ function goToTrees()
     return true
 end
 
+local function logsPerHour()
+    local elapsed = API.SystemTime() - startTime
+
+    if elapsed <= 0 then return 0 end
+
+    return math.floor((totalLogs * 60) / (elapsed / 60000))
+end
+
 function Chopping_and_Banking()
 
     if Inventory:IsFull() then
@@ -272,6 +296,32 @@ function Chopping_and_Banking()
         if woodBoxFullCheck() then  
           canFillBox = false  
         end
+
+        if choppedLogCheck() then
+          if hasAcadiaWoodSpirits() then
+              totalLogs = totalLogs + 2
+          else
+              totalLogs = totalLogs + 1
+          end
+        end
+
+        local metrics = {
+        {"Script", "Al-Kharid Acadia logs"},
+        {"Total Logs:", totalLogs},
+        {"Logs/H:", logsPerHour()},
+        {"Est. Profit:", (totalLogs * gePrice) .. "gp"},
+        {"Profit/H:", (function()
+                        local elapsed = (API.SystemTime() - startTime) / 3600000
+
+                        if elapsed > 0 then
+                          return math.floor( (totalLogs * gePrice) / elapsed ) .. "gp"
+                        else
+                          return "0gp"
+                        end
+                      end)()}
+        }
+
+    API.DrawTable(metrics)
     
     end
 
