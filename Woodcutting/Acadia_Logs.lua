@@ -299,6 +299,8 @@ function Chopping_and_Banking()
               return
             end
         end
+
+        updateLogsChopped()
   
         if Inventory:FreeSpaces() <= math.random(1,16) then
             fillWoodBox()
@@ -307,8 +309,6 @@ function Chopping_and_Banking()
         if woodBoxFullCheck() then  
           canFillBox = false  
         end
-
-        updateLogsChopped()
 
         local metrics = {
         {"Script", "Al-Kharid Acadia logs"},
