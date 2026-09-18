@@ -59,7 +59,7 @@ while(API.Read_LoopyLoop())
 
 do-----------------------------------------------------------------------------------
 
-    if Inventory:Contains("Accursed ashes") and Inventory:Contains("Maple incense sticks") then
+    --[[if Inventory:Contains("Accursed ashes") and Inventory:Contains("Maple incense sticks") then
         coatIncense() 
     else
         if not loadLastPreset("Accursed ashes") then
@@ -67,17 +67,17 @@ do------------------------------------------------------------------------------
             API.Write_LoopyLoop(false)
             return false
         end
-    end
+    end]]
 
-    --[[if Inventory:Contains("Maple logs") then
+    if Inventory:Contains("Yew logs") then
         craftIncense() 
     else
-        if not loadLastPreset("Maple logs") then
-            API.logWarn("No Maple logs in inventory!")
+        if not loadLastPreset("Yew logs") then
+            API.logWarn("No Yew logs in inventory!")
             API.Write_LoopyLoop(false)
             return false
         end
-    end]]
+    end
 
   
 
