@@ -63,7 +63,7 @@ end
 
 local function woodBoxFullCheck()
     local check = readChat()
-    if check  == "<col=EB2F2F>Your wood box is too full to deposit all items from the backpack.</col>" then
+    if check  == "<col=EB2F2F>Your wood box is too full to deposit all items from the backpack." then
         return true
     else
         return false
