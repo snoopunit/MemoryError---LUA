@@ -5,6 +5,9 @@ local WC = require("lib/WOODCUTTING")
 local BANK = require("lib/BANKING")
 
 local canFillBox = true
+local lastLogCount = 0
+local totalLogs = 0
+local startTime = API.SystemTime()
 
 local ACADIA = {
   Name = "Acadia tree",
@@ -12,6 +15,7 @@ local ACADIA = {
   IDs = {},
   log_ID = 40285,
 }
+local gePrice = API.GetExchangePrice(ACADIA.log_ID)
 
 ---@param point WPOINT
 ---@return number
@@ -113,26 +117,57 @@ function walkPath(destination)
     end
 end
 
+local function hasAcadiaWoodSpirits()
+  return Inventory:Contains("Acadia wood spirit")
+end
+
+local function readChat()
+    local chats = API.GatherEvents_chat_check()
+
+    for index, value in ipairs(chats) do
+        if value.text then
+            --API.logInfo("Chat: "..value.text)
+            return value.text
+        end
+    end   
+    return nil
+end
+
+local function woodBoxFullCheck()
+    local check = readChat()
+    if check  == "<col=EB2F2F>The wood box is too full to deposit any items from your backpack." then
+      API.logInfo("Wood box is full!")
+        return true
+    else
+        return false
+    end
+end
+
+local function currentAcadiaLogs()
+    return Inventory:GetItemAmount(ACADIA.log_ID)
+end
+
 local function fillWoodBox()
+
+  if not canFillBox then return end
+
+  local count = Inventory:FreeSpaces()
     
   local ability = API.GetABs_name("ood box", false)
-    
   if ability.action == "Fill" and ability.enabled then
-        
-    API.DoAction_Ability_Direct(ability, 1, API.OFF_ACT_GeneralInterface_route)
-        
+    if not API.DoAction_Ability_Direct(ability, 1, API.OFF_ACT_GeneralInterface_route) then
+      API.logWarn("Unable to DoAction_Ability_Direct!")
+      API.Write_LoopyLoop(False)
+      return
+    end
   end
-    
-  API.RandomSleep2(1200,0,400)
-    
-  if Inventory:GetItemAmount("Acadia logs") ~= 0 and Inventory:GetItemAmount("Acadia logs") > 1 then
-        
-    return false
-        
+
+  API.RandomSleep2(600,0,250)
+
+  if count < Inventory:FreeSpaces() then
+    lastLogCount = currentAcadiaLogs()
   end
-    
-  return true
-    
+        
 end
 
 local function isAtLocation(location, distance)
@@ -189,6 +224,26 @@ function goToTrees()
 
     API.logDebug("Successfully reached ACADIA location")
     return true
+end
+
+local function updateLogsChopped()
+    local count = currentAcadiaLogs()
+
+    if count > lastLogCount then
+        totalLogs =
+            totalLogs
+            + (count - lastLogCount)
+
+        lastLogCount = count
+    end
+end
+
+local function logsPerHour()
+    local elapsed = API.SystemTime() - startTime
+
+    if elapsed <= 0 then return 0 end
+
+    return math.floor((totalLogs * 60) / (elapsed / 60000))
 end
 
 function Chopping_and_Banking()
@@ -270,16 +325,34 @@ function Chopping_and_Banking()
             API.Write_LoopyLoop(false)
             return
         end
+        
+        updateLogsChopped()
   
-        if Inventory:FreeSpaces() <= math.random(1,16) and canFillBox then
-            if not fillWoodBox() then
-                canFillBox = false
-            end
+        if Inventory:FreeSpaces() <= math.random(1,12) then
+            fillWoodBox()
         end
 
     end
 
-    API.RandomSleep2(600, 0 ,4800)
+    local metrics = {
+    {"Script", "Al-Kharid Acadia logs"},
+    {"Total Logs:", totalLogs},
+    {"Logs/H:", logsPerHour()},
+    {"Est. Profit:", (totalLogs * gePrice) .. "gp"},
+    {"Profit/H:", (function()
+                    local elapsed = (API.SystemTime() - startTime) / 3600000
+
+                    if elapsed > 0 then
+                        return math.floor( (totalLogs * gePrice) / elapsed ) .. "gp"
+                    else
+                        return "0gp"
+                    end
+                end)()}
+    }
+
+    API.DrawTable(metrics)
+    
+    API.RandomSleep2(250, 0 ,250)
 
 end
 
