@@ -5,6 +5,7 @@ local WC = require("lib/WOODCUTTING")
 local BANK = require("lib/BANKING")
 
 local canFillBox = true
+local lastLogCount = 0
 local totalLogs = 0
 local startTime = API.SystemTime()
 
@@ -132,16 +133,6 @@ local function readChat()
     return nil
 end
 
-local function choppedLogCheck()
-    local check = readChat()
-    if check  == "You get some acadia tree logs." then
-        API.logInfo("Chopped some logs!")
-        return true
-    else
-        return false
-    end
-end
-
 local function woodBoxFullCheck()
     local check = readChat()
     if check  == "<col=EB2F2F>The wood box is too full to deposit any items from your backpack." then
@@ -225,6 +216,22 @@ function goToTrees()
     return true
 end
 
+local function currentAcadiaLogs()
+    return Inventory:GetItemAmount(ACADIA.log_ID)
+end
+
+local function updateLogsChopped()
+    local count = currentAcadiaLogs()
+
+    if count > lastLogCount then
+        totalLogs =
+            totalLogs
+            + (count - lastLogCount)
+
+        lastLogCount = count
+    end
+end
+
 local function logsPerHour()
     local elapsed = API.SystemTime() - startTime
 
@@ -301,13 +308,7 @@ function Chopping_and_Banking()
           canFillBox = false  
         end
 
-        if choppedLogCheck() then
-          if hasAcadiaWoodSpirits() then
-              totalLogs = totalLogs + 2
-          else
-              totalLogs = totalLogs + 1
-          end
-        end
+        updateLogsChopped()
 
         local metrics = {
         {"Script", "Al-Kharid Acadia logs"},
