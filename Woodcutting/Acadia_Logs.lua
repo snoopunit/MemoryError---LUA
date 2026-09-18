@@ -135,7 +135,7 @@ end
 local function choppedLogCheck()
     local check = readChat()
     if check  == "You get some acadia tree logs." then
-        API.LogInfo("Chopped some logs!")
+        API.logInfo("Chopped some logs!")
         return true
     else
         return false
@@ -145,7 +145,7 @@ end
 local function woodBoxFullCheck()
     local check = readChat()
     if check  == "<col=EB2F2F>The wood box is too full to deposit any items from your backpack." then
-      API.LogInfo("Wood box is full!")
+      API.logInfo("Wood box is full!")
         return true
     else
         return false
