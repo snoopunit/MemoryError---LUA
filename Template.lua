@@ -55,6 +55,7 @@ local function readChat()
 
     for index, value in ipairs(chats) do
         if value.text then
+            API.logDebug("Chat: "..value.text)
             return value.text
         end
     end   
