@@ -113,26 +113,40 @@ function walkPath(destination)
     end
 end
 
+local function readChat()
+    local chats = API.GatherEvents_chat_check()
+
+    for index, value in ipairs(chats) do
+        if value.text then
+            API.logDebug("Chat: "..value.text)
+            return value.text
+        end
+    end   
+    return nil
+end
+
+local function woodBoxFullCheck()
+    local check = readChat()
+    if check  == "<col=EB2F2F>The wood box is too full to deposit any items from your backpack." then
+        return true
+    else
+        return false
+    end
+end
+
 local function fillWoodBox()
+
+  if not canFillBox then return end
     
   local ability = API.GetABs_name("ood box", false)
-    
   if ability.action == "Fill" and ability.enabled then
-        
-    API.DoAction_Ability_Direct(ability, 1, API.OFF_ACT_GeneralInterface_route)
-        
+    if not API.DoAction_Ability_Direct(ability, 1, API.OFF_ACT_GeneralInterface_route) then
+      API.logWarn("Unable to DoAction_Ability_Direct!")
+      API.Write_LoopyLoop(False)
+      return
+    end
   end
-    
-  API.RandomSleep2(1200,0,400)
-    
-  if Inventory:GetItemAmount("Acadia logs") ~= 0 and Inventory:GetItemAmount("Acadia logs") > 1 then
         
-    return false
-        
-  end
-    
-  return true
-    
 end
 
 local function isAtLocation(location, distance)
@@ -251,14 +265,17 @@ function Chopping_and_Banking()
             end
         end
   
-        if Inventory:FreeSpaces() <= math.random(1,16) and canFillBox then
-            if not fillWoodBox() then
-                canFillBox = false
-            end
+        if Inventory:FreeSpaces() <= math.random(1,16) then
+            fillWoodBox()
         end
+
+        if woodBoxFullCheck() then  
+          canFillBox = false  
+        end
+    
     end
 
-    API.RandomSleep2(2400, 0 ,600)
+    API.RandomSleep2(600, 0 ,600)
 
 end
 
