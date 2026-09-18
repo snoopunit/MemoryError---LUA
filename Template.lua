@@ -50,6 +50,26 @@ function craftIncense()
 
 end
 
+local function readChat()
+    local chats = API.GatherEvents_chat_check()
+
+    for index, value in ipairs(chats) do
+        if value.text then
+            return value.text
+        end
+    end   
+    return nil
+end
+
+local function woodBoxFullCheck()
+    local check = readChat()
+    if check  == "<col=EB2F2F>Your wood box is too full to deposit all items from the backpack.</col>" then
+        return true
+    else
+        return false
+    end
+end
+
 API.Write_LoopyLoop(true)
 API.SetDrawLogs(true)
 API.SetDrawTrackedSkills(true)
@@ -69,7 +89,7 @@ do------------------------------------------------------------------------------
         end
     end]]
 
-    if Inventory:Contains("Yew logs") then
+    --[[if Inventory:Contains("Yew logs") then
         craftIncense() 
     else
         if not loadLastPreset("Yew logs") then
@@ -77,9 +97,9 @@ do------------------------------------------------------------------------------
             API.Write_LoopyLoop(false)
             return false
         end
-    end
+    end]]
 
-  
+    print("Wood box full: "..tostring(woodBoxFullCheck()))
 
     API.RandomSleep2(800, 0, 400)
 end----------------------------------------------------------------------------------
