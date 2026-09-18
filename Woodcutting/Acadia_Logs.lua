@@ -193,20 +193,22 @@ end
 
 function Chopping_and_Banking()
 
+    local failCounter = 0
+
     if Inventory:IsFull() then
 
         BANK.goTo(BANK.BANKERS.AL_KHARID)
-
-        local failCounter = 0
     
         while API.Read_LoopyLoop() and not Bank:IsOpen() do
             
-            if not Interact:NPC("Banker", "Bank", 40) then
-              if not Interact:Object("Bank booth", "Bank", 40) then
-                  API.logWarn("Unable to interact with the bankers or booths!")
-                  failCounter = failCounter + 1
-              end
-            end  
+            if not API.ReadPlayerMovin2() then
+                if not Interact:NPC("Banker", "Bank", 40) then
+                    if not Interact:Object("Bank booth", "Bank", 40) then
+                        API.logWarn("Unable to interact with the bankers or booths!")
+                        failCounter = failCounter + 1
+                    end
+                end  
+            end
 
             if failCounter >= 10 then
                 API.logWarn("Failed to open bank after 10 attempts!")
@@ -214,26 +216,36 @@ function Chopping_and_Banking()
                 return
             end
 
+            API.RandomSleep2(1800,0,1800)
+
         end
     
-        API.RandomSleep2(1800,0,1800)
-        if not Bank:DepositAll(ACADIA.log_ID) then
-          API.logWarn("Unable to deposit logs!")
-          API.Write_LoopyLoop(false)
-          return
+        while API.Read_LoopyLoop() and not Inventory:FreeSpaces() >= 26 do
+
+            if not Bank:WoodBoxDepositLogs() then
+                API.logWarn("Unable to deposit woodbox logs!")
+                failCounter = failCounter + 1
+            end
+
+            API.RandomSleep2(600,0,2400)
+
+            if not Bank:DepositAll(ACADIA.log_ID) then
+                API.logWarn("Unable to deposit logs!")
+                failCounter = failCounter + 1
+            end
+        
+            API.RandomSleep2(600,0,2400)
+            
+            if failCounter >= 10 then
+                API.logWarn("Failed to deposit logs after 10 attempts!")
+                API.Write_LoopyLoop(false)
+                return
+            end
+
         end
-    
-        API.RandomSleep2(1800,0,1800)
-        if not Bank:WoodBoxDepositLogs() then
-          API.logWarn("Unable to deposit woodbox logs!")
-          API.Write_LoopyLoop(false)
-          return
-        end
-
-        API.RandomSleep2(1800,0,1800)
-
-
+        
         canFillBox = true
+        failCounter = 0
 
     else
 
@@ -246,9 +258,17 @@ function Chopping_and_Banking()
         
         if not API.CheckAnim(15) then
             if not WC.chop() then
-              API.Write_LoopyLoop(false)
-              return
+              failCounter = failCounter + 1
+              API.RandomSleep2(3600, 0 ,4800)
+            else
+                failCounter = 0
             end
+        end
+
+        if failCounter >= 10 then
+            API.logWarn("Failed to chop logs 10 attempts!")
+            API.Write_LoopyLoop(false)
+            return
         end
   
         if Inventory:FreeSpaces() <= math.random(1,16) and canFillBox then
@@ -256,9 +276,10 @@ function Chopping_and_Banking()
                 canFillBox = false
             end
         end
+
     end
 
-    API.RandomSleep2(2400, 0 ,600)
+    API.RandomSleep2(600, 0 ,4800)
 
 end
 
