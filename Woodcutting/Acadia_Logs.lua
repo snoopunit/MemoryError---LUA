@@ -61,7 +61,7 @@ end
 
 ---@param destination WPOINT
 function walkPath(destination)
-    local MAX_SEGMENT_LENGTH = 30
+    local MAX_SEGMENT_LENGTH = 50
     local currentPosition = API.PlayerCoord()
     
     if distanceFromPlayer(destination) <= 30 then
