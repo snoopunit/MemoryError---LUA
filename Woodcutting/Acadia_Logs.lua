@@ -162,6 +162,8 @@ local function fillWoodBox()
       return
     end
   end
+
+  API.RandomSleep2(600,0,250)
         
 end
 
@@ -325,7 +327,7 @@ function Chopping_and_Banking()
     
     end
 
-    API.RandomSleep2(600, 0 ,600)
+    API.RandomSleep2(250, 0 ,250)
 
 end
 
