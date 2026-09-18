@@ -61,7 +61,7 @@ end
 
 ---@param destination WPOINT
 function walkPath(destination)
-    local MAX_SEGMENT_LENGTH = 40
+    local MAX_SEGMENT_LENGTH = 30
     local currentPosition = API.PlayerCoord()
     
     if distanceFromPlayer(destination) <= 30 then
@@ -81,7 +81,7 @@ function walkPath(destination)
         if API.DoAction_WalkerW(nextPoint) then
             API.RandomSleep2(1800, 200, 1200)
             while API.ReadPlayerMovin2() do
-                if distanceFromPlayer(destination) < 40 then return true end
+                if distanceFromPlayer(destination) < 30 then return true end
                 API.RandomSleep2(50, 0, 50)   
             end
         else
@@ -90,7 +90,7 @@ function walkPath(destination)
         end
         
         currentPosition = API.PlayerCoord()
-        if distanceFromPlayer(destination) < 40 then
+        if distanceFromPlayer(destination) < 30 then
             return true
         end
     end
@@ -100,7 +100,7 @@ function walkPath(destination)
     if API.DoAction_WalkerW(destination) then
         API.RandomSleep2(1800, 200, 1200)
         while API.ReadPlayerMovin2() do
-            if API.PinAreaW(destination, 40) then return true end
+            if API.PinAreaW(destination, 30) then return true end
             API.RandomSleep2(50, 0, 50)   
         end
     else
@@ -108,7 +108,7 @@ function walkPath(destination)
         return false
     end
     
-    if distanceFromPlayer(destination) < 40 then
+    if distanceFromPlayer(destination) < 30 then
         API.logDebug("Successfully reached destination")
         return true
     else
