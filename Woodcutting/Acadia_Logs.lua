@@ -143,9 +143,15 @@ local function woodBoxFullCheck()
     end
 end
 
+local function currentAcadiaLogs()
+    return Inventory:GetItemAmount(ACADIA.log_ID)
+end
+
 local function fillWoodBox()
 
   if not canFillBox then return end
+
+  local count = Inventory:FreeSpaces()
     
   local ability = API.GetABs_name("ood box", false)
   if ability.action == "Fill" and ability.enabled then
@@ -157,6 +163,10 @@ local function fillWoodBox()
   end
 
   API.RandomSleep2(600,0,250)
+
+  if count < Inventory:FreeSpaces() then
+    lastLogCount = currentAcadiaLogs()
+  end
         
 end
 
@@ -214,10 +224,6 @@ function goToTrees()
 
     API.logDebug("Successfully reached ACADIA location")
     return true
-end
-
-local function currentAcadiaLogs()
-    return Inventory:GetItemAmount(ACADIA.log_ID)
 end
 
 local function updateLogsChopped()
