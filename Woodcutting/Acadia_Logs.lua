@@ -275,7 +275,7 @@ function Chopping_and_Banking()
 
         end
     
-        while API.Read_LoopyLoop() and not Inventory:FreeSpaces() >= 26 do
+        while API.Read_LoopyLoop() and Inventory:FreeSpaces() <= 26 do
 
             if not Bank:WoodBoxDepositLogs() then
                 API.logWarn("Unable to deposit woodbox logs!")
