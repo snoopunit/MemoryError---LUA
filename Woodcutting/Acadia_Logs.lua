@@ -149,24 +149,27 @@ end
 
 local function fillWoodBox()
 
-  if not canFillBox then return end
+    if not canFillBox then return end
 
-  local count = Inventory:FreeSpaces()
-    
-  local ability = API.GetABs_name("ood box", false)
-  if ability.action == "Fill" and ability.enabled then
-    if not API.DoAction_Ability_Direct(ability, 1, API.OFF_ACT_GeneralInterface_route) then
-      API.logWarn("Unable to DoAction_Ability_Direct!")
-      API.Write_LoopyLoop(False)
-      return
+    local count = Inventory:FreeSpaces()
+        
+    local ability = API.GetABs_name("ood box", false)
+
+    if ability.action == "Fill" and ability.enabled then
+
+        if not API.DoAction_Ability_Direct(ability, 1, API.OFF_ACT_GeneralInterface_route) then
+            API.logWarn("Unable to DoAction_Ability_Direct!")
+            API.Write_LoopyLoop(False)
+            return
+        end
+
     end
-  end
 
-  API.RandomSleep2(600,0,250)
+    API.RandomSleep2(600,0,250)
 
-  if count < Inventory:FreeSpaces() then
-    lastLogCount = currentAcadiaLogs()
-  end
+    if count < Inventory:FreeSpaces() then
+        lastLogCount = currentAcadiaLogs()
+    end
         
 end
 
@@ -330,6 +333,9 @@ function Chopping_and_Banking()
   
         if Inventory:FreeSpaces() <= math.random(1,12) then
             fillWoodBox()
+            if woodBoxFullCheck() then
+                canFillBox = false
+            end
         end
 
     end
