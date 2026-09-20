@@ -308,6 +308,7 @@ function Chopping_and_Banking()
         
         canFillBox = true
         failCounter = 0
+        totalLogs = totalLogs + 226
 
     else
 
@@ -333,7 +334,7 @@ function Chopping_and_Banking()
             return
         end
         
-        updateLogsChopped()
+        --updateLogsChopped()
   
         if Inventory:FreeSpaces() <= math.random(1,12) then
             fillWoodBox()
