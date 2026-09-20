@@ -264,7 +264,11 @@ function Chopping_and_Banking()
                     if not Interact:Object("Bank booth", "Bank", 40) then
                         API.logWarn("Unable to interact with the bankers or booths!")
                         failCounter = failCounter + 1
+                    else
+                        failCounter = 0
                     end
+                else
+                    failCounter = 0
                 end  
             end
 
