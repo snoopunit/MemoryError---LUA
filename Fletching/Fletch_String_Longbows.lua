@@ -76,7 +76,10 @@ do------------------------------------------------------------------------------
     API.RandomSleep2(800, 0, 2400)
 
     if not Inventory:IsFull() then
-        loadLastPreset()
+        if not loadLastPreset() then
+            API.logWarn("Unable to load a full inventory!")
+            API.Write_LoopyLoop(false)
+        end        
     end
 
     API.RandomSleep2(800, 0, 2400)
