@@ -5,7 +5,8 @@ local BANK = require("lib/BANKING")
 local MISC = require("lib/MISC")
 
 local logType = "Maple logs"
-local bowType = 
+local unstrungType = "Maple longbow (unstrung)"
+local strungType = "Maple longbow"
 
 local Max_AFK = 5
 
