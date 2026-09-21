@@ -802,11 +802,11 @@ local function startExcavation()
 end
 
 local artifactFoundInterface = {
-    InterfaceComp5.new(1189, 2, -1, 0),
+    InterfaceComp5:new(1189, 2, -1, 0),
 }
 
 local destroyInterface = {
-    InterfaceComp5.new(1183, 11, -1, 0),
+    InterfaceComp5:new(1183, 11, -1, 0),
 }
 
 local function destroyInterfaceFound()
