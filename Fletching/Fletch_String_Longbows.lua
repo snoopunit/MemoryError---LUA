@@ -4,6 +4,9 @@ local API = require("api")
 local BANK = require("lib/BANKING")
 local MISC = require("lib/MISC")
 
+local logType = "Maple logs"
+local bowType = 
+
 local Max_AFK = 5
 
 local function loadLastPreset() 
@@ -59,6 +62,12 @@ do------------------------------------------------------------------------------
 
     if Inventory:Contains("Bowstring") then
         stringLongbows() 
+    end
+
+    API.RandomSleep2(800, 0, 2400)
+
+    if not Inventory:IsFull() then
+        loadLastPreset()
     end
 
     API.RandomSleep2(800, 0, 2400)
