@@ -16,8 +16,9 @@ local function loadLastPreset()
 end
 
 local function fletchUnstrungLongbows()
+    API.logDebug("Fletching unstrung longbows")
 
-    local boxAB = API.GetABs_name("log", false)
+    local boxAB = API.GetABs_name("logs", false)
 
     if boxAB.action == "Craft" and boxAB.enabled then
         API.DoAction_Ability_Direct(boxAB, 1, API.OFF_ACT_GeneralInterface_route)
@@ -26,10 +27,12 @@ local function fletchUnstrungLongbows()
     API.RandomSleep2(1800, 0, 3200)
 
     if MISC.isChooseToolOpen() then
+        API.logDebug("Choose tool interface detected! Picking fletch option...")
         MISC.chooseToolOption("Fletch")
         API.RandomSleep2(1800,0,600)
     end
 
+    API.logDebug("Choosing unstrung longbows...")
     MISC.chooseCraftingItem(5)
     API.RandomSleep2(1800,0,600)
 
@@ -37,6 +40,7 @@ local function fletchUnstrungLongbows()
 end
 
 function stringLongbows()
+    API.logDebug("Stringing unstrung longbows...")
 
     local boxAB = API.GetABs_name("unstrung", false)
 
