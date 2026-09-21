@@ -4,10 +4,6 @@ local API = require("api")
 local BANK = require("lib/BANKING")
 local MISC = require("lib/MISC")
 
-local logType = "Maple logs"
-local unstrungType = "Maple longbow (unstrung)"
-local strungType = "Maple longbow"
-
 local Max_AFK = 5
 
 local function loadLastPreset() 
@@ -28,6 +24,14 @@ local function fletchUnstrungLongbows()
     end
 
     API.RandomSleep2(1800, 0, 3200)
+
+    if MISC.isChooseToolOpen() then
+        MISC.chooseToolOption("Fletch")
+        API.RandomSleep2(1800,0,600)
+    end
+
+    MISC.chooseCraftingItem(5)
+    API.RandomSleep2(1800,0,600)
 
     return MISC.doCrafting()
 end
@@ -55,7 +59,7 @@ while(API.Read_LoopyLoop())
 
 do-----------------------------------------------------------------------------------
 
-    if Inventory:Contains("Maple logs") then
+    if Inventory:Contains("Maple logs") or Inventory:Contains("Acadia logs") or Inventory:Contains("Yew logs") or Inventory:Contains("Willow logs") or Inventory:Contains("Magic logs") then
         fletchUnstrungLongbows() 
     end
 
