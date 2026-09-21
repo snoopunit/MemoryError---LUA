@@ -14,7 +14,7 @@ local itemSelection = 2
 local isBanking = false
 local makeIncense = false
 local startTime = API.SystemTime()
-local timeToQuit = math.random(3600000, ( 3600000 * math.random(2,4) ))
+local timeToQuit = math.random(3600000, ( 3600000 * math.random(2,6) ))
 print("timeToQuit = "..tostring(timeToQuit))
 
 function drawGUI()
