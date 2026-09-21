@@ -1011,7 +1011,7 @@ local function followTimeSprite(objects)
         if sprite and sprite.Id then
             local spritePos = WPOINT.new(sprite.TileX / 512, sprite.TileY / 512, sprite.TileZ / 512)
             local distanceF = API.Math_DistanceF(API.PlayerCoordfloat(), sprite.Tile_XYZ)
-            if distanceF > 1.2 then
+            if distanceF > 2.0 then
                 UTILS.randomSleep(400)
                 if not API.CheckAnim(20) and #foundObjects > 0 then
                     API.logInfo("Excavating " .. target)
